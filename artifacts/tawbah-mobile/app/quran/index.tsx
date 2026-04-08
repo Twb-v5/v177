@@ -123,6 +123,26 @@ export default function QuranHubScreen() {
         </View>
       </View>
 
+      <View style={{ paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: isDark ? "#334155" : "#e2e8f0" }}>
+        <Text style={{ fontSize: 11, fontWeight: "700", color: isDark ? "#64748b" : "#94a3b8", marginBottom: 8, textAlign: "right" }}>أدوات القرآن</Text>
+        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          {[
+            { label: "تفسير", emoji: "📖", href: "/quran/tafsir" },
+            { label: "حفظ", emoji: "🧠", href: "/quran/memorize" },
+            { label: "تحديات", emoji: "🏆", href: "/quran/challenges" },
+            { label: "ختمة", emoji: "📿", href: "/quran/khatmat" },
+            { label: "مساجد", emoji: "🕌", href: "/quran/map" },
+          ].map(tool => (
+            <Pressable key={tool.href} onPress={() => router.push(tool.href as any)}
+              style={{ flexDirection: "row-reverse", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10,
+                backgroundColor: isDark ? "#1e293b" : "#f1f5f9", borderWidth: 1, borderColor: isDark ? "#334155" : "#e2e8f0" }}>
+              <Text style={{ fontSize: 14 }}>{tool.emoji}</Text>
+              <Text style={{ fontSize: 11, fontWeight: "600", color: isDark ? "#f1f5f9" : "#1e293b" }}>{tool.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
       <View style={styles.tabs}>
         <Pressable style={[styles.tab, styles.activeTab, { backgroundColor: isDark ? "#1e293b" : "#ffffff" }]}>
           <Text style={[styles.tabText, { color: isDark ? "#22c55e" : "#1a4731" }]}>الكل</Text>

@@ -23,7 +23,7 @@
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
 - **Web frontend**: React + Vite, Tailwind CSS, Framer Motion
-- **Mobile**: Expo React Native, Expo Router
+- **Mobile**: Expo SDK 54, Expo Router, AsyncStorage, expo-av, expo-haptics, expo-location
 
 ## App Features
 
