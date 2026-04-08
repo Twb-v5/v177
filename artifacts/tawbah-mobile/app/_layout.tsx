@@ -35,24 +35,26 @@ export default function RootLayout() {
     I18nManager.forceRTL(false);
   }, []);
 
-  const [amiriLoaded] = useAmiriFonts({
+  const [amiriLoaded, amiriError] = useAmiriFonts({
     Amiri_400Regular,
     Amiri_700Bold,
   });
 
-  const [plexLoaded] = usePlexArabicFonts({
+  const [plexLoaded, plexError] = usePlexArabicFonts({
     IBMPlexSansArabic_400Regular,
     IBMPlexSansArabic_500Medium,
     IBMPlexSansArabic_700Bold,
   });
 
+  const fontsReady = (amiriLoaded || !!amiriError) && (plexLoaded || !!plexError);
+
   useEffect(() => {
-    if (amiriLoaded && plexLoaded) {
+    if (fontsReady) {
       SplashScreen.hideAsync();
     }
-  }, [amiriLoaded, plexLoaded]);
+  }, [fontsReady]);
 
-  if (!amiriLoaded || !plexLoaded) {
+  if (!fontsReady) {
     return null;
   }
 
