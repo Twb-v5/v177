@@ -1153,33 +1153,114 @@ export function IslamicHero() {
         </div>
         {/* /logo wrapper */}
 
-        {/* App name */}
-        <motion.h1
+        {/* Ayah banner */}
+        <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{
             opacity: orbiting ? 0.35 : 1,
             y: 0,
-            filter: orbiting ? "blur(4px)" : "blur(0px)",
+            filter: orbiting ? "blur(2px)" : "blur(0px)",
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="text-[17px] font-bold tracking-widest mb-1 text-[#facd70] mt-[-27px]"
-          style={
-            isDark
-              ? {
-                  color: "#f5c842",
-                  textShadow:
-                    "0 0 24px rgba(251,191,36,0.45), 0 0 60px rgba(251,191,36,0.18)",
-                  letterSpacing: "0.06em",
-                }
-              : {
-                  color: lightCfg.textColor,
-                  textShadow: `0 1px 8px ${lightCfg.glowColor}`,
-                  letterSpacing: "0.06em",
-                }
-          }
+          className="max-w-xs"
+          style={{
+            marginTop: -16,
+            marginBottom: 4,
+          }}
         >
-          دليل التوبة النصوح
-        </motion.h1>
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{
+              opacity: orbiting ? 0.4 : 1,
+              y: 0,
+              filter: orbiting ? "blur(3px)" : "blur(0px)",
+            }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="rounded-xl overflow-hidden"
+            style={{
+              background: isDark ? "rgba(255,255,255,0.05)" : lightCfg.cardBg,
+              border: `1px solid ${isDark ? "rgba(251,191,36,0.16)" : lightCfg.cardBorder}`,
+              backdropFilter: "blur(12px)",
+            }}
+          >
+            <div
+              className="flex items-center justify-between px-3 py-2"
+              style={{
+                borderBottom: `1px solid ${isDark ? "rgba(251,191,36,0.1)" : lightCfg.cardBorder}`,
+                background: isDark
+                  ? "linear-gradient(to right, rgba(251,191,36,0.05), transparent)"
+                  : `linear-gradient(to right, ${lightCfg.glowColor}, transparent)`,
+              }}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                {items[idx] && TYPE_META[items[idx].type] ? (
+                  <span
+                    className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                    style={{ background: TYPE_META[items[idx].type].bg, color: TYPE_META[items[idx].type].color }}
+                  >
+                    {TYPE_META[items[idx].type].icon}
+                    {TYPE_META[items[idx].type].label}
+                  </span>
+                ) : (
+                  <Sparkles size={10} style={{ color: isDark ? "rgba(251,191,36,0.85)" : lightCfg.textColor }} />
+                )}
+                {items[idx]?.source && (
+                  <span
+                    className="text-[9px] truncate"
+                    style={{ color: isDark ? "rgba(200,230,215,0.5)" : lightCfg.subColor }}
+                  >
+                    {items[idx].source}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="min-h-[60px] px-3 py-2">
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center justify-center gap-2.5 h-full py-2"
+                  >
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                      style={{ color: isDark ? "rgba(251,191,36,0.85)" : lightCfg.textColor }}
+                    >
+                      <Sparkles size={11} />
+                    </motion.div>
+                    <p className="text-[11px]" style={{ color: isDark ? "rgba(200,230,215,0.5)" : lightCfg.subColor }}>
+                      Loading...
+                    </p>
+                  </motion.div>
+                ) : items[idx] ? (
+                  <motion.div
+                    key={`item-${idx}`}
+                    initial={{ opacity: 0, x: 12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -12 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="flex flex-col items-center"
+                  >
+                    <p
+                      className="text-[12px] leading-[1.8] font-medium text-center"
+                      style={{ color: isDark ? "rgba(240,255,245,0.92)" : lightCfg.textColor }}
+                      dir="rtl"
+                    >
+                      {items[idx].type === "ayah" ? (items[idx].text.startsWith(" ") ? items[idx].text : ` ${items[idx].text} `) : items[idx].text}
+                    </p>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* Tap hint */}
         <motion.p
