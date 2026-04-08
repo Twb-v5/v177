@@ -1,4 +1,3 @@
-
 packages:
   - artifacts/*
   - lib/*
@@ -59,6 +58,7 @@ catalog:
 #
 # ============================================================================
 minimumReleaseAge: 1440
+nodeLinker: hoisted
 
 onlyBuiltDependencies:
   - '@swc/core'

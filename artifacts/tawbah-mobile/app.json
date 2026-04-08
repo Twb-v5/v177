@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "Tawbah",
+    "slug": "tawbah-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "scheme": "tawbah",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a4731"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aiservx.tawbah",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Tawbah needs your location to calculate accurate prayer times for your area."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a4731"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.aiservx.tawbah",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#1a4731"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Tawbah needs your location to calculate accurate prayer times for your area."
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
