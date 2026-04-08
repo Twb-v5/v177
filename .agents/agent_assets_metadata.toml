@@ -60,3 +60,9 @@ id = "y8ThfmAgx9ZqhRYm0JHFX"
 uri = "file://screenshots/desktop/06-zakiy.png"
 type = "image"
 title = "لقطة: زكي AI (سطح المكتب)"
+
+[[outputs]]
+id = "QSBrElWHDCMSpLg6BKe_m"
+uri = "file://zakiy_full_analysis.md"
+type = "text"
+title = "تشريح الزكي الكامل — وثيقة التحويل لـ Expo"
