@@ -1,19 +1,50 @@
-import { useCallback, useEffect, useMemo } from "react";
-import { View, Text, Pressable, StyleSheet, I18nManager } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useAdhkar } from "@/hooks/useAdhkar";
+import { useColors } from "@/hooks/useColors";
 import { useSettings } from "@/providers/SettingsProvider";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  withSequence,
+  interpolateColor,
+  useDerivedValue,
+} from "react-native-reanimated";
+import { ChevronRight, ChevronLeft, RotateCcw, ChevronDown, ChevronUp } from "lucide-react-native";
+
+type Category = "morning" | "evening" | "sleep" | "general" | "prayer" | "waking";
+
+const CATEGORY_LABELS: Record<Category, { ar: string; emoji: string }> = {
+  morning:  { ar: "أذكار الصباح",        emoji: "🌅" },
+  evening:  { ar: "أذكار المساء",         emoji: "🌙" },
+  sleep:    { ar: "أذكار النوم",           emoji: "💫" },
+  general:  { ar: "تسبيح عام",            emoji: "📿" },
+  prayer:   { ar: "أذكار الصلاة",          emoji: "🕌" },
+  waking:   { ar: "أذكار الاستيقاظ",      emoji: "☀️" },
+};
 
 export default function DhikrCounterScreen() {
   const router = useRouter();
-  const { category } = useLocalSearchParams<{ category?: string }>();
-  const cat = (category || "general") as "morning" | "evening" | "sleep" | "general";
-  
-  const { resolvedTheme } = useSettings();
-  const isDark = resolvedTheme === "dark";
-  const isRTL = I18nManager.isRTL;
+  const { category, arabic, count: countParam } = useLocalSearchParams<{
+    category?: string;
+    arabic?: string;
+    count?: string;
+  }>();
+
+  const cat = (category || "general") as Category;
+  const c = useColors();
+  const { language } = useSettings();
+  const isDark = c.isDark;
+  const isRTL = language === "ar";
 
   const {
     currentDhikr,
@@ -27,134 +58,323 @@ export default function DhikrCounterScreen() {
     previousDhikr,
   } = useAdhkar();
 
-  const mushafFont = "Amiri_400Regular";
-  const arabicUiFont = "IBMPlexSansArabic_400Regular";
-  const arabicUiFontBold = "IBMPlexSansArabic_700Bold";
+  const [localCount, setLocalCount] = useState(0);
+  const isQuickMode = !!arabic;
+  const quickTarget = parseInt(countParam || "33", 10);
+  const quickCompleted = localCount >= quickTarget;
 
   useEffect(() => {
-    selectCategory(cat);
-  }, [cat, selectCategory]);
+    if (!isQuickMode) selectCategory(cat);
+  }, [cat, selectCategory, isQuickMode]);
 
-  const labels = useMemo(() => {
-    const map: Record<typeof cat, { en: string; ar: string }> = {
-      general: { en: "General", ar: "تسبيح عام" },
-      morning: { en: "Morning", ar: "أذكار الصباح" },
-      evening: { en: "Evening", ar: "أذكار المساء" },
-      sleep: { en: "Sleep", ar: "أذكار النوم" },
-    };
-    return map[cat];
-  }, [cat]);
+  const label = CATEGORY_LABELS[cat] || CATEGORY_LABELS.general;
 
-  const handlePress = useCallback(() => {
-    Haptics.impactAsync(isCompleted ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium);
-    incrementCounter();
-  }, [incrementCounter, isCompleted]);
+  const displayText = isQuickMode ? arabic! : (currentDhikr?.arabic || "");
+  const displayCount = isQuickMode ? localCount : counter;
+  const displayTarget = isQuickMode ? quickTarget : (currentDhikr?.count || 33);
+  const displayProgress = isQuickMode
+    ? Math.min(100, (localCount / quickTarget) * 100)
+    : progress;
+  const displayCompleted = isQuickMode ? quickCompleted : isCompleted;
+
+  const scale = useSharedValue(1);
+  const glow = useSharedValue(0);
+  const progressAnim = useSharedValue(0);
+  const completedAnim = useSharedValue(0);
+
+  useEffect(() => {
+    progressAnim.value = withTiming(displayProgress / 100, { duration: 400 });
+  }, [displayProgress]);
+
+  useEffect(() => {
+    if (displayCompleted) {
+      completedAnim.value = withSpring(1, { damping: 12, stiffness: 180 });
+    } else {
+      completedAnim.value = withTiming(0, { duration: 200 });
+    }
+  }, [displayCompleted]);
+
+  const handlePress = useCallback(async () => {
+    if (isQuickMode) {
+      if (!quickCompleted) {
+        setLocalCount((prev) => prev + 1);
+        await Haptics.impactAsync(
+          localCount + 1 >= quickTarget
+            ? Haptics.ImpactFeedbackStyle.Heavy
+            : Haptics.ImpactFeedbackStyle.Medium
+        );
+      }
+    } else {
+      if (!isCompleted) {
+        incrementCounter();
+        await Haptics.impactAsync(
+          counter + 1 >= (currentDhikr?.count || 33)
+            ? Haptics.ImpactFeedbackStyle.Heavy
+            : Haptics.ImpactFeedbackStyle.Medium
+        );
+      }
+    }
+    scale.value = withSequence(
+      withSpring(0.92, { damping: 20, stiffness: 600 }),
+      withSpring(1.0,  { damping: 20, stiffness: 400 })
+    );
+    glow.value = withSequence(
+      withTiming(1, { duration: 80 }),
+      withTiming(0, { duration: 350 })
+    );
+  }, [isQuickMode, quickCompleted, localCount, quickTarget, isCompleted, counter, currentDhikr, incrementCounter]);
 
   const handleReset = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    resetCounter();
-  }, [resetCounter]);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    if (isQuickMode) {
+      setLocalCount(0);
+    } else {
+      resetCounter();
+    }
+    completedAnim.value = withTiming(0, { duration: 200 });
+  }, [isQuickMode, resetCounter]);
 
   const handleNext = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    nextDhikr();
-  }, [nextDhikr]);
+    if (!isQuickMode) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      nextDhikr();
+    }
+  }, [isQuickMode, nextDhikr]);
 
   const handlePrev = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    previousDhikr();
-  }, [previousDhikr]);
+    if (!isQuickMode) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      previousDhikr();
+    }
+  }, [isQuickMode, previousDhikr]);
+
+  const btnStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    shadowOpacity: 0.15 + glow.value * 0.35,
+    shadowRadius: 12 + glow.value * 24,
+  }));
+
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progressAnim.value * 100}%` as any,
+    backgroundColor: displayCompleted ? "#22C55E" : c.primary,
+  }));
+
+  const completedStyle = useAnimatedStyle(() => ({
+    opacity: completedAnim.value,
+    transform: [{ scale: completedAnim.value }],
+  }));
+
+  const primaryBtn = isDark ? c.primary : "#2D6A4F";
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#0f172a" : "#f8fafc" }]} edges={["top"]}>
-      <View style={[styles.header, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={[styles.backBtnText, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
-            {isRTL ? "»" : "«"}
-          </Text>
-        </Pressable>
-        <Text style={[styles.headerTitle, { color: isDark ? "#f1f5f9" : "#1e293b", fontFamily: isRTL ? arabicUiFontBold : undefined }]}>
-          {isRTL ? labels.ar : labels.en}
-        </Text>
-        <View style={styles.placeholder} />
-      </View>
-
-      <View style={[styles.progressContainer, { backgroundColor: isDark ? "#1e293b" : "#ffffff" }]}>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: isCompleted ? "#22c55e" : "#1a4731" }]} />
-        </View>
-        <Text style={[styles.progressText, { color: isDark ? "#94a3b8" : "#64748b", fontFamily: isRTL ? arabicUiFont : undefined }]}>
-          {counter} / {currentDhikr?.count || 0}
-        </Text>
-      </View>
-
-      <View style={styles.dhikrContainer}>
-        <Text style={[styles.dhikrArabic, { color: isDark ? "#f1f5f9" : "#1e293b", fontFamily: mushafFont }]}>
-          {currentDhikr?.arabic || ""}
-        </Text>
-        <Text style={[styles.dhikrTransliteration, { color: isDark ? "#94a3b8" : "#64748b" }]}>
-          {currentDhikr?.transliteration || ""}
-        </Text>
-        <Text style={[styles.dhikrTranslation, { color: isDark ? "#64748b" : "#94a3b8" }]}>
-          {currentDhikr?.translation || ""}
-        </Text>
-      </View>
-
-      <Pressable
-        onPress={handlePress}
-        style={({ pressed }) => [
-          styles.counterBtn,
-          { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" },
-          pressed && styles.counterBtnPressed,
-        ]}
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={["top"]}>
+      {/* Header */}
+      <View
+        style={{
+          flexDirection: isRTL ? "row-reverse" : "row",
+          alignItems: "center",
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: c.divider,
+        }}
       >
-        <Text style={[styles.counterText, { color: isDark ? "#22c55e" : "#1a4731" }]}>
-          {counter}
-        </Text>
-        <Text style={[styles.counterHint, { color: isDark ? "#94a3b8" : "#64748b", fontFamily: isRTL ? arabicUiFont : undefined }]}>
-          {isRTL ? "اضغط للتسبيح" : "Tap to count"}
-        </Text>
-      </Pressable>
+        <Pressable
+          onPress={() => router.back()}
+          style={{
+            width: 38, height: 38, borderRadius: 12,
+            backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+            alignItems: "center", justifyContent: "center",
+          }}
+        >
+          {isRTL
+            ? <ChevronRight size={20} color={c.textSecondary} />
+            : <ChevronLeft size={20} color={c.textSecondary} />
+          }
+        </Pressable>
 
-      <View style={styles.controls}>
-        <Pressable onPress={handleReset} style={[styles.controlBtn, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
-          <Text style={[styles.controlBtnText, { color: isDark ? "#f1f5f9" : "#1e293b", fontFamily: isRTL ? arabicUiFontBold : undefined }]}>
-            {isRTL ? "تصفير" : "Reset"}
+        <View style={{ flex: 1, alignItems: "center" }}>
+          <Text style={{ fontSize: 15, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold" }}>
+            {isQuickMode ? arabic : label.ar}
           </Text>
-        </Pressable>
-        
-        <Pressable onPress={handlePrev} style={[styles.controlBtn, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
-          <Text style={[styles.controlBtnText, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>{isRTL ? "»" : "«"}</Text>
-        </Pressable>
-        
-        <Pressable onPress={handleNext} style={[styles.controlBtn, { backgroundColor: "#1a4731" }]}>
-          <Text style={[styles.controlBtnText, { color: "#ffffff" }]}>{isRTL ? "«" : "»"}</Text>
+          {!isQuickMode && (
+            <Text style={{ fontSize: 12, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 1 }}>
+              {label.emoji}
+            </Text>
+          )}
+        </View>
+
+        <Pressable
+          onPress={handleReset}
+          style={{
+            width: 38, height: 38, borderRadius: 12,
+            backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+            alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <RotateCcw size={18} color={c.textSecondary} />
         </Pressable>
       </View>
+
+      {/* Progress Bar */}
+      <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+        <View
+          style={{
+            height: 5, borderRadius: 4,
+            backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+            overflow: "hidden",
+          }}
+        >
+          <Animated.View style={[{ height: "100%", borderRadius: 4 }, progressStyle]} />
+        </View>
+        <Text style={{
+          textAlign: "center", fontSize: 12,
+          color: c.textMuted, marginTop: 6,
+          fontFamily: "IBMPlexSansArabic_400Regular",
+        }}>
+          {displayCount} / {displayTarget}
+        </Text>
+      </View>
+
+      {/* Dhikr Text */}
+      <View style={{ flex: 1, paddingHorizontal: 24, justifyContent: "center", alignItems: "center" }}>
+        {displayCompleted ? (
+          <Animated.View style={[completedStyle, { alignItems: "center" }]}>
+            <Text style={{ fontSize: 48, marginBottom: 12 }}>✅</Text>
+            <Text style={{
+              fontSize: 20, fontWeight: "800", color: "#22C55E",
+              fontFamily: "IBMPlexSansArabic_700Bold",
+              textAlign: "center",
+            }}>
+              أحسنت! اكتملت الأذكار
+            </Text>
+            {!isQuickMode && (
+              <Pressable
+                onPress={handleNext}
+                style={{
+                  marginTop: 20, paddingHorizontal: 28, paddingVertical: 12,
+                  borderRadius: 16, backgroundColor: primaryBtn,
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "700", fontFamily: "IBMPlexSansArabic_700Bold", fontSize: 14 }}>
+                  الذكر التالي
+                </Text>
+              </Pressable>
+            )}
+          </Animated.View>
+        ) : (
+          <>
+            <Text
+              style={{
+                fontSize: 26, fontWeight: "800",
+                color: c.text, fontFamily: "Amiri_400Regular",
+                textAlign: "center", lineHeight: 46,
+                marginBottom: 16,
+              }}
+            >
+              {displayText}
+            </Text>
+            {!isQuickMode && currentDhikr?.transliteration ? (
+              <Text style={{
+                fontSize: 14, color: c.textSecondary,
+                fontStyle: "italic", textAlign: "center", marginBottom: 8,
+              }}>
+                {currentDhikr.transliteration}
+              </Text>
+            ) : null}
+            {!isQuickMode && currentDhikr?.translation ? (
+              <Text style={{
+                fontSize: 13, color: c.textMuted,
+                textAlign: "center", lineHeight: 20,
+              }}>
+                {currentDhikr.translation}
+              </Text>
+            ) : null}
+          </>
+        )}
+      </View>
+
+      {/* Big Tap Button */}
+      <View style={{ paddingHorizontal: 32, paddingBottom: 16 }}>
+        <Animated.View style={btnStyle}>
+          <Pressable
+            onPress={handlePress}
+            disabled={displayCompleted}
+            style={{
+              height: 160,
+              borderRadius: 32,
+              backgroundColor: displayCompleted
+                ? isDark ? "#16302B" : "#D1FAE5"
+                : isDark ? c.surface : "#FFFFFF",
+              borderWidth: 2,
+              borderColor: displayCompleted
+                ? "#22C55E"
+                : isDark ? c.border : "rgba(45,106,79,0.16)",
+              alignItems: "center",
+              justifyContent: "center",
+              shadowColor: c.primary,
+              shadowOffset: { width: 0, height: 8 },
+              elevation: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 72, fontWeight: "900",
+                color: displayCompleted ? "#22C55E" : c.primary,
+                lineHeight: 80,
+              }}
+            >
+              {displayCount}
+            </Text>
+            <Text style={{
+              fontSize: 13, color: c.textMuted,
+              fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 4,
+            }}>
+              {displayCompleted ? "✨ اكتملت" : "اضغط للتسبيح"}
+            </Text>
+          </Pressable>
+        </Animated.View>
+      </View>
+
+      {/* Navigation Controls */}
+      {!isQuickMode && (
+        <View
+          style={{
+            flexDirection: isRTL ? "row-reverse" : "row",
+            justifyContent: "center",
+            gap: 12,
+            paddingHorizontal: 24,
+            paddingBottom: 32,
+          }}
+        >
+          <Pressable
+            onPress={handlePrev}
+            style={{
+              flex: 1, paddingVertical: 13, borderRadius: 14,
+              backgroundColor: isDark ? c.surface : "#F1F5F9",
+              borderWidth: 1, borderColor: c.divider,
+              alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: "600" }}>
+              {isRTL ? "السابق" : "Previous"}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={handleNext}
+            style={{
+              flex: 1, paddingVertical: 13, borderRadius: 14,
+              backgroundColor: primaryBtn,
+              alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: "#fff", fontSize: 13, fontWeight: "700", fontFamily: "IBMPlexSansArabic_700Bold" }}>
+              {isRTL ? "التالي" : "Next"}
+            </Text>
+          </Pressable>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", padding: 16, borderBottomWidth: 1 },
-  backBtn: { padding: 8 },
-  backBtnText: { fontSize: 24, fontWeight: "bold" },
-  headerTitle: { flex: 1, fontSize: 18, fontWeight: "bold", textAlign: "center" },
-  placeholder: { width: 40 },
-  progressContainer: { padding: 16 },
-  progressTrack: { height: 6, backgroundColor: "#e2e8f0", borderRadius: 3, overflow: "hidden" },
-  progressFill: { height: "100%", borderRadius: 3 },
-  progressText: { textAlign: "center", marginTop: 8, fontSize: 14 },
-  dhikrContainer: { flex: 1, padding: 20, alignItems: "center", justifyContent: "center" },
-  dhikrArabic: { fontSize: 24, textAlign: "center", lineHeight: 40, fontFamily: "serif", marginBottom: 16 },
-  dhikrTransliteration: { fontSize: 14, textAlign: "center", fontStyle: "italic", marginBottom: 8 },
-  dhikrTranslation: { fontSize: 14, textAlign: "center" },
-  counterBtn: { marginHorizontal: 40, padding: 30, borderRadius: 24, alignItems: "center", borderWidth: 2 },
-  counterBtnPressed: { opacity: 0.8, transform: [{ scale: 0.98 }] },
-  counterText: { fontSize: 56, fontWeight: "bold" },
-  counterHint: { fontSize: 14, marginTop: 4 },
-  controls: { flexDirection: "row", justifyContent: "center", gap: 12, padding: 20, paddingBottom: 40 },
-  controlBtn: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, borderWidth: 1 },
-  controlBtnText: { fontSize: 16, fontWeight: "600" },
-});

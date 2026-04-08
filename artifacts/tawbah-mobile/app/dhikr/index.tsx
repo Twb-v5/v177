@@ -1,118 +1,421 @@
-import { useState } from "react";
-import { View, Text, ScrollView, Pressable, StyleSheet, I18nManager } from "react-native";
+import { View, Text, ScrollView, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useColors } from "@/hooks/useColors";
 import { useSettings } from "@/providers/SettingsProvider";
+import { FloatingTabBar } from "@/components/home/FloatingTabBar";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
 
-const DHIKR_CATEGORIES = [
-  { id: "general", label: "General", labelAr: "تسبيح عام", icon: "📿" },
-  { id: "morning", label: "Morning", labelAr: "أذكار الصباح", icon: "☀️" },
-  { id: "evening", label: "Evening", labelAr: "أذكار المساء", icon: "🌙" },
-  { id: "sleep", label: "Sleep", labelAr: "أذكار النوم", icon: "🛌" },
+const CATEGORIES = [
+  {
+    id: "morning",
+    labelAr: "أذكار الصباح",
+    emoji: "🌅",
+    countAr: "٢١ ذكراً",
+    bgLight: "#FDF6E8",
+    bgDark: "#1A1206",
+    accentLight: "#C8963E",
+    accentDark: "#F59E0B",
+    borderLight: "rgba(200,150,62,0.18)",
+    borderDark: "rgba(245,158,11,0.22)",
+  },
+  {
+    id: "evening",
+    labelAr: "أذكار المساء",
+    emoji: "🌙",
+    countAr: "٢٠ ذكراً",
+    bgLight: "#F5F0FF",
+    bgDark: "#120A1A",
+    accentLight: "#7C3AED",
+    accentDark: "#A78BFA",
+    borderLight: "rgba(109,40,217,0.14)",
+    borderDark: "rgba(167,139,250,0.20)",
+  },
+  {
+    id: "sleep",
+    labelAr: "أذكار النوم",
+    emoji: "💫",
+    countAr: "١١ ذكراً",
+    bgLight: "#EFF6FF",
+    bgDark: "#080F1A",
+    accentLight: "#2563EB",
+    accentDark: "#60A5FA",
+    borderLight: "rgba(37,99,235,0.14)",
+    borderDark: "rgba(96,165,250,0.20)",
+  },
+  {
+    id: "general",
+    labelAr: "تسبيح عام",
+    emoji: "📿",
+    countAr: "بلا حدود",
+    bgLight: "#E8F5EE",
+    bgDark: "#0A1F18",
+    accentLight: "#2D6A4F",
+    accentDark: "#34D399",
+    borderLight: "rgba(45,106,79,0.18)",
+    borderDark: "rgba(52,211,153,0.20)",
+  },
+  {
+    id: "prayer",
+    labelAr: "أذكار الصلاة",
+    emoji: "🕌",
+    countAr: "١٥ ذكراً",
+    bgLight: "#FFF1F0",
+    bgDark: "#1A0A0A",
+    accentLight: "#DC2626",
+    accentDark: "#F87171",
+    borderLight: "rgba(220,38,38,0.14)",
+    borderDark: "rgba(248,113,113,0.20)",
+  },
+  {
+    id: "waking",
+    labelAr: "أذكار الاستيقاظ",
+    emoji: "☀️",
+    countAr: "٦ أذكار",
+    bgLight: "#FDF6E8",
+    bgDark: "#1A1206",
+    accentLight: "#B45309",
+    accentDark: "#FCD34D",
+    borderLight: "rgba(200,150,62,0.18)",
+    borderDark: "rgba(252,211,77,0.20)",
+  },
 ];
 
-export default function DhikrHubScreen() {
-  const router = useRouter();
-  const { resolvedTheme } = useSettings();
-  const isDark = resolvedTheme === "dark";
-  const isRTL = I18nManager.isRTL;
+const QUICK_DHIKR = [
+  { labelAr: "سبحان الله", count: 33 },
+  { labelAr: "الحمد لله", count: 33 },
+  { labelAr: "الله أكبر", count: 34 },
+  { labelAr: "لا إله إلا الله", count: 100 },
+  { labelAr: "أستغفر الله", count: 100 },
+  { labelAr: "سبحان الله وبحمده", count: 100 },
+];
 
-  const handleCategoryPress = (categoryId: string) => {
-    // @ts-ignore - expo-router type issue
-    router.push({ pathname: "/dhikr/counter", params: { category: categoryId } });
-  };
+function CategoryCard({
+  cat,
+  isDark,
+  isRTL,
+  onPress,
+}: {
+  cat: (typeof CATEGORIES)[0];
+  isDark: boolean;
+  isRTL: boolean;
+  onPress: () => void;
+}) {
+  const scale = useSharedValue(1);
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
-  const renderCategoryCard = (category: typeof DHIKR_CATEGORIES[0], index: number) => {
-    const colors = ["#1a4731", "#0369a1", "#7c3aed", "#be185d"];
-    const bgColor = colors[index % colors.length];
-    
-    return (
-      <Pressable
-        key={category.id}
-        onPress={() => handleCategoryPress(category.id)}
-        style={[
-          styles.categoryCard,
-          { backgroundColor: isDark ? "#1e293b" : "#ffffff" },
-        ]}
-      >
-        <View style={[styles.iconContainer, { backgroundColor: bgColor }]}>
-          <Text style={styles.iconText}>{category.icon}</Text>
-        </View>
-        <View style={styles.categoryInfo}>
-          <Text style={[styles.categoryLabel, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
-            {isRTL ? category.labelAr : category.label}
-          </Text>
-          <Text style={[styles.categorySubtext, { color: isDark ? "#94a3b8" : "#64748b" }]}>
-            {isRTL ? " " : "Tap to start counting"}
-          </Text>
-        </View>
-        <Text style={[styles.arrow, { color: isDark ? "#94a3b8" : "#64748b" }]}>
-          {isRTL ? "«" : "»"}
-        </Text>
-      </Pressable>
-    );
-  };
+  const bg = isDark ? cat.bgDark : cat.bgLight;
+  const accent = isDark ? cat.accentDark : cat.accentLight;
+  const border = isDark ? cat.borderDark : cat.borderLight;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#0f172a" : "#f8fafc" }]} edges={["top"]}>
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
-        <Text style={[styles.headerTitle, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
-          {isRTL ? "الأذكار" : "Dhikr"}
+    <Animated.View style={[animStyle, { width: "48%" }]}>
+      <Pressable
+        onPressIn={() => {
+          scale.value = withSpring(0.95, { damping: 20, stiffness: 400 });
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(1.0, { damping: 20, stiffness: 400 });
+        }}
+        onPress={onPress}
+        style={{
+          padding: 16,
+          borderRadius: 20,
+          backgroundColor: isDark ? "rgba(14,14,14,0.92)" : "rgba(255,255,255,0.92)",
+          borderWidth: 1,
+          borderColor: border,
+          minHeight: 110,
+          overflow: "hidden",
+        }}
+      >
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: bg,
+            opacity: 0.6,
+          }}
+        />
+        <Text style={{ fontSize: 28, marginBottom: 8 }}>{cat.emoji}</Text>
+        <Text
+          style={{
+            fontSize: 14,
+            fontWeight: "800",
+            color: accent,
+            fontFamily: "IBMPlexSansArabic_700Bold",
+            textAlign: isRTL ? "right" : "left",
+          }}
+        >
+          {cat.labelAr}
         </Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Hero Section */}
-        <View style={[styles.heroCard, { backgroundColor: "#1a4731" }]}>
-          <Text style={styles.heroTitle}>
-            {isRTL ? "ذِكْرُ الله" : "Remembrance of Allah"}
-          </Text>
-          <Text style={styles.heroSubtitle}>
-            {isRTL ? "سبّح واذكر الله… واحتسب الأجر" : "Count your dhikr and seek blessings"}
-          </Text>
-        </View>
-
-        {/* Categories */}
-        <View style={styles.categoriesSection}>
-          <Text style={[styles.sectionTitle, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
-            {isRTL ? "الأقسام" : "Categories"}
-          </Text>
-          {DHIKR_CATEGORIES.map(renderCategoryCard)}
-        </View>
-
-        {/* Info Card */}
-        <View style={[styles.infoCard, { backgroundColor: isDark ? "#1e293b" : "#ffffff" }]}>
-          <Text style={[styles.infoTitle, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
-            {isRTL ? "فضل الذِّكر" : "Benefits of Dhikr"}
-          </Text>
-          <Text style={[styles.infoText, { color: isDark ? "#94a3b8" : "#64748b" }]}>
-            {isRTL ? "بذكر الله تطمئن القلوب، وتزداد البركة، ويُحفظ العبد من الوسواس." : "Remembering Allah brings peace to the heart, increases blessings, and protects from Shaytan."}
-          </Text>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        <Text
+          style={{
+            fontSize: 11,
+            color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)",
+            fontFamily: "IBMPlexSansArabic_400Regular",
+            marginTop: 3,
+            textAlign: isRTL ? "right" : "left",
+          }}
+        >
+          {cat.countAr}
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { padding: 16, borderBottomWidth: 1 },
-  headerTitle: { fontSize: 24, fontWeight: "bold", textAlign: "center" },
-  content: { padding: 16 },
-  heroCard: { padding: 24, borderRadius: 20, marginBottom: 24, alignItems: "center" },
-  heroTitle: { fontSize: 22, fontWeight: "bold", color: "#ffffff", marginBottom: 4 },
-  heroSubtitle: { fontSize: 14, color: "rgba(255,255,255,0.8)" },
-  categoriesSection: { marginBottom: 24 },
-  sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 16 },
-  categoryCard: { flexDirection: "row", alignItems: "center", padding: 16, borderRadius: 16, marginBottom: 12, borderWidth: 1, borderColor: "transparent" },
-  iconContainer: { width: 50, height: 50, borderRadius: 25, alignItems: "center", justifyContent: "center", marginEnd: 14 },
-  iconText: { fontSize: 20 },
-  categoryInfo: { flex: 1 },
-  categoryLabel: { fontSize: 16, fontWeight: "600" },
-  categorySubtext: { fontSize: 13, marginTop: 2 },
-  arrow: { fontSize: 20, fontWeight: "bold" },
-  infoCard: { padding: 20, borderRadius: 16 },
-  infoTitle: { fontSize: 16, fontWeight: "600", marginBottom: 8 },
-  infoText: { fontSize: 14, lineHeight: 22 },
-});
+export default function DhikrHubScreen() {
+  const router = useRouter();
+  const c = useColors();
+  const { language } = useSettings();
+  const isDark = c.isDark;
+  const isRTL = language === "ar";
+
+  return (
+    <View style={{ flex: 1, backgroundColor: c.background }}>
+      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+        {/* Header */}
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            borderBottomWidth: 1,
+            borderBottomColor: c.divider,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: "800",
+              color: c.text,
+              fontFamily: "IBMPlexSansArabic_700Bold",
+              textAlign: isRTL ? "right" : "left",
+            }}
+          >
+            الذكر والأدعية
+          </Text>
+          <Text
+            style={{
+              fontSize: 12,
+              color: c.textMuted,
+              fontFamily: "IBMPlexSansArabic_400Regular",
+              textAlign: isRTL ? "right" : "left",
+              marginTop: 2,
+            }}
+          >
+            {isRTL ? "ذِكْر الله تطمئن القلوب" : "The heart finds rest in the remembrance of Allah"}
+          </Text>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 120, paddingTop: 16 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Quranic Verse Hero */}
+          <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
+            <View
+              style={{
+                borderRadius: 24,
+                padding: 22,
+                overflow: "hidden",
+                backgroundColor: isDark ? "#0A1F14" : "#2D6A4F",
+              }}
+            >
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0, left: 0, right: 0, bottom: 0,
+                  opacity: 0.12,
+                  backgroundColor: isDark ? "#10B981" : "#ffffff",
+                }}
+              />
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "800",
+                  color: "#ffffff",
+                  fontFamily: "Amiri_400Regular",
+                  textAlign: "center",
+                  lineHeight: 38,
+                  marginBottom: 10,
+                }}
+              >
+                أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.65)",
+                  textAlign: "center",
+                  fontFamily: "IBMPlexSansArabic_400Regular",
+                }}
+              >
+                الرعد: ٢٨
+              </Text>
+            </View>
+          </View>
+
+          {/* Quick Tasbih */}
+          <View style={{ marginBottom: 22 }}>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "800",
+                color: c.text,
+                fontFamily: "IBMPlexSansArabic_700Bold",
+                textAlign: isRTL ? "right" : "left",
+                marginBottom: 10,
+                paddingHorizontal: 16,
+              }}
+            >
+              التسبيح السريع
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                flexDirection: isRTL ? "row-reverse" : "row",
+                gap: 10,
+                paddingHorizontal: 16,
+              }}
+            >
+              {QUICK_DHIKR.map((d) => (
+                <Pressable
+                  key={d.labelAr}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/dhikr/counter",
+                      params: { arabic: d.labelAr, count: d.count, category: "general" },
+                    } as any)
+                  }
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    borderRadius: 16,
+                    backgroundColor: isDark
+                      ? "rgba(16,185,129,0.08)"
+                      : "rgba(45,106,79,0.07)",
+                    borderWidth: 1,
+                    borderColor: isDark
+                      ? "rgba(16,185,129,0.18)"
+                      : "rgba(45,106,79,0.14)",
+                    alignItems: "center",
+                    minWidth: 100,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontWeight: "700",
+                      color: c.primary,
+                      fontFamily: "Amiri_400Regular",
+                    }}
+                  >
+                    {d.labelAr}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      color: c.textMuted,
+                      fontFamily: "IBMPlexSansArabic_400Regular",
+                      marginTop: 3,
+                    }}
+                  >
+                    × {d.count}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Categories Grid */}
+          <View style={{ paddingHorizontal: 16 }}>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "800",
+                color: c.text,
+                fontFamily: "IBMPlexSansArabic_700Bold",
+                textAlign: isRTL ? "right" : "left",
+                marginBottom: 12,
+              }}
+            >
+              الأذكار المأثورة
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: 10,
+              }}
+            >
+              {CATEGORIES.map((cat) => (
+                <CategoryCard
+                  key={cat.id}
+                  cat={cat}
+                  isDark={isDark}
+                  isRTL={isRTL}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/dhikr/counter",
+                      params: { category: cat.id },
+                    } as any)
+                  }
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* Virtue Card */}
+          <View style={{ paddingHorizontal: 16, marginTop: 20 }}>
+            <View
+              style={{
+                borderRadius: 18,
+                padding: 18,
+                backgroundColor: isDark ? "rgba(16,16,16,0.8)" : "rgba(255,255,255,0.85)",
+                borderWidth: 1,
+                borderColor: c.divider,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "800",
+                  color: c.text,
+                  fontFamily: "IBMPlexSansArabic_700Bold",
+                  textAlign: isRTL ? "right" : "left",
+                  marginBottom: 8,
+                }}
+              >
+                فضل الذكر
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: c.textSecondary,
+                  fontFamily: "IBMPlexSansArabic_400Regular",
+                  lineHeight: 22,
+                  textAlign: isRTL ? "right" : "left",
+                }}
+              >
+                بذكر الله تطمئن القلوب، وتُمحى الذنوب، وتُرفع الدرجات. قال
+                صلى الله عليه وسلم: «أحبُّ الكلامِ إلى اللهِ أربعٌ: سبحانَ
+                اللهِ، والحمدُ للهِ، ولا إلهَ إلا اللهُ، واللهُ أكبرُ»
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+      <FloatingTabBar />
+    </View>
+  );
+}
