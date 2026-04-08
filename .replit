@@ -32,10 +32,6 @@ args = "Start application"
 task = "workflow.run"
 args = "Start frontend"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "artifacts/tawbah-mobile: Mobile App"
-
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -59,18 +55,6 @@ waitForPort = 20251
 
 [workflows.workflow.metadata]
 outputType = "webview"
-
-[[workflows.workflow]]
-name = "artifacts/tawbah-mobile: Mobile App"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pnpm --filter @workspace/tawbah-mobile exec expo start --web --port 8099"
-waitForPort = 8099
 
 [agent]
 stack = "PNPM_WORKSPACE"
