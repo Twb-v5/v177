@@ -142,7 +142,23 @@ Three adaptive header variants — all use design tokens only:
 
 ### `artifacts/tawbah-mobile` (`@workspace/tawbah-mobile`)
 
-Expo React Native app with 4 tabs + 4 modal/stack screens.
-Tabs: الرئيسية, المهام, الذكر, التقدم
-Screens: covenant (modal), sos (modal), signs, relapse
-Uses AsyncStorage for local persistence (no API calls needed).
+Expo React Native app with 4 tabs + multiple stack/modal screens.
+Tabs: الرئيسية, القرآن, الذكر, زكي, المزيد
+
+#### Mobile Engines (src/engines/)
+- **Zakiy engine** (`src/engines/zakiy/`) - AI spiritual chat: `useZakiy.ts` hook with real API calls to `/api/zakiy/message`, `/api/zakiy/voice`, `/api/zakiy/suggestions`, voice recording via expo-av, voice profiles, Arabic starters, risk alerts, anniversary milestones
+- **Journey engine** (`src/engines/journey/`) - 30-day journey: `useJourney.ts` with React Query, real API (`/journey30`, `/journey30/complete`), fallback journey data, per-day task tracking
+- **Media engine** (`src/engines/media/`) - Islamic media player: `useMediaPlayer.ts` with expo-av, 6 live radio stations, 3 podcast series with episodes, 50 Islamic programs, playback state, favorites, progress persistence via AsyncStorage
+
+#### Mobile Shared Infrastructure (src/lib/)
+- `src/lib/api.ts` - API base URL management with AsyncStorage, defaults to `https://tawbah.replit.app/api`
+- `src/lib/session.ts` - Persistent session ID generation stored in AsyncStorage key `tawbah_session_id`
+
+#### Mobile Screens
+- `app/zakiy/index.tsx` - Full chat UI: suggestions bar, risk alerts, voice recording, TTS playback, streaming messages
+- `app/journey/index.tsx` - 30-day journey: API-connected progress card, day cards with expand/collapse, task tracking, completion flow
+- `app/programs/index.tsx` - Islamic programs browser: hero banner (auto-rotating), live radio, podcast series with episodes, program category browser with mini-player
+- `app/more/index.tsx` - Navigation hub: links to all screens including Programs (/programs)
+
+#### Path Aliases
+- `@/*` → `src/*` (so `@/engines/*` → `src/engines/*`, `@/lib/*` → `src/lib/*`)

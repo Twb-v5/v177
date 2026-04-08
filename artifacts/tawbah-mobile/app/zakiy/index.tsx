@@ -1,456 +1,541 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  withSpring,
-  FadeIn,
-  FadeInDown,
-  Layout,
-} from "react-native-reanimated";
-import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, I18nManager, KeyboardAvoidingView, Platform } from "react-native";
+import { useState, useRef, useCallback, useEffect } from "react";
+import {
+  View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView,
+  Platform, I18nManager, ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useSettings } from "@/providers/SettingsProvider";
-import { Sparkles, Send, Mic, MicOff, X } from "lucide-react-native";
+import Animated, {
+  FadeIn, FadeInDown, FadeInUp, useSharedValue, useAnimatedStyle,
+  withRepeat, withSequence, withTiming, withSpring,
+} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
+import {
+  ChevronRight, Send, Mic, MicOff, Settings2, AlertTriangle, X, Sparkles,
+} from "lucide-react-native";
+import { useSettings } from "@/providers/SettingsProvider";
+import { useColors } from "@/hooks/useColors";
+import { useZakiy } from "@/engines/zakiy/useZakiy";
+import type { Message } from "@/engines/zakiy/types";
 
-const STARTER_QUESTIONS = [
-  " Idris, how do I make sincere repentance?",
-  " I'm far from Allah, where do I start?",
-  " I committed a big sin, will Allah forgive me?",
-  " How do I stay consistent in worship?",
-  " I feel spiritually empty, what should I do?",
-  " How do I overcome my bad habits?",
-  " What are the best morning adhkar?",
-  " How do I strengthen my faith?",
-  " I keep relapsing, what should I do?",
-  " How do I make my heart soft again?",
-  " What dua should I make during hardship?",
-  " How do I stay away from forbidden things?",
-  " I feel alone in my journey, can we talk?",
-  " How do I increase my halal rizq?",
-  " What's the best way to memorize Quran?",
-  " I feel like giving up, give me hope",
-  " How do I control my anger?",
-  " I neglect prayer, how to fix that?",
-  " How do I make my nights worshipful?",
-  " What's the remedy for a hard heart?",
-  " How do I stay away from sins online?",
-  " I broke my promise to Allah, what now?",
-  " How do I develop good habits?",
-  " What's the importance of istighfar?",
-  " How do I make my days productive?",
-  " I feel distant from Quran, help me",
-  " How do I prepare for death?",
-  " What's the reward of praying at night?",
-];
-
-const TIME_GREETINGS = [
-  { start: 3, end: 7, msg: "Ahlan ya sahbi!  Jowa el-lel, rabena ma'ak." },
-  { start: 7, end: 12, msg: "Ahlan!  El-sobh gamil, rabena yebarek yomak." },
-  { start: 12, end: 15, msg: "Ahlan!  Waqt el-dohra..." },
-  { start: 15, end: 18, msg: "Ahlan ya sahbi!  El-asr gay..." },
-  { start: 18, end: 20, msg: "Ahlan!  Waqt el-maghrib..." },
-  { start: 20, end: 22, msg: "Ahlan!  El-'esha'..." },
-  { start: 22, end: 24, msg: "Ahlan ya sahbi!  Late night, rabena yihfazak." },
-];
-
-const VOICE_PROFILES = [
-  { id: "young-guide", name: "El-morshid el-shab", nameAr: " guiden", voice: "echo" },
-  { id: "sheikh-calm", name: "El-sheikh el-haadi", nameAr: " sheikh", voice: "onyx" },
-  { id: "wise-friend", name: "El-sahib el-hakeem", nameAr: " ami", voice: "fable" },
-  { id: "sister-caring", name: "El-okht el-mufahima", nameAr: "soeur", voice: "nova" },
-  { id: "wise-teacher", name: "El-mu'allima el-fadila", nameAr: "enseignante", voice: "shimmer" },
-  { id: "gentle-mentor", name: "El-murshida el-hannana", nameAr: "mentor", voice: "coral" },
-];
-
-interface Message {
-  id: string;
-  role: "user" | "bot";
-  text: string;
-  timestamp: number;
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
 }
 
-function getTimeGreeting(): string {
-  const hour = new Date().getHours();
-  const base = "أهلاً يا غالي، نورت مكانك";
-  if (hour >= 5 && hour < 12) return `${base}.. صباح الفل`;
-  if (hour >= 12 && hour < 17) return `${base}.. نهارك سعيد`;
-  if (hour >= 17 && hour < 21) return `${base}.. مسا الخير`;
-  return `${base}.. ربنا يطمن قلبك`;
+function MessageBubble({
+  msg,
+  isDark,
+  c,
+}: {
+  msg: Message;
+  isDark: boolean;
+  c: ReturnType<typeof useColors>;
+}) {
+  const isUser = msg.role === "user";
+
+  return (
+    <Animated.View
+      entering={FadeInDown.duration(280).springify()}
+      style={{
+        flexDirection: "row",
+        justifyContent: isUser ? "flex-end" : "flex-start",
+        marginBottom: 8,
+      }}
+    >
+      <View
+        style={{
+          maxWidth: "85%",
+          borderRadius: 20,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          backgroundColor: isUser
+            ? "#059669"
+            : isDark ? "#1a2e1a" : "#ffffff",
+          borderWidth: isUser ? 0 : 1,
+          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+          shadowColor: "#000",
+          shadowOpacity: 0.08,
+          shadowRadius: 6,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 2,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 14,
+            lineHeight: 22,
+            color: isUser ? "#ffffff" : c.text,
+            fontFamily: "IBMPlexSansArabic_400Regular",
+            textAlign: "right",
+          }}
+        >
+          {msg.text}
+        </Text>
+
+        {msg.suggestions && msg.suggestions.length > 0 && (
+          <View style={{ marginTop: 10, gap: 6 }}>
+            {msg.suggestions.map((s, i) => (
+              <Pressable
+                key={i}
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 7,
+                  borderRadius: 12,
+                  backgroundColor: isDark ? "rgba(5,150,105,0.18)" : "rgba(5,150,105,0.1)",
+                  borderWidth: 1,
+                  borderColor: "rgba(5,150,105,0.3)",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: "#059669",
+                    fontFamily: "IBMPlexSansArabic_500Medium",
+                    textAlign: "right",
+                  }}
+                >
+                  {s}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+
+        {msg.suggestionsLoading && (
+          <ActivityIndicator
+            size="small"
+            color="#059669"
+            style={{ marginTop: 8, alignSelf: "flex-end" }}
+          />
+        )}
+
+        <Text
+          style={{
+            fontSize: 10,
+            color: isUser ? "rgba(255,255,255,0.6)" : c.textMuted,
+            textAlign: "right",
+            marginTop: 6,
+            fontFamily: "IBMPlexSansArabic_400Regular",
+          }}
+        >
+          {formatTime(msg.timestamp)}
+        </Text>
+      </View>
+    </Animated.View>
+  );
 }
 
-function getRandomStarters(): string[] {
-  const shuffled = [...STARTER_QUESTIONS].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 6);
+function ThinkingIndicator({ isDark, c }: { isDark: boolean; c: ReturnType<typeof useColors> }) {
+  const dot1 = useSharedValue(0.4);
+  const dot2 = useSharedValue(0.4);
+  const dot3 = useSharedValue(0.4);
+
+  useEffect(() => {
+    dot1.value = withRepeat(withSequence(withTiming(1, { duration: 400 }), withTiming(0.4, { duration: 400 })), -1, false);
+    setTimeout(() => {
+      dot2.value = withRepeat(withSequence(withTiming(1, { duration: 400 }), withTiming(0.4, { duration: 400 })), -1, false);
+    }, 133);
+    setTimeout(() => {
+      dot3.value = withRepeat(withSequence(withTiming(1, { duration: 400 }), withTiming(0.4, { duration: 400 })), -1, false);
+    }, 266);
+  }, []);
+
+  const d1Style = useAnimatedStyle(() => ({ opacity: dot1.value }));
+  const d2Style = useAnimatedStyle(() => ({ opacity: dot2.value }));
+  const d3Style = useAnimatedStyle(() => ({ opacity: dot3.value }));
+
+  return (
+    <Animated.View
+      entering={FadeIn.duration(200)}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 18,
+        backgroundColor: isDark ? "#1a2e1a" : "#ffffff",
+        borderWidth: 1,
+        borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+        alignSelf: "flex-start",
+        marginBottom: 8,
+      }}
+    >
+      <Text style={{ fontSize: 12, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>الزكي بيفكر</Text>
+      <View style={{ flexDirection: "row", gap: 4, alignItems: "center" }}>
+        {[d1Style, d2Style, d3Style].map((style, i) => (
+          <Animated.View
+            key={i}
+            style={[{ width: 7, height: 7, borderRadius: 4, backgroundColor: "#059669" }, style]}
+          />
+        ))}
+      </View>
+    </Animated.View>
+  );
 }
 
 export default function ZakiyScreen() {
+  const router = useRouter();
+  const c = useColors();
   const { resolvedTheme } = useSettings();
   const isDark = resolvedTheme === "dark";
-  const isRTL = I18nManager.isRTL;
+  const scrollRef = useRef<ScrollView>(null);
 
-  const uiFontArabic = "IBMPlexSansArabic_500Medium";
-  const uiFontLatin = "IBMPlexSansArabic_500Medium";
-  const titleFont = "Amiri_700Bold";
+  const {
+    messages,
+    input,
+    setInput,
+    chatState,
+    isBusy,
+    recording,
+    riskAlert,
+    anniversaryMilestone,
+    voiceProfileId,
+    voiceSelectorOpen,
+    setVoiceSelectorOpen,
+    currentVoiceProfile,
+    starters,
+    hasUserMessages,
+    sendMessage,
+    startVoiceRecording,
+    stopVoiceRecording,
+    handleVoiceProfileSelect,
+    dismissRiskAlert,
+    VOICE_PROFILES,
+  } = useZakiy();
 
-  const [input, setInput] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [showStarters, setShowStarters] = useState(true);
-  const [chatState, setChatState] = useState<"idle" | "thinking" | "responding">("idle");
-  const [selectedVoice, setSelectedVoice] = useState("young-guide");
-  const [showVoiceSelector, setShowVoiceSelector] = useState(false);
-
-  const waveformScale = useSharedValue(1);
-  const waveformOpacity = useSharedValue(0);
-  const pulseScale = useSharedValue(1);
-
-  const wave1 = useSharedValue(6);
-  const wave2 = useSharedValue(10);
-  const wave3 = useSharedValue(14);
-  const wave4 = useSharedValue(10);
-  const wave5 = useSharedValue(6);
+  const micScale = useSharedValue(1);
+  const micAnimStyle = useAnimatedStyle(() => ({ transform: [{ scale: micScale.value }] }));
 
   useEffect(() => {
-    if (isListening) {
-      waveformOpacity.value = withTiming(1, { duration: 200 });
-      waveformScale.value = withRepeat(
-        withSequence(withTiming(1.15, { duration: 500 }), withTiming(0.9, { duration: 500 })),
+    if (recording) {
+      micScale.value = withRepeat(
+        withSequence(withTiming(1.15, { duration: 600 }), withTiming(0.9, { duration: 600 })),
         -1,
         true
       );
-      pulseScale.value = withRepeat(
-        withSequence(withTiming(1.05, { duration: 800 }), withTiming(1, { duration: 800 })),
-        -1,
-        true
-      );
-
-      const mk = (min: number, max: number) =>
-        withRepeat(
-          withSequence(
-            withTiming(min, { duration: 220 }),
-            withTiming(max, { duration: 260 }),
-            withTiming(min + 2, { duration: 240 })
-          ),
-          -1,
-          true
-        );
-      wave1.value = mk(6, 14);
-      wave2.value = mk(8, 18);
-      wave3.value = mk(10, 22);
-      wave4.value = mk(8, 18);
-      wave5.value = mk(6, 14);
     } else {
-      waveformOpacity.value = withTiming(0, { duration: 200 });
-      waveformScale.value = withTiming(1, { duration: 200 });
-      pulseScale.value = withTiming(1, { duration: 200 });
-
-      wave1.value = withTiming(6, { duration: 180 });
-      wave2.value = withTiming(10, { duration: 180 });
-      wave3.value = withTiming(14, { duration: 180 });
-      wave4.value = withTiming(10, { duration: 180 });
-      wave5.value = withTiming(6, { duration: 180 });
+      micScale.value = withSpring(1, { damping: 20 });
     }
-  }, [isListening]);
+  }, [recording]);
 
-  const waveformAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: waveformScale.value }],
-    opacity: waveformOpacity.value,
-  }));
-
-  const pulseAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale.value }],
-  }));
-
-  const handleVoicePress = () => {
-    const next = !isListening;
-    if (next) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    } else {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     }
-    setIsListening(next);
-  };
+  }, [messages.length]);
 
-  const handleSendMessage = useCallback(() => {
-    if (!input.trim()) return;
-    
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      text: input.trim(),
-      timestamp: Date.now(),
-    };
-    
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
-    setShowStarters(false);
-    setChatState("thinking");
-    
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
-    setTimeout(() => {
-      setChatState("responding");
-      const botMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "bot",
-        text: "Ya salam, shukran li-sualak! Ana geh hena l-ekhlas. Ga'et t-tekalam ma'aya, fa-hna hena. Gididak: " + input.trim() + " - hwa shi mühim. Nizak: ",
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [...prev, botMsg]);
-      setChatState("idle");
-    }, 1500);
-  }, [input]);
+  const handleSend = useCallback(() => {
+    if (!input.trim() || isBusy) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    sendMessage(input);
+  }, [input, isBusy, sendMessage]);
 
   const handleStarterPress = useCallback((question: string) => {
-    setInput(question);
-    setShowStarters(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setTimeout(() => handleSendMessage(), 300);
-  }, [handleSendMessage]);
+    sendMessage(question);
+  }, [sendMessage]);
 
-  const handleVoiceSelect = useCallback((voiceId: string) => {
-    setSelectedVoice(voiceId);
-    setShowVoiceSelector(false);
-    Haptics.selectionAsync();
-  }, []);
-
-  const palette = useMemo(
-    () => ({
-      bg: isDark ? "#051612" : "#f0fdf4",
-      card: isDark ? "#062c2a" : "#ffffff",
-      card2: isDark ? "#05312d" : "#ecfdf5",
-      border: isDark ? "#115e59" : "#a7f3d0",
-      text: isDark ? "#d1fae5" : "#064e3b",
-      textMuted: isDark ? "#6ee7b7" : "#047857",
-      muted: isDark ? "#5eead4" : "#0d9488",
-      emerald: "#10b981",
-      emeraldDark: "#059669",
-      gold: "#fbbf24",
-      goldDark: "#d97706",
-      userBubble: isDark ? "#065f46" : "#d1fae5",
-      botBubble: isDark ? "#064e3b" : "#ffffff",
-    }),
-    [isDark]
-  );
-
-  const greeting = useMemo(() => getTimeGreeting(), []);
-  const starters = useMemo(() => getRandomStarters(), []);
-
-  const renderStarterCard = ({ item, index }: { item: string; index: number }) => (
-    <Animated.View entering={FadeInDown.delay(index * 100).springify()} layout={Layout.springify()}>
-      <Pressable
-        onPress={() => handleStarterPress(item)}
-        style={({ pressed }) => [
-          styles.starterCard,
-          {
-            backgroundColor: palette.card,
-            borderColor: palette.border,
-            transform: [{ scale: pressed ? 0.98 : 1 }],
-            shadowColor: isDark ? "#000" : palette.emeraldDark,
-            shadowOpacity: pressed ? 0.12 : 0.18,
-            shadowRadius: pressed ? 10 : 14,
-            shadowOffset: { width: 0, height: pressed ? 6 : 10 },
-          },
-        ]}
-      >
-        <Text style={[styles.starterText, { color: palette.text, fontFamily: uiFontLatin }]}>{item}</Text>
-      </Pressable>
-    </Animated.View>
-  );
+  const handleVoicePress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (recording) {
+      stopVoiceRecording();
+    } else {
+      startVoiceRecording();
+    }
+  }, [recording, startVoiceRecording, stopVoiceRecording]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: palette.bg }]} edges={["top"]}>
-      <Animated.View style={[styles.header, { backgroundColor: palette.card, borderColor: palette.border }, pulseAnimatedStyle]}>
-        <View style={styles.headerTop}>
-          <Animated.View style={[styles.sparkleWrapper, waveformAnimatedStyle]}>
-            <Sparkles size={22} color={palette.gold} />
-          </Animated.View>
-          <Text style={[styles.title, { color: palette.text, fontFamily: titleFont }]}>{"زكي"}</Text>
-          <Pressable onPress={() => setShowVoiceSelector(!showVoiceSelector)} style={[styles.voiceSelectorBtn, { borderColor: palette.border }]}>
-            <Text style={[styles.voiceSelectorText, { color: palette.muted, fontFamily: uiFontArabic }]}>{"الصوت"}</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? "#030d03" : "#f0fdf4" }} edges={["top"]}>
+      <View style={{ flex: 1 }}>
+
+        <View
+          style={{
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
+            backgroundColor: isDark ? "rgba(3,13,3,0.96)" : "rgba(240,253,244,0.97)",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <Pressable
+            onPress={() => router.back()}
+            style={{
+              width: 38, height: 38, borderRadius: 12,
+              alignItems: "center", justifyContent: "center",
+              backgroundColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.05)",
+            }}
+          >
+            <ChevronRight size={20} color={c.textMuted} />
+          </Pressable>
+
+          <View style={{ flex: 1, alignItems: "flex-end" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              {anniversaryMilestone && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "rgba(251,191,36,0.15)", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20, borderWidth: 1, borderColor: "rgba(251,191,36,0.3)" }}>
+                  <Sparkles size={11} color="#f59e0b" />
+                  <Text style={{ fontSize: 10, color: "#f59e0b", fontFamily: "IBMPlexSansArabic_700Bold" }}>{anniversaryMilestone}</Text>
+                </View>
+              )}
+              <Text style={{ fontSize: 16, fontWeight: "900", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold" }}>الزكي</Text>
+            </View>
+            <Text style={{ fontSize: 11, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>صاحبك الروحاني دايماً معاك</Text>
+          </View>
+
+          <Pressable
+            onPress={() => setVoiceSelectorOpen(!voiceSelectorOpen)}
+            style={{
+              width: 38, height: 38, borderRadius: 12,
+              alignItems: "center", justifyContent: "center",
+              backgroundColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.05)",
+            }}
+          >
+            <Settings2 size={18} color={c.textMuted} />
           </Pressable>
         </View>
-        <Text style={[styles.sub, { color: palette.muted, fontFamily: uiFontArabic }]}>{greeting}</Text>
 
-        <Animated.View style={[styles.waveformRow, { opacity: waveformOpacity.value }]}>
-          <Animated.View style={[styles.waveBar, { backgroundColor: palette.gold }, useAnimatedStyle(() => ({ height: wave1.value }))]} />
-          <Animated.View style={[styles.waveBar, { backgroundColor: palette.goldDark }, useAnimatedStyle(() => ({ height: wave2.value }))]} />
-          <Animated.View style={[styles.waveBar, { backgroundColor: palette.gold }, useAnimatedStyle(() => ({ height: wave3.value }))]} />
-          <Animated.View style={[styles.waveBar, { backgroundColor: palette.goldDark }, useAnimatedStyle(() => ({ height: wave4.value }))]} />
-          <Animated.View style={[styles.waveBar, { backgroundColor: palette.gold }, useAnimatedStyle(() => ({ height: wave5.value }))]} />
-        </Animated.View>
-        
-        {showVoiceSelector && (
-          <Animated.View entering={FadeIn.duration(200)} style={[styles.voiceSelector, { backgroundColor: palette.card2, borderColor: palette.border }]}>
+        {voiceSelectorOpen && (
+          <Animated.View
+            entering={FadeInDown.duration(200)}
+            style={{
+              marginHorizontal: 12,
+              marginTop: 4,
+              borderRadius: 16,
+              backgroundColor: isDark ? "#111a11" : "#ffffff",
+              borderWidth: 1,
+              borderColor: isDark ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.07)",
+              padding: 8,
+              zIndex: 50,
+              position: "absolute",
+              top: 60,
+              left: 12,
+              right: 12,
+              shadowColor: "#000",
+              shadowOpacity: 0.15,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
+          >
             {VOICE_PROFILES.map((vp) => (
               <Pressable
                 key={vp.id}
-                onPress={() => handleVoiceSelect(vp.id)}
-                style={[styles.voiceOption, selectedVoice === vp.id && { backgroundColor: palette.emerald + "20" }]}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  handleVoiceProfileSelect(vp.id);
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  backgroundColor:
+                    voiceProfileId === vp.id
+                      ? "rgba(5,150,105,0.12)"
+                      : "transparent",
+                  justifyContent: "flex-end",
+                }}
               >
-                <Text style={[styles.voiceOptionText, { color: selectedVoice === vp.id ? palette.emerald : palette.text, fontFamily: uiFontLatin }]}>{vp.name}</Text>
+                <View style={{ flex: 1, alignItems: "flex-end" }}>
+                  <Text style={{ fontSize: 13, fontWeight: "800", color: voiceProfileId === vp.id ? "#059669" : c.text, fontFamily: "IBMPlexSansArabic_700Bold" }}>
+                    {vp.name}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>
+                    {vp.tag}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 20 }}>{vp.emoji}</Text>
               </Pressable>
             ))}
           </Animated.View>
         )}
-      </Animated.View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
-        keyboardVerticalOffset={100}
-      >
+        {riskAlert && (
+          <Animated.View
+            entering={FadeInUp.duration(300)}
+            style={{
+              marginHorizontal: 12,
+              marginTop: 8,
+              borderRadius: 14,
+              padding: 12,
+              backgroundColor: riskAlert.level === "high"
+                ? "rgba(220,38,38,0.1)"
+                : "rgba(245,158,11,0.1)",
+              borderWidth: 1,
+              borderColor: riskAlert.level === "high"
+                ? "rgba(220,38,38,0.3)"
+                : "rgba(245,158,11,0.3)",
+              flexDirection: "row",
+              gap: 10,
+              alignItems: "flex-start",
+            }}
+          >
+            <Pressable onPress={dismissRiskAlert} style={{ padding: 2 }}>
+              <X size={14} color={c.textMuted} />
+            </Pressable>
+            <View style={{ flex: 1, alignItems: "flex-end" }}>
+              <Text style={{ fontSize: 12, fontWeight: "800", color: riskAlert.level === "high" ? "#dc2626" : "#d97706", fontFamily: "IBMPlexSansArabic_700Bold", marginBottom: 2 }}>
+                {riskAlert.level === "high" ? "⚠️ الزكي قلقان عليك" : "💛 الزكي يلاحظ"}
+              </Text>
+              <Text style={{ fontSize: 12, color: riskAlert.level === "high" ? "#dc2626" : "#d97706", fontFamily: "IBMPlexSansArabic_400Regular", lineHeight: 18, textAlign: "right" }}>
+                {riskAlert.message}
+              </Text>
+              {riskAlert.sign && (
+                <Text style={{ fontSize: 10, color: c.textMuted, marginTop: 4, textAlign: "right" }}>
+                  العلامة: {riskAlert.sign}
+                </Text>
+              )}
+            </View>
+            <AlertTriangle
+              size={16}
+              color={riskAlert.level === "high" ? "#dc2626" : "#d97706"}
+            />
+          </Animated.View>
+        )}
+
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          ref={scrollRef}
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingHorizontal: 12,
+            paddingTop: 16,
+            paddingBottom: 16,
+            backgroundColor: isDark ? "rgba(3,13,3,0.4)" : "rgba(240,253,244,0.5)",
+          }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {showStarters ? (
-            <Animated.View entering={FadeIn.duration(400)} style={styles.startersContainer}>
-              <Text style={[styles.startersTitle, { color: palette.textMuted, fontFamily: uiFontArabic }]}>{"اختار موضوع:"}</Text>
-              <View style={styles.startersGrid}>
-                {starters.map((q, i) => renderStarterCard({ item: q, index: i }))}
+          {!hasUserMessages && starters.length > 0 && (
+            <Animated.View entering={FadeIn.duration(400)} style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 12, color: c.textMuted, textAlign: "center", marginBottom: 12, fontFamily: "IBMPlexSansArabic_400Regular" }}>
+                اختار موضوع أو اكتب سؤالك
+              </Text>
+              <View style={{ gap: 8 }}>
+                {starters.map((s, i) => (
+                  <Animated.View key={i} entering={FadeInDown.delay(i * 60).springify()}>
+                    <Pressable
+                      onPress={() => handleStarterPress(s.q)}
+                      style={({ pressed }) => ({
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 10,
+                        paddingHorizontal: 16,
+                        paddingVertical: 14,
+                        borderRadius: 18,
+                        backgroundColor: isDark ? "#111a11" : "#ffffff",
+                        borderWidth: 1,
+                        borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)",
+                        transform: [{ scale: pressed ? 0.98 : 1 }],
+                        justifyContent: "flex-end",
+                        shadowColor: "#000",
+                        shadowOpacity: 0.06,
+                        shadowRadius: 8,
+                        elevation: 1,
+                      })}
+                    >
+                      <Text style={{ fontSize: 14, color: c.text, fontFamily: "IBMPlexSansArabic_500Medium", flex: 1, textAlign: "right" }}>
+                        {s.q}
+                      </Text>
+                      <Text style={{ fontSize: 18 }}>{s.icon}</Text>
+                    </Pressable>
+                  </Animated.View>
+                ))}
               </View>
             </Animated.View>
-          ) : (
-            <View style={styles.messagesContainer}>
-              {messages.map((msg) => (
-                <Animated.View
-                  key={msg.id}
-                  entering={FadeInDown.springify()}
-                  style={[
-                    styles.messageWrapper,
-                    msg.role === "user" ? styles.userMessageWrapper : styles.botMessageWrapper,
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.messageBubble,
-                      {
-                        backgroundColor: msg.role === "user" ? palette.userBubble : palette.botBubble,
-                        borderColor: palette.border,
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.messageText,
-                        { color: msg.role === "user" ? palette.text : palette.text, fontFamily: uiFontArabic },
-                      ]}
-                    >
-                      {msg.text}
-                    </Text>
-                  </View>
-                </Animated.View>
-              ))}
-              
-              {chatState === "thinking" && (
-                <Animated.View entering={FadeIn} style={[styles.typingIndicator, { backgroundColor: palette.card, borderColor: palette.border }]}>
-                  <View style={styles.typingDots}>
-                    <Animated.View style={[styles.typingDot, { backgroundColor: palette.emerald }]} />
-                    <Animated.View style={[styles.typingDot, { backgroundColor: palette.emerald }]} />
-                    <Animated.View style={[styles.typingDot, { backgroundColor: palette.emerald }]} />
-                  </View>
-                  <Text style={[styles.typingText, { color: palette.muted, fontFamily: uiFontArabic }]}>{"زكي بيفكر..."}</Text>
-                </Animated.View>
-              )}
-            </View>
+          )}
+
+          {messages.map((msg) => (
+            <MessageBubble key={msg.id} msg={msg} isDark={isDark} c={c} />
+          ))}
+
+          {(chatState === "thinking" || chatState === "responding") && (
+            <ThinkingIndicator isDark={isDark} c={c} />
           )}
         </ScrollView>
 
-        <View style={[styles.composer, { backgroundColor: palette.card, borderColor: palette.border }]}>
-          <Pressable
-            onPress={handleVoicePress}
-            style={[
-              styles.voiceBtn,
-              {
-                backgroundColor: isListening ? palette.gold : palette.card2,
-                borderColor: palette.border,
-              },
-            ]}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              paddingBottom: Platform.OS === "ios" ? 14 : 10,
+              borderTopWidth: 1,
+              borderTopColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
+              backgroundColor: isDark ? "#030d03" : "#f0fdf4",
+            }}
           >
-            {isListening ? (
-              <MicOff size={20} color="#0f172a" />
-            ) : (
-              <Mic size={20} color={palette.text} />
-            )}
-          </Pressable>
-          
-          <TextInput
-            value={input}
-            onChangeText={setInput}
-            placeholder={"اسأل زكي..."}
-            placeholderTextColor={palette.muted}
-            style={[
-              styles.input,
-              {
-                color: palette.text,
-                backgroundColor: palette.card2,
-                borderColor: palette.border,
-                textAlign: isRTL ? "right" : "left",
-                fontFamily: uiFontArabic,
-              },
-            ]}
-            onSubmitEditing={handleSendMessage}
-            returnKeyType="send"
-          />
-          
-          <Pressable
-            onPress={handleSendMessage}
-            disabled={!input.trim()}
-            style={[
-              styles.sendBtn,
-              {
-                backgroundColor: input.trim() ? palette.emerald : palette.card2,
-                opacity: input.trim() ? 1 : 0.5,
-              },
-            ]}
-          >
-            <Send size={18} color={input.trim() ? "#052e16" : palette.muted} />
-          </Pressable>
-        </View>
-      </KeyboardAvoidingView>
+            <Pressable
+              onPress={handleSend}
+              disabled={!input.trim() || isBusy}
+              style={{
+                width: 44, height: 44, borderRadius: 14,
+                alignItems: "center", justifyContent: "center",
+                backgroundColor: input.trim() && !isBusy ? "#059669" : (isDark ? "#1a2e1a" : "#e5e7eb"),
+                opacity: input.trim() && !isBusy ? 1 : 0.5,
+              }}
+            >
+              <Send size={18} color={input.trim() && !isBusy ? "#fff" : c.textMuted} />
+            </Pressable>
+
+            <TextInput
+              value={input}
+              onChangeText={setInput}
+              placeholder="اسأل الزكي..."
+              placeholderTextColor={c.textMuted}
+              style={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)",
+                borderRadius: 18,
+                paddingHorizontal: 16,
+                paddingVertical: 11,
+                fontSize: 14,
+                color: c.text,
+                backgroundColor: isDark ? "#111a11" : "#ffffff",
+                textAlign: "right",
+                fontFamily: "IBMPlexSansArabic_400Regular",
+                maxHeight: 100,
+              }}
+              onSubmitEditing={handleSend}
+              returnKeyType="send"
+              multiline
+              textAlignVertical="center"
+            />
+
+            <Animated.View style={micAnimStyle}>
+              <Pressable
+                onPress={handleVoicePress}
+                style={{
+                  width: 44, height: 44, borderRadius: 14,
+                  alignItems: "center", justifyContent: "center",
+                  backgroundColor: recording
+                    ? "#dc2626"
+                    : (isDark ? "#1a2e1a" : "#e5e7eb"),
+                  borderWidth: recording ? 2 : 0,
+                  borderColor: recording ? "rgba(220,38,38,0.4)" : "transparent",
+                }}
+              >
+                {recording
+                  ? <MicOff size={18} color="#fff" />
+                  : <Mic size={18} color={c.text} />
+                }
+              </Pressable>
+            </Animated.View>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, borderBottomWidth: 1 },
-  headerTop: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
-  title: { fontSize: 24, fontWeight: "900", letterSpacing: 0.5 },
-  sub: { marginTop: 6, fontSize: 13, textAlign: "center", fontStyle: "italic" },
-  sparkleWrapper: { padding: 4 },
-  waveformRow: { marginTop: 10, height: 24, flexDirection: "row", alignItems: "flex-end", justifyContent: "center", gap: 6 },
-  waveBar: { width: 6, borderRadius: 10 },
-  voiceSelectorBtn: { position: "absolute", right: 16, top: 12, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderRadius: 8 },
-  voiceSelectorText: { fontSize: 11, fontWeight: "600" },
-  voiceSelector: { marginTop: 12, borderRadius: 12, padding: 8, borderWidth: 1 },
-  voiceOption: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 },
-  voiceOptionText: { fontSize: 13, fontWeight: "500" },
-  keyboardView: { flex: 1 },
-  scrollContent: { flexGrow: 1, paddingBottom: 20 },
-  startersContainer: { padding: 16 },
-  startersTitle: { fontSize: 14, fontWeight: "600", marginBottom: 16, textAlign: "center" },
-  startersGrid: { gap: 10 },
-  starterCard: { padding: 14, borderRadius: 16, borderWidth: 1 },
-  starterText: { fontSize: 14, fontWeight: "500", lineHeight: 20 },
-  messagesContainer: { padding: 16, gap: 12 },
-  messageWrapper: { flexDirection: "row" },
-  userMessageWrapper: { justifyContent: "flex-end" },
-  botMessageWrapper: { justifyContent: "flex-start" },
-  messageBubble: { maxWidth: "85%", padding: 14, borderRadius: 20, borderWidth: 1 },
-  messageText: { fontSize: 14, lineHeight: 20 },
-  typingIndicator: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 16, borderWidth: 1, alignSelf: "flex-start" },
-  typingDots: { flexDirection: "row", gap: 4 },
-  typingDot: { width: 8, height: 8, borderRadius: 4 },
-  typingText: { fontSize: 12 },
-  composer: { padding: 12, flexDirection: "row", gap: 10, alignItems: "center" },
-  voiceBtn: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center", borderWidth: 1 },
-  input: { flex: 1, borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14 },
-  sendBtn: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-});

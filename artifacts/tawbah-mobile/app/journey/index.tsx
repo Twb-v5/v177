@@ -1,134 +1,188 @@
-import { useState, useEffect } from "react";
-import { View, Text, Pressable, ScrollView, Modal } from "react-native";
+import { useState, useCallback } from "react";
+import {
+  View, Text, Pressable, ScrollView, ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
   FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withSpring,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  CheckCircle2, Circle, Lock, Trophy, Flame, Star, ChevronDown, ChevronUp,
+  CheckCircle2, Lock, Trophy, Flame, Star, ChevronDown, ChevronUp,
+  RefreshCw, AlertCircle, BookHeart,
 } from "lucide-react-native";
 import { useColors } from "@/hooks/useColors";
 import { useSettings } from "@/providers/SettingsProvider";
 import { PageHeader } from "@/components/shared/PageHeader";
-
-const STORAGE_KEY = "journey30_completed_days";
-
-const DAY_EMOJIS: Record<number, string> = {
-  1: "🌅", 2: "📿", 3: "🤲", 4: "💧", 5: "📖",
-  6: "🕌", 7: "🌱", 8: "🌙", 9: "⭐", 10: "🔑",
-  11: "💎", 12: "🦋", 13: "🌊", 14: "🌿", 15: "☀️",
-  16: "🕊️", 17: "🌸", 18: "🔥", 19: "🌟", 20: "🙏",
-  21: "🌳", 22: "💫", 23: "🏔️", 24: "🎯", 25: "🌈",
-  26: "👑", 27: "✨", 28: "🗝️", 29: "🌺", 30: "🏆",
-};
-
-const DAY_TASKS: Record<number, { titleAr: string; tasks: string[] }> = {
-  1:  { titleAr: "بداية التوبة", tasks: ["اغتسل نية التوبة", "قرأ آية الكرسي 3 مرات", "استغفر 100 مرة"] },
-  2:  { titleAr: "يوم الذكر", tasks: ["أذكار الصباح كاملة", "تسبيح 300 مرة", "أذكار المساء كاملة"] },
-  3:  { titleAr: "يوم الدعاء", tasks: ["صلِّ ركعتي التوبة", "ادعُ بعد الفجر", "دعاء قبل النوم مكتوب"] },
-  4:  { titleAr: "يوم الطهارة", tasks: ["الوضوء لكل صلاة", "غسل اليدين بنية", "تجنب النجاسة الروحية"] },
-  5:  { titleAr: "يوم القرآن", tasks: ["اقرأ سورة البقرة أول ربع", "تدبّر آيتين", "احفظ آية كريمة"] },
-  6:  { titleAr: "يوم الصلاة", tasks: ["صلِّ السنن الرواتب", "اخشع في ركعة واحدة", "صلاة الضحى"] },
-  7:  { titleAr: "يوم الشكر", tasks: ["اكتب 10 نعم", "قل الحمد لله 100 مرة", "ادعُ للناس بالخير"] },
-  8:  { titleAr: "يوم الصبر", tasks: ["تمرّن على الصمت 1 ساعة", "تجنب الشكوى اليوم", "قرأ عن فضل الصبر"] },
-  9:  { titleAr: "يوم الصدق", tasks: ["لا تكذب اليوم", "قل الحق في موقف صعب", "حاسب نفسك مساءً"] },
-  10: { titleAr: "يوم الجود", tasks: ["تصدّق ولو بدرهم", "ساعد شخصاً اليوم", "ابتسم في وجوه الناس"] },
-  15: { titleAr: "منتصف الرحلة", tasks: ["راجع التزامك في 14 يوم", "صم يوم إن أمكن", "اكتب عهداً جديداً"] },
-  20: { titleAr: "ثلثا الطريق", tasks: ["قرأ سورة الكهف", "صلِّ التهجد", "شارك رحلتك مع ثقة"] },
-  30: { titleAr: "إتمام الرحلة", tasks: ["ختم جزء كاملاً", "قم بعمل صالح كبير", "ادعُ الله بالثبات"] },
-};
-
-function getTasksForDay(day: number) {
-  if (DAY_TASKS[day]) return DAY_TASKS[day];
-  const defaultTasks = [
-    `أذكار الصباح والمساء – اليوم ${day}`,
-    `تلاوة ربع جزء من القرآن`,
-    `ذكر الله 100 مرة`,
-  ];
-  return { titleAr: `اليوم ${day}`, tasks: defaultTasks };
-}
+import { useJourney } from "@/engines/journey/useJourney";
+import { DAY_EMOJIS } from "@/engines/journey/utils";
+import type { JourneyDay } from "@/engines/journey/types";
 
 interface DayCardProps {
-  day: number;
-  isCompleted: boolean;
-  isUnlocked: boolean;
-  isRTL: boolean;
+  day: JourneyDay;
   isDark: boolean;
-  c: any;
-  onComplete: (day: number) => void;
+  c: ReturnType<typeof useColors>;
+  onComplete: (dayNum: number) => void;
+  isCompletingDay: boolean;
 }
 
-function DayCard({ day, isCompleted, isUnlocked, isRTL, isDark, c, onComplete }: DayCardProps) {
+function DayCard({ day, isDark, c, onComplete, isCompletingDay }: DayCardProps) {
   const [expanded, setExpanded] = useState(false);
   const scale = useSharedValue(1);
   const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const info = getTasksForDay(day);
-  const emoji = DAY_EMOJIS[day] ?? "✨";
 
-  const isToday = isUnlocked && !isCompleted;
-  const accent = isCompleted ? "#10b981" : isToday ? "#F59E0B" : "#6B7280";
+  const emoji = DAY_EMOJIS[day.day] ?? "✨";
+  const isToday = day.isCurrent && !day.completed;
+  const accent = day.completed ? "#10b981" : isToday ? "#F59E0B" : "#6B7280";
+
+  const completedTaskCount = (day.taskChecks ?? []).filter(Boolean).length;
+  const totalTasks = day.tasks.length;
+  const taskProgress = totalTasks > 0 ? completedTaskCount / totalTasks : 0;
 
   return (
     <Animated.View style={[animStyle, { marginBottom: 8 }]}>
-      <View style={{
-        borderRadius: 18,
-        backgroundColor: isDark ? "rgba(14,14,14,0.92)" : "#fff",
-        borderWidth: 1.5,
-        borderColor: isCompleted ? "rgba(16,185,129,0.35)" : isToday ? "rgba(245,158,11,0.35)" : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"),
-        opacity: !isUnlocked ? 0.5 : 1,
-        overflow: "hidden",
-      }}>
-        {isCompleted && <View style={{ height: 2, backgroundColor: "#10b981" }} />}
+      <View
+        style={{
+          borderRadius: 18,
+          backgroundColor: isDark ? "rgba(14,14,14,0.92)" : "#fff",
+          borderWidth: 1.5,
+          borderColor: day.completed
+            ? "rgba(16,185,129,0.35)"
+            : isToday
+            ? "rgba(245,158,11,0.35)"
+            : isDark
+            ? "rgba(255,255,255,0.06)"
+            : "rgba(0,0,0,0.06)",
+          opacity: day.isLocked ? 0.5 : 1,
+          overflow: "hidden",
+        }}
+      >
+        {day.completed && <View style={{ height: 2, backgroundColor: "#10b981" }} />}
         {isToday && <View style={{ height: 2, backgroundColor: "#F59E0B" }} />}
 
         <Pressable
-          onPressIn={() => { if (isUnlocked) scale.value = withSpring(0.98); }}
+          onPressIn={() => { if (!day.isLocked) scale.value = withSpring(0.98); }}
           onPressOut={() => { scale.value = withSpring(1); }}
-          onPress={() => { if (isUnlocked) { setExpanded(e => !e); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } }}
-          style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 12, padding: 14 }}>
-          <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: `${accent}15`, borderWidth: 1, borderColor: `${accent}25`, alignItems: "center", justifyContent: "center" }}>
-            {!isUnlocked ? (
-              <Lock size={20} color={c.textMuted} />
-            ) : (
-              <Text style={{ fontSize: 22 }}>{emoji}</Text>
+          onPress={() => {
+            if (day.isLocked) return;
+            setExpanded((e) => !e);
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+            padding: 14,
+            justifyContent: "flex-end",
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            {day.completed && <CheckCircle2 size={20} color="#10b981" />}
+            {!day.completed && !day.isLocked && (
+              expanded
+                ? <ChevronUp size={18} color={c.textMuted} />
+                : <ChevronDown size={18} color={c.textMuted} />
             )}
+            {day.isLocked && <Lock size={16} color={c.textMuted} />}
           </View>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 6 }}>
-              <Text style={{ fontSize: 10, fontWeight: "800", color: accent, fontFamily: "IBMPlexSansArabic_700Bold" }}>اليوم {day}</Text>
+
+          <View style={{ flex: 1, alignItems: "flex-end" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Text style={{ fontSize: 10, fontWeight: "800", color: accent, fontFamily: "IBMPlexSansArabic_700Bold" }}>
+                اليوم {day.day}
+              </Text>
               {isToday && (
                 <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, backgroundColor: "rgba(245,158,11,0.15)" }}>
                   <Text style={{ fontSize: 9, fontWeight: "800", color: "#F59E0B", fontFamily: "IBMPlexSansArabic_700Bold" }}>اليوم</Text>
                 </View>
               )}
             </View>
-            <Text style={{ fontSize: 13, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 2 }}>{info.titleAr}</Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            {isCompleted && <CheckCircle2 size={20} color="#10b981" />}
-            {!isCompleted && isUnlocked && (
-              expanded ? <ChevronUp size={18} color={c.textMuted} /> : <ChevronDown size={18} color={c.textMuted} />
+            <Text style={{ fontSize: 13, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 2 }}>
+              {day.title}
+            </Text>
+            {isToday && totalTasks > 0 && (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
+                <View style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: "rgba(245,158,11,0.2)", overflow: "hidden", maxWidth: 80 }}>
+                  <View style={{ height: "100%", borderRadius: 2, backgroundColor: "#F59E0B", width: `${taskProgress * 100}%` }} />
+                </View>
+                <Text style={{ fontSize: 10, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>
+                  {completedTaskCount}/{totalTasks}
+                </Text>
+              </View>
             )}
-            {!isUnlocked && <Lock size={16} color={c.textMuted} />}
+          </View>
+
+          <View
+            style={{
+              width: 48, height: 48, borderRadius: 16,
+              backgroundColor: `${accent}15`,
+              borderWidth: 1, borderColor: `${accent}25`,
+              alignItems: "center", justifyContent: "center",
+            }}
+          >
+            {day.isLocked
+              ? <Lock size={20} color={c.textMuted} />
+              : <Text style={{ fontSize: 22 }}>{emoji}</Text>
+            }
           </View>
         </Pressable>
 
-        {expanded && isUnlocked && (
+        {expanded && !day.isLocked && (
           <Animated.View entering={FadeIn.duration(200)} style={{ paddingHorizontal: 14, paddingBottom: 14 }}>
             <View style={{ height: 1, backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", marginBottom: 12 }} />
-            {info.tasks.map((task, i) => (
-              <View key={i} style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: accent }} />
-                <Text style={{ flex: 1, fontSize: 13, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular" }}>{task}</Text>
+
+            {day.verse ? (
+              <View style={{ marginBottom: 12, padding: 12, borderRadius: 12, backgroundColor: isDark ? "rgba(5,150,105,0.08)" : "rgba(5,150,105,0.05)", borderWidth: 1, borderColor: "rgba(5,150,105,0.2)" }}>
+                <Text style={{ fontSize: 13, color: "#059669", textAlign: "right", fontFamily: "Amiri_400Regular", lineHeight: 22 }}>
+                  {day.verse}
+                </Text>
+              </View>
+            ) : null}
+
+            {day.tasks.map((task, i) => (
+              <View
+                key={i}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 8,
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Text style={{ flex: 1, fontSize: 13, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: "right" }}>
+                  {task}
+                </Text>
+                <View
+                  style={{
+                    width: 8, height: 8, borderRadius: 4,
+                    backgroundColor: day.taskChecks?.[i] ? "#10b981" : accent,
+                  }}
+                />
               </View>
             ))}
-            {!isCompleted && (
+
+            {!day.completed && (
               <Pressable
-                onPress={() => { onComplete(day); setExpanded(false); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }}
-                style={{ marginTop: 10, paddingVertical: 12, borderRadius: 14, alignItems: "center", backgroundColor: "#F59E0B" }}>
-                <Text style={{ fontSize: 14, fontWeight: "800", color: "#1a0e00", fontFamily: "IBMPlexSansArabic_700Bold" }}>✓ أتممت مهام اليوم</Text>
+                onPress={() => {
+                  onComplete(day.day);
+                  setExpanded(false);
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                }}
+                disabled={isCompletingDay}
+                style={{
+                  marginTop: 10,
+                  paddingVertical: 12,
+                  borderRadius: 14,
+                  alignItems: "center",
+                  backgroundColor: "#F59E0B",
+                  opacity: isCompletingDay ? 0.7 : 1,
+                }}
+              >
+                {isCompletingDay
+                  ? <ActivityIndicator size="small" color="#1a0e00" />
+                  : <Text style={{ fontSize: 14, fontWeight: "800", color: "#1a0e00", fontFamily: "IBMPlexSansArabic_700Bold" }}>✓ أتممت مهام اليوم</Text>
+                }
               </Pressable>
             )}
           </Animated.View>
@@ -141,83 +195,204 @@ function DayCard({ day, isCompleted, isUnlocked, isRTL, isDark, c, onComplete }:
 export default function JourneyScreen() {
   const c = useColors();
   const { language } = useSettings();
-  const isRTL = language === "ar";
   const isDark = c.isDark;
-  const [completedDays, setCompletedDays] = useState<Set<number>>(new Set());
 
-  useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then(raw => {
-      if (raw) {
-        const parsed = JSON.parse(raw) as number[];
-        setCompletedDays(new Set(parsed));
-      }
-    });
-  }, []);
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    currentDay,
+    completedDays,
+    completedCount,
+    streakDays,
+    progress,
+    tasksAllDone,
+    isComplete,
+    completeDay,
+    isCompletingDay,
+  } = useJourney();
 
-  const completeDay = async (day: number) => {
-    const updated = new Set([...completedDays, day]);
-    setCompletedDays(updated);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(updated)));
-  };
+  if (isLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={["top"]}>
+        <PageHeader titleAr="رحلة ٣٠ يوماً" subtitleAr="طريقك إلى التوبة النصوح" />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator size="large" color={c.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-  const completedCount = completedDays.size;
-  const streakDays = completedCount;
-  const progressPct = (completedCount / 30) * 100;
-  const currentDay = completedCount + 1;
+  if (isError || !data) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={["top"]}>
+        <PageHeader titleAr="رحلة ٣٠ يوماً" subtitleAr="طريقك إلى التوبة النصوح" />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
+          <AlertCircle size={40} color={c.textMuted} style={{ marginBottom: 12 }} />
+          <Text style={{ fontSize: 15, fontWeight: "800", color: c.text, textAlign: "center", fontFamily: "IBMPlexSansArabic_700Bold", marginBottom: 6 }}>
+            تعذّر تحميل الرحلة
+          </Text>
+          <Text style={{ fontSize: 13, color: c.textMuted, textAlign: "center", fontFamily: "IBMPlexSansArabic_400Regular", marginBottom: 16 }}>
+            تحقق من اتصال الإنترنت ثم أعد المحاولة
+          </Text>
+          <Pressable
+            onPress={() => refetch()}
+            style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 20, paddingVertical: 11, borderRadius: 14, backgroundColor: c.primary }}
+          >
+            <RefreshCw size={15} color="#fff" />
+            <Text style={{ fontSize: 13, fontWeight: "800", color: "#fff", fontFamily: "IBMPlexSansArabic_700Bold" }}>إعادة المحاولة</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isComplete) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={["top"]}>
+        <PageHeader titleAr="رحلة ٣٠ يوماً" subtitleAr="مكتملة" />
+        <View style={{ flex: 1, padding: 24 }}>
+          <View style={{ height: 2, backgroundColor: c.primary, marginBottom: 24 }} />
+          <Animated.View entering={FadeIn.duration(600)} style={{ alignItems: "center", padding: 32, borderRadius: 24, backgroundColor: isDark ? "rgba(16,185,129,0.08)" : "rgba(16,185,129,0.06)", borderWidth: 1.5, borderColor: "rgba(16,185,129,0.25)" }}>
+            <Text style={{ fontSize: 64 }}>🏆</Text>
+            <Text style={{ fontSize: 22, fontWeight: "900", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center", marginTop: 12 }}>
+              تهانينا! أتممت الرحلة
+            </Text>
+            <Text style={{ fontSize: 13, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: "center", lineHeight: 22, marginTop: 8 }}>
+              أتممت رحلة الثلاثين يوماً — سجّل الله لك هذا الجهد وقبل منك التوبة إن شاء الله
+            </Text>
+            <View style={{ flexDirection: "row", gap: 4, marginTop: 16 }}>
+              {[0, 1, 2, 3, 4].map((i) => (
+                <Star key={i} size={20} color="#f59e0b" fill="#f59e0b" />
+              ))}
+            </View>
+            <View style={{ marginTop: 16, padding: 12, borderRadius: 14, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)", width: "100%" }}>
+              <Text style={{ fontSize: 12, color: c.textMuted, textAlign: "center", fontFamily: "IBMPlexSansArabic_400Regular" }}>
+                ٣٠ يوماً · {streakDays} يوم متتالٍ
+              </Text>
+            </View>
+          </Animated.View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={["top"]}>
       <PageHeader titleAr="رحلة ٣٠ يوماً" subtitleAr="طريقك إلى التوبة النصوح" />
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <View style={{ borderRadius: 22, padding: 20, marginBottom: 18, overflow: "hidden",
-          backgroundColor: isDark ? "rgba(245,158,11,0.07)" : "#FFFBEB", borderWidth: 1, borderColor: isDark ? "rgba(245,158,11,0.18)" : "rgba(245,158,11,0.3)" }}>
-          <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <View>
+      <View style={{ height: 3, backgroundColor: "rgba(0,0,0,0.06)" }}>
+        <Animated.View
+          style={{
+            height: "100%",
+            borderRadius: 3,
+            backgroundColor: c.primary,
+            width: `${progress}%`,
+          }}
+        />
+      </View>
+
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View
+          style={{
+            borderRadius: 22, padding: 18, marginBottom: 16,
+            backgroundColor: isDark ? "rgba(245,158,11,0.07)" : "#FFFBEB",
+            borderWidth: 1, borderColor: isDark ? "rgba(245,158,11,0.18)" : "rgba(245,158,11,0.3)",
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <Text style={{ fontSize: 40 }}>
+              {completedCount >= 30 ? "🏆" : completedCount >= 20 ? "🌳" : completedCount >= 10 ? "🌿" : "🌱"}
+            </Text>
+            <View style={{ alignItems: "flex-end" }}>
               <Text style={{ fontSize: 13, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>تقدمك في الرحلة</Text>
-              <Text style={{ fontSize: 26, fontWeight: "900", color: "#F59E0B", fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 2 }}>{completedCount} / 30</Text>
-            </View>
-            <View style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 40 }}>{completedCount >= 30 ? "🏆" : completedCount >= 20 ? "🌳" : completedCount >= 10 ? "🌿" : "🌱"}</Text>
+              <Text style={{ fontSize: 26, fontWeight: "900", color: "#F59E0B", fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 2 }}>
+                {completedCount} / 30
+              </Text>
             </View>
           </View>
 
           <View style={{ height: 10, borderRadius: 10, backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(245,158,11,0.15)", overflow: "hidden", marginBottom: 10 }}>
-            <View style={{ height: "100%", borderRadius: 10, backgroundColor: "#F59E0B", width: `${progressPct}%` }} />
+            <View style={{ height: "100%", borderRadius: 10, backgroundColor: "#F59E0B", width: `${progress}%` }} />
           </View>
 
-          <View style={{ flexDirection: isRTL ? "row-reverse" : "row", justifyContent: "space-between" }}>
-            <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 4 }}>
-              <Flame size={13} color="#F59E0B" />
-              <Text style={{ fontSize: 12, color: "#F59E0B", fontFamily: "IBMPlexSansArabic_700Bold", fontWeight: "700" }}>{streakDays} يوم متواصل</Text>
-            </View>
-            <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 4 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+              <Text style={{ fontSize: 12, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>
+                {30 - completedCount} يوم متبقٍ
+              </Text>
               <Star size={13} color="#F59E0B" />
-              <Text style={{ fontSize: 12, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>{30 - completedCount} يوم متبقية</Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+              <Text style={{ fontSize: 12, color: "#F59E0B", fontFamily: "IBMPlexSansArabic_700Bold", fontWeight: "700" }}>
+                {streakDays} يوم متواصل
+              </Text>
+              <Flame size={13} color="#F59E0B" />
             </View>
           </View>
         </View>
 
-        {completedCount >= 30 ? (
-          <Animated.View entering={FadeIn.duration(600)} style={{ padding: 24, borderRadius: 22, alignItems: "center", marginBottom: 18, backgroundColor: "rgba(16,185,129,0.08)", borderWidth: 1.5, borderColor: "rgba(16,185,129,0.3)" }}>
-            <Text style={{ fontSize: 56 }}>🏆</Text>
-            <Text style={{ fontSize: 20, fontWeight: "900", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center", marginTop: 10 }}>أتممت رحلتك!</Text>
-            <Text style={{ fontSize: 14, color: c.textSecondary, fontFamily: "Amiri_400Regular", textAlign: "center", lineHeight: 28, marginTop: 8 }}>
-              «وَالَّذِينَ جَاهَدُوا فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا»
+        {currentDay && tasksAllDone && (
+          <Animated.View
+            entering={FadeIn.duration(400)}
+            style={{
+              borderRadius: 20, padding: 18, marginBottom: 16,
+              backgroundColor: isDark ? "rgba(16,185,129,0.1)" : "rgba(16,185,129,0.07)",
+              borderWidth: 1.5, borderColor: "rgba(16,185,129,0.3)",
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, justifyContent: "flex-end", marginBottom: 10 }}>
+              <Text style={{ fontSize: 15, fontWeight: "900", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>
+                أحسنت! مهام اليوم مكتملة ✅
+              </Text>
+              <CheckCircle2 size={22} color="#10b981" />
+            </View>
+            <Text style={{ fontSize: 13, color: c.textSecondary, textAlign: "right", fontFamily: "IBMPlexSansArabic_400Regular", marginBottom: 14 }}>
+              {currentDay.title} — اليوم {currentDay.day} من ٣٠
             </Text>
+            <Pressable
+              onPress={() => {
+                completeDay(currentDay.day);
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              }}
+              disabled={isCompletingDay}
+              style={{
+                paddingVertical: 13, borderRadius: 15,
+                alignItems: "center",
+                backgroundColor: "#10b981",
+                opacity: isCompletingDay ? 0.7 : 1,
+              }}
+            >
+              {isCompletingDay
+                ? <ActivityIndicator size="small" color="#fff" />
+                : <Text style={{ fontSize: 15, fontWeight: "900", color: "#fff", fontFamily: "IBMPlexSansArabic_700Bold" }}>
+                  انتقل لليوم التالي ←
+                </Text>
+              }
+            </Pressable>
           </Animated.View>
-        ) : null}
+        )}
 
-        {Array.from({ length: 30 }, (_, i) => i + 1).map((day, i) => (
-          <Animated.View key={day} entering={FadeInDown.delay(i < 10 ? i * 30 : 0).springify()}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+          <View style={{ flex: 1, height: 1, backgroundColor: c.divider }} />
+          <Text style={{ fontSize: 10, fontWeight: "800", color: c.textMuted, fontFamily: "IBMPlexSansArabic_700Bold", paddingHorizontal: 12, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            أيام الرحلة
+          </Text>
+          <View style={{ flex: 1, height: 1, backgroundColor: c.divider }} />
+        </View>
+
+        {(data.days ?? []).map((day, i) => (
+          <Animated.View key={day.day} entering={FadeInDown.delay(i < 8 ? i * 25 : 0).springify()}>
             <DayCard
               day={day}
-              isCompleted={completedDays.has(day)}
-              isUnlocked={day <= currentDay}
-              isRTL={isRTL}
               isDark={isDark}
               c={c}
               onComplete={completeDay}
+              isCompletingDay={isCompletingDay}
             />
           </Animated.View>
         ))}

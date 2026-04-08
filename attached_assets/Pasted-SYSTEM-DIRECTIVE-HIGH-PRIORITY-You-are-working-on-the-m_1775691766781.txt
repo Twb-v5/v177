@@ -1,0 +1,307 @@
+SYSTEM DIRECTIVE — HIGH PRIORITY
+
+You are working on the mobile version of the "Tawbah" app (Expo).
+
+This is NOT a new build.
+This is a LOGIC PORTING + SYSTEM RECONSTRUCTION task.
+
+---
+
+================================
+SOURCE OF TRUTH (MANDATORY)
+===========================
+
+You MUST use the web project as the ONLY reference for logic:
+
+* artifacts/tawbah-web/src/pages/zakiy
+* artifacts/tawbah-web/src/pages/journey
+* artifacts/tawbah-web/src/pages/islamic-programs
+
+These folders contain the FULL and FINAL implementation.
+
+---
+
+================================
+CORE MISSION
+============
+
+Extract and rebuild the EXACT SAME LOGIC from web into mobile.
+
+You are NOT allowed to:
+
+* invent logic
+* simplify flows
+* skip edge cases
+* assume behavior
+
+If it exists in web → it MUST exist in mobile.
+
+---
+
+================================
+WHAT YOU ARE BUILDING
+=====================
+
+You are rebuilding THREE CORE SYSTEMS:
+
+1. Zakiy AI System
+2. Journey System
+3. Programs / Radio / Podcast System
+
+All must match web behavior EXACTLY.
+
+---
+
+================================
+EXECUTION MODE (CRITICAL)
+=========================
+
+You are in CONTINUOUS EXECUTION MODE:
+
+* DO NOT stop
+* DO NOT restart
+* DO NOT re-plan from scratch
+* DO NOT summarize
+
+You CONTINUE from current progress until completion.
+
+---
+
+================================
+ANTI-CHAOS RULES (STRICT)
+=========================
+
+* NO duplicated logic
+* NO conflicting states
+* NO random abstractions
+* NO mixing responsibilities
+
+If logic already exists → REUSE or ADAPT it.
+
+---
+
+================================
+ARCHITECTURE RULES
+==================
+
+You MUST enforce strict separation:
+
+* UI (screens only)
+* Logic (hooks/services)
+* State (central store)
+
+Create structured modules:
+
+* /zakiy-engine
+* /journey-engine
+* /media-engine
+* /user-state
+
+NO business logic inside UI components.
+
+---
+
+================================
+IMPLEMENTATION STRATEGY
+=======================
+
+For EACH system:
+
+### STEP 1 — ANALYZE (MANDATORY)
+
+From web code, extract:
+
+* states
+* flows
+* transitions
+* conditions
+* triggers
+* outputs
+
+### STEP 2 — MAP
+
+Create mapping:
+web logic → mobile equivalent
+
+### STEP 3 — REBUILD
+
+Implement using:
+
+* hooks
+* services
+* clean state management
+
+---
+
+================================
+ZAKIY SYSTEM (FULL MIRROR)
+==========================
+
+You MUST replicate:
+
+* conversation flow logic
+* emotional detection
+* personality adaptation
+* response branching
+* relapse handling
+* SOS behavior
+
+Include:
+
+* memory system (user state)
+* message structure (text + audio-ready)
+
+---
+
+================================
+JOURNEY SYSTEM (STATE MACHINE)
+==============================
+
+Rebuild ALL flows:
+
+* with sin
+* without sin
+* relapse recovery
+
+Include:
+
+* sin classification:
+
+  * major
+  * minor
+  * requires expiation
+  * repeated relapse
+
+* dynamic plan generation
+
+MANDATORY:
+Implement a CLEAR STATE MACHINE with transitions.
+
+---
+
+================================
+MEDIA SYSTEM (PROGRAMS / RADIO / PODCAST)
+=========================================
+
+Rebuild FULL logic:
+
+### Content Types:
+
+* programs (multi-episode structured)
+* podcasts (independent episodes)
+* radio (live stream simulation)
+
+---
+
+### Audio Engine:
+
+* play / pause / resume
+* progress tracking
+* resume from last position
+* switching between content
+
+(using expo-av structure)
+
+---
+
+### User Features:
+
+* continue listening
+* recently played
+* favorites
+* per-content progress
+
+---
+
+### Discovery:
+
+* categories
+* suggestions based on user journey state
+
+---
+
+================================
+UI RULE
+=======
+
+* DO NOT copy web UI literally
+* DO NOT waste time on styling
+
+Focus:
+
+* correct behavior
+* clean mobile UX
+
+---
+
+================================
+EXECUTION ORDER (LOCKED)
+========================
+
+1. Finish Zakiy system
+2. Finish Journey system
+3. Finish Media system
+
+DO NOT switch between systems.
+
+---
+
+================================
+CONTINUATION RULE
+=================
+
+* Continue from existing work
+* If something is partially built → COMPLETE it
+* DO NOT restart or delete working code
+
+---
+
+================================
+QUALITY CONTROL (STRICT)
+========================
+
+Before moving forward, ensure:
+
+* no missing flows
+* no broken transitions
+* no logic gaps
+* no duplicated states
+
+---
+
+================================
+FAIL CONDITIONS
+===============
+
+This is considered FAILURE if:
+
+* logic differs from web
+* flows are simplified
+* edge cases are ignored
+* system behaves differently than web
+
+---
+
+================================
+SUCCESS CRITERIA
+================
+
+Mobile MUST behave IDENTICALLY to web in:
+
+* logic
+* flow
+* decisions
+* user experience behavior
+
+UI differences are allowed.
+Logic differences are NOT.
+
+---
+
+================================
+OUTPUT MODE
+===========
+
+* Code first
+* Minimal explanation only if necessary
+* No summaries

@@ -20,6 +20,7 @@ import {
   Radio,
   Target,
   Moon,
+  Tv,
 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -217,6 +218,21 @@ export default function MoreScreen() {
           color: "#0891B2",
           bg: "#ECFEFF",
           bgDark: "#091A1F",
+        },
+      ],
+    },
+    {
+      title: "المحتوى الإسلامي",
+      items: [
+        {
+          icon: <Tv size={18} color="#8B5CF6" />,
+          labelAr: "برامج إسلامية",
+          labelEn: "Islamic Programs",
+          href: "/programs",
+          color: "#8B5CF6",
+          bg: "#F5F0FF",
+          bgDark: "#120A1A",
+          badge: "جديد",
         },
       ],
     },
