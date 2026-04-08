@@ -153,9 +153,16 @@ router.delete("/jobs", async (req, res) => {
 // Internal: send due push notifications (called by scheduler)
 export async function sendDuePushJobs() {
   const now = new Date();
-  const dueJobs = await db.query.pushJobsTable.findMany({
-    where: and(eq(pushJobsTable.sent, false), lte(pushJobsTable.fireAt, now)),
-  });
+  let dueJobs: Awaited<ReturnType<typeof db.query.pushJobsTable.findMany>>;
+  try {
+    dueJobs = await db.query.pushJobsTable.findMany({
+      where: and(eq(pushJobsTable.sent, false), lte(pushJobsTable.fireAt, now)),
+    });
+  } catch (err: unknown) {
+    const code = (err as { cause?: { code?: string } }).cause?.code;
+    if (code === "42P01") return;
+    throw err;
+  }
   if (dueJobs.length === 0) return;
 
   for (const job of dueJobs) {
