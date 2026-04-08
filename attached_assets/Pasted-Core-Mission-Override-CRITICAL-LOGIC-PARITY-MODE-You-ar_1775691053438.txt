@@ -1,0 +1,190 @@
+Core Mission Override (CRITICAL – LOGIC PARITY MODE):
+
+You are NOT building UI features.
+
+You are RECONSTRUCTING the CORE INTELLIGENCE and USER JOURNEY LOGIC of the Tawbah app from the web version into mobile.
+
+This is a LOGIC-FIRST task, not a UI task.
+
+---
+
+PRIMARY OBJECTIVE:
+
+Replicate the FULL behavioral system of:
+
+1. Zakiy AI Chat (the brain of the app)
+2. Journey System (all paths and states)
+
+You must mirror:
+
+* decision logic
+* state transitions
+* branching flows
+* emotional tone handling
+* personalization behavior
+
+UI is secondary.
+
+---
+
+ZAKIY AI – FULL PARITY REQUIRED:
+
+Rebuild Zakiy as a COMPLETE SYSTEM, not a chat screen.
+
+You MUST implement:
+
+1. Conversation Engine:
+
+   * Context-aware responses
+   * Tracks user state across messages
+   * Handles different user intentions:
+     (repentance, relapse, confusion, motivation, guilt)
+
+2. Personality System:
+
+   * Consistent tone (compassionate, wise, non-judgmental)
+   * Adaptive responses based on user emotional state
+
+3. Voice System:
+
+   * Prepare architecture for voice input/output (expo-av placeholder)
+   * Response objects must support text + audio
+
+4. Memory Layer:
+
+   * Persist user state (sin type, journey progress, emotional flags)
+   * Use structured state (NOT random variables)
+
+5. Emergency Mode:
+
+   * If user is in relapse or distress → trigger SOS logic automatically
+
+---
+
+JOURNEY SYSTEM – FULL LOGIC MIRROR:
+
+You must rebuild ALL journey entry points:
+
+1. User Paths:
+
+   * Started after selecting a SIN
+   * Started without sin (general spiritual growth)
+   * Relapse recovery path
+
+2. Sin Classification Logic:
+
+   * Major sin (كبيرة)
+   * Minor sin
+   * Requires expiation (كفارة)
+   * Repeated relapse
+
+3. Dynamic Journey Generation:
+
+   * Generate different plans based on:
+
+     * sin type
+     * user consistency
+     * relapse frequency
+
+4. State Machine (MANDATORY):
+
+Each user must have a clear state:
+
+* بداية (start)
+* توبة
+* ثبات
+* انتكاسة
+* تعافي
+
+Transitions must be explicit and controlled.
+
+---
+
+CRITICAL RULES:
+
+* DO NOT copy UI from web
+* DO NOT try to visually match design
+* DO NOT simplify logic
+
+INSTEAD:
+
+* Extract LOGIC
+* Rebuild it natively for mobile
+* Improve where possible
+
+---
+
+ARCHITECTURE REQUIREMENTS:
+
+You MUST separate:
+
+* UI (screens)
+* Logic (hooks/services)
+* State (context or store)
+
+Create:
+
+* zakiy-engine/
+* journey-engine/
+* user-state/
+
+NO logic inside components.
+
+---
+
+DATA MODELING:
+
+Define structured models:
+
+UserState:
+
+* currentPath
+* sinType
+* relapseCount
+* emotionalState
+
+Message:
+
+* text
+* tone
+* intent
+* optionalAudio
+
+JourneyStep:
+
+* id
+* type
+* requirement
+* completed
+
+---
+
+EXECUTION STRATEGY:
+
+1. STOP creating new pages
+
+2. FOCUS only on:
+
+   * Zakiy AI
+   * Journey Logic
+
+3. Refactor existing code if needed
+
+---
+
+OUTPUT MODE:
+
+* Code + minimal explanation (only when necessary)
+* No long analysis
+* No summaries
+
+---
+
+PRIORITY:
+
+If everything works but logic is weak → FAIL
+If UI is basic but logic is powerful → SUCCESS
+
+---
+
+You are rebuilding the SOUL of the app, not the interface.

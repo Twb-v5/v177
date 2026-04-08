@@ -1,0 +1,296 @@
+Context & Mission:
+
+You are continuing an advanced mobile migration for the "Tawbah" app (Expo SDK 54).
+
+This is NOT a UI task.
+This is a LOGIC + SYSTEM RECONSTRUCTION task.
+
+You are rebuilding the SOUL of the app, not just screens.
+
+---
+
+CRITICAL EXECUTION MODE:
+
+You are in CONTINUOUS PIPELINE MODE.
+
+* DO NOT stop
+* DO NOT summarize
+* DO NOT re-analyze
+* DO NOT restart planning
+
+You CONTINUE from the current progress and MOVE FORWARD only.
+
+---
+
+PRIMARY OBJECTIVE:
+
+Rebuild THREE CORE SYSTEMS with FULL parity from web:
+
+1. Zakiy AI System
+2. Journey System
+3. Programs / Radio / Podcast System
+
+UI is secondary. Logic is everything.
+
+---
+
+========================
+
+1. ZAKIY AI SYSTEM (FULL BRAIN)
+   ========================
+
+You are NOT building a chat UI.
+You are building an INTELLIGENT ENGINE.
+
+Implement:
+
+### Conversation Engine
+
+* Context-aware responses
+* Tracks user intent and emotional state
+* Handles:
+
+  * repentance
+  * relapse
+  * guilt
+  * motivation
+  * confusion
+
+### Personality Engine
+
+* Compassionate
+* Non-judgmental
+* Adaptive tone
+
+### Memory System
+
+Persist:
+
+* sinType
+* relapseCount
+* emotionalState
+* journeyProgress
+
+### Voice Architecture
+
+* Prepare for voice input/output (expo-av)
+* Messages must support:
+  text + optional audio
+
+### Emergency Detection
+
+If user is:
+
+* distressed
+* relapsing
+
+→ Automatically trigger SOS logic
+
+---
+
+========================
+2) JOURNEY SYSTEM (STATE MACHINE)
+=================================
+
+Rebuild ALL flows:
+
+### Entry Points:
+
+* With sin
+* Without sin (general growth)
+* Relapse recovery
+
+### Sin Classification:
+
+* Major sin
+* Minor sin
+* Requires expiation (kafara)
+* Repeated relapse
+
+### Dynamic Journey Builder:
+
+Generate plan based on:
+
+* sinType
+* consistency
+* relapse behavior
+
+### State Machine (MANDATORY):
+
+User states:
+
+* start
+* repentance
+* stability
+* relapse
+* recovery
+
+Transitions must be explicit.
+
+---
+
+========================
+3) PROGRAMS / RADIO / PODCAST SYSTEM
+====================================
+
+Rebuild full media ecosystem with LOGIC parity.
+
+### Content Types:
+
+* Programs (series-based structured content)
+* Radio (live / continuous streaming)
+* Podcasts (episodic content)
+
+---
+
+### Core Requirements:
+
+#### Content Model:
+
+Each item must support:
+
+* id
+* title
+* type (program / radio / podcast)
+* category
+* speaker
+* duration
+* audioUrl
+* progress
+* isFavorite
+
+---
+
+### Audio Engine:
+
+Implement a unified audio system:
+
+* Play / Pause / Resume
+* Background playback ready (structure only)
+* Track progress (per content)
+* Resume from last position
+* Handle switching between content types
+
+Use expo-av architecture.
+
+---
+
+### User Behavior Tracking:
+
+* Continue Listening section
+* Recently Played
+* Favorites system
+* Progress tracking per episode/program
+
+---
+
+### Program Logic:
+
+* Multi-episode structure
+* Sequential progression (episode locking optional)
+* Completion tracking
+
+---
+
+### Podcast Logic:
+
+* Independent episodes
+* Sort (latest / popular)
+* Bookmark episodes
+
+---
+
+### Radio Logic:
+
+* Live stream simulation
+* Continuous playback
+* No fixed progress (live feeling)
+
+---
+
+### Discovery System:
+
+* Categories (spiritual, repentance, motivation, etc.)
+* Suggested content based on:
+
+  * user state
+  * journey stage
+
+---
+
+========================
+ARCHITECTURE RULES
+==================
+
+STRICT separation:
+
+* UI → screens only
+* Logic → hooks/services
+* State → central store/context
+
+Create:
+
+* zakiy-engine/
+* journey-engine/
+* media-engine/
+* user-state/
+
+NO business logic inside components.
+
+---
+
+========================
+EXECUTION RULES
+===============
+
+* DO NOT rebuild existing completed UI unless required
+* DO NOT duplicate logic
+* DO NOT create placeholder features
+
+---
+
+========================
+EXECUTION ORDER LOCK
+====================
+
+You MUST follow this order:
+
+1. Finish Zakiy AI system
+2. Finish Journey system
+3. Finish Media system (Programs/Radio/Podcast)
+
+DO NOT switch between them.
+
+---
+
+========================
+CONTINUATION RULE
+=================
+
+* Continue from last implemented part
+* If something is partially built → COMPLETE it
+* DO NOT restart anything
+
+---
+
+========================
+OUTPUT MODE
+===========
+
+* Code first
+* Minimal explanation only if necessary
+* No long text
+* No repeated summaries
+
+---
+
+========================
+SUCCESS CRITERIA
+================
+
+If UI looks great but logic is weak → FAIL
+If logic is powerful but UI is simple → SUCCESS
+
+---
+
+You are building an intelligent system, not screens.
