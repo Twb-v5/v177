@@ -1,0 +1,65 @@
+# Tajweed Guide
+
+- 
+                  [الْقُرْآن الْكَرِيْم](https://alquran.cloud)
+              
+[الْقُرْآن الْكَرِيْم](https://alquran.cloud)
+- [Home](https://alquran.cloud)
+- [Quran](https://alquran.cloud/read)
+- [Juz](https://alquran.cloud/juzs)
+- [Surah](https://alquran.cloud/surahs)
+- [Ayah](https://alquran.cloud/ayah)
+- 
+                API 
+                
+                    API Documentation
+                    Content Delivery Network
+                    
+                    Tajweed Guide
+                    [Font Edition Tester](https://alquran.cloud/arabic-font-edition-tester)
+                
+            
+- [API Documentation](https://alquran.cloud/api)
+- [Content Delivery Network](https://alquran.cloud/cdn)
+- [Tajweed Guide](https://alquran.cloud/tajweed-guide)
+- [Font Edition Tester](https://alquran.cloud/arabic-font-edition-tester)
+- [CDN](https://alquran.cloud/cdn)
+[Home](https://alquran.cloud)
+[Quran](https://alquran.cloud/read)
+[Juz](https://alquran.cloud/juzs)
+[Surah](https://alquran.cloud/surahs)
+[Ayah](https://alquran.cloud/ayah)
+API
+- [API Documentation](https://alquran.cloud/api)
+- [Content Delivery Network](https://alquran.cloud/cdn)
+- [Tajweed Guide](https://alquran.cloud/tajweed-guide)
+- [Font Edition Tester](https://alquran.cloud/arabic-font-edition-tester)
+[API Documentation](https://alquran.cloud/api)
+[Content Delivery Network](https://alquran.cloud/cdn)
+[Tajweed Guide](https://alquran.cloud/tajweed-guide)
+[Font Edition Tester](https://alquran.cloud/arabic-font-edition-tester)
+[CDN](https://alquran.cloud/cdn)
+
+#### Tajweed Guide - Parsing and Displaying Tajweed Data
+
+##### Developer Tools and Documentation
+The library and documentation on how to use it is available on [https://github.com/meezaan/alquran-tools](https://github.com/islamic-network/alquran-tools). This page essentially lists the output of the library. Please see the complete documentation the GitHub URL above.
+
+##### Rendered Example - Ayah Noor (24:35) with Tajweed Parsed
+
+##### What do the Colours mean?
+Essentially, all that's happening here is that [h:9421[ٱ] which is returned by the API for the above Vese becomes:
+
+```
+<tajweed class="ham_wasl" data-type="hamza-wasl" data-description="Hamzat ul Wasl" data-tajweed=":9421">ٱ</tajweed>
+```
+
+© 2026 Islamic Network and respective [contributors](http://alquran.cloud/contributors).
+- [Prayer Times](http://aladhan.com)
+- [Hijri Calendar](http://aladhan.com/gregorian-hijri-calendar)
+- [Contact](http://alquran.cloud/contact)
+- [Terms & Conditions](http://alquran.cloud/terms-and-conditions)
+[Prayer Times](http://aladhan.com)
+[Hijri Calendar](http://aladhan.com/gregorian-hijri-calendar)
+[Contact](http://alquran.cloud/contact)
+[Terms & Conditions](http://alquran.cloud/terms-and-conditions)
