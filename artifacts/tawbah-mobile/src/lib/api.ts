@@ -1,6 +1,16 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 
-const DEFAULT_API_BASE = "https://tawbah.replit.app/api";
+const PRODUCTION_API = "https://tawbah.replit.app/api";
+
+function detectDevApiBase(): string {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    return `${window.location.origin}/api`;
+  }
+  return PRODUCTION_API;
+}
+
+const DEFAULT_API_BASE = __DEV__ ? detectDevApiBase() : PRODUCTION_API;
 
 let _apiBase: string | null = null;
 

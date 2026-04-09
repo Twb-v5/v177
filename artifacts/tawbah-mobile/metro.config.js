@@ -1,4 +1,5 @@
 const path = require('path');
+const http = require('http');
 const { getDefaultConfig } = require('expo/metro-config');
 
 const projectRoot = __dirname;
@@ -9,8 +10,6 @@ process.env.EXPO_ROUTER_APP_ROOT = appRoot;
 const config = getDefaultConfig(projectRoot);
 
 config.resolver.unstable_enablePackageExports = true;
-
-const originalTransformerPath = config.transformer?.babelTransformerPath;
 
 config.transformer = {
   ...config.transformer,
@@ -26,6 +25,52 @@ const origCustomTransformOptions = config.transformer.customTransformOptions || 
 config.transformer.customTransformOptions = {
   ...origCustomTransformOptions,
   routerRoot: appRoot,
+};
+
+config.server = {
+  ...config.server,
+  enhanceMiddleware: (metroMiddleware) => {
+    return (req, res, next) => {
+      if (req.url && req.url.startsWith('/api/')) {
+        const apiPort = 8080;
+        const options = {
+          hostname: 'localhost',
+          port: apiPort,
+          path: req.url,
+          method: req.method,
+          headers: {
+            ...req.headers,
+            host: `localhost:${apiPort}`,
+          },
+        };
+
+        const proxy = http.request(options, (apiRes) => {
+          res.writeHead(apiRes.statusCode, {
+            ...apiRes.headers,
+            'access-control-allow-origin': '*',
+            'access-control-allow-headers': 'Content-Type, Authorization',
+            'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          });
+          apiRes.pipe(res, { end: true });
+        });
+
+        proxy.on('error', (err) => {
+          console.error('[API Proxy] Error:', err.message);
+          res.writeHead(502);
+          res.end(JSON.stringify({ error: 'API server unavailable' }));
+        });
+
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          req.pipe(proxy, { end: true });
+        } else {
+          proxy.end();
+        }
+        return;
+      }
+
+      return metroMiddleware(req, res, next);
+    };
+  },
 };
 
 module.exports = config;
