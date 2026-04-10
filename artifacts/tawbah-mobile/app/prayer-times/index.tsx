@@ -8,13 +8,15 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, I18nManager } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, I18nManager, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { usePrayerTimes, PrayerTimes } from "@/hooks/usePrayerTimes";
 import { useSettings } from "@/providers/SettingsProvider";
 import { Magnetometer } from "expo-sensors";
 import * as Haptics from "expo-haptics";
+
+const isNativePlatform = Platform.OS !== "web";
 
 const PRAYER_ORDER = [
   { key: "Fajr", label: "Fajr", labelAr: "الفجر", icon: "fajr" },
@@ -71,7 +73,7 @@ export default function PrayerTimesScreen() {
       const aligned = qiblaRelativeDeg <= 10 || qiblaRelativeDeg >= 350;
       if (aligned && !isAligned) {
         setIsAligned(true);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        if (isNativePlatform) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         goldScale.value = withSpring(1.2, {}, () => {
           goldScale.value = withSpring(1);
         });
@@ -95,16 +97,22 @@ export default function PrayerTimesScreen() {
   }));
 
   useEffect(() => {
-    Magnetometer.setUpdateInterval(250);
-    const sub = Magnetometer.addListener((data) => {
-      const { x, y } = data;
-      if (typeof x !== "number" || typeof y !== "number") return;
-      let deg = (Math.atan2(y, x) * 180) / Math.PI;
-      deg = (deg + 360) % 360;
-      setHeadingDeg(deg);
-    });
+    if (!isNativePlatform) return;
+    let sub: { remove: () => void } | null = null;
+    try {
+      Magnetometer.setUpdateInterval(250);
+      sub = Magnetometer.addListener((data) => {
+        const { x, y } = data;
+        if (typeof x !== "number" || typeof y !== "number") return;
+        let deg = (Math.atan2(y, x) * 180) / Math.PI;
+        deg = (deg + 360) % 360;
+        setHeadingDeg(deg);
+      });
+    } catch (e) {
+      // Magnetometer not available on this device/platform
+    }
     return () => {
-      sub.remove();
+      try { sub?.remove(); } catch {}
     };
   }, []);
 

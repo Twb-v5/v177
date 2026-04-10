@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
+import { Platform } from "react-native";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
+
+const isNative = Platform.OS !== "web";
 
 const ALADHAN_API = "https://api.aladhan.com/v1";
 
@@ -121,26 +124,32 @@ export function usePrayerTimes() {
   }, [init]);
 
   const ensureNotificationsReady = useCallback(async () => {
-    const { status } = await Notifications.getPermissionsAsync();
-    if (status !== "granted") {
-      const req = await Notifications.requestPermissionsAsync();
-      if (req.status !== "granted") return false;
-    }
+    if (!isNative) return false;
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== "granted") {
+        const req = await Notifications.requestPermissionsAsync();
+        if (req.status !== "granted") return false;
+      }
 
-    if (process.env.EXPO_OS === "android") {
-      await Notifications.setNotificationChannelAsync("prayer-times", {
-        name: "Prayer Times",
-        importance: Notifications.AndroidImportance.MAX,
-        sound: "default",
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#22c55e",
-      });
-    }
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("prayer-times", {
+          name: "Prayer Times",
+          importance: Notifications.AndroidImportance.MAX,
+          sound: "default",
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: "#22c55e",
+        });
+      }
 
-    return true;
+      return true;
+    } catch {
+      return false;
+    }
   }, []);
 
   const scheduleNotification = useCallback(async (prayerName: string, time: string) => {
+    if (!isNative) return;
     try {
       const normalized = normalizeTime(time);
       if (!normalized) return;
@@ -155,7 +164,7 @@ export function usePrayerTimes() {
         content: {
           title: "Prayer Time",
           body: `${prayerName} prayer time - ${normalized}`,
-          ...(process.env.EXPO_OS === "android" ? { channelId: "prayer-times" } : null),
+          ...(Platform.OS === "android" ? { channelId: "prayer-times" } : null),
         },
         trigger,
       });
