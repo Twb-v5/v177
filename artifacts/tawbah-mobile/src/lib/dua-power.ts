@@ -1,3 +1,6 @@
+// ── Dua-answer power score calculation ────────────────────────────────────────
+// Single source of truth — imported by dua-timing.tsx, NotificationsContext, etc.
+
 function getHour(): number { return new Date().getHours(); }
 function getMinutes(): number { return new Date().getMinutes(); }
 function getDayOfWeek(): number { return new Date().getDay(); }
@@ -99,7 +102,7 @@ export function buildDuaWindows(): DuaWindow[] {
       power: 35,
       active: isBetweenAdhanIqamah(),
       hadith: "«الدعاء لا يُرد بين الأذان والإقامة»",
-      bestDua: "اللهم رب هذه الدعوة التامة والصلاة القائمة آتِ محمداً الوسيلة والفضيلة",
+      bestDua: "اللهم رب هذه الدعوة التامة والصلاة القائمة آتِ محمداً الوسيلة والفضيلة وابعثه مقاماً محموداً الذي وعدته",
     },
     {
       id: "fajr-time",
@@ -107,7 +110,7 @@ export function buildDuaWindows(): DuaWindow[] {
       sub: "صلِّ ركعتين قبل الفريضة وادعُ",
       power: 30,
       active: isFajrTime(),
-      hadith: "«ركعتا الفجر خير من الدنيا وما فيها»",
+      hadith: "«ركعتا الفجر خير من الدنيا وما فيها» — ومن صلاهما وجد قلبه خفيفاً مفتوحاً للدعاء",
       bestDua: "اللهم إني أسألك علماً نافعاً ورزقاً طيباً وعملاً متقبلاً",
     },
     {
@@ -168,6 +171,7 @@ export function buildDuaWindows(): DuaWindow[] {
   ];
 }
 
+/** Returns 0-100 power score for the current moment. */
 export function calcDuaPower(): number {
   const wins = buildDuaWindows();
   const active = wins.filter((w) => w.active || w.alwaysActive);
@@ -176,14 +180,16 @@ export function calcDuaPower(): number {
   return Math.min(100, total);
 }
 
+/** Returns human-readable label for a power score. */
 export function getPowerLabel(score: number): { label: string; color: string; pulse: boolean } {
-  if (score >= 80) return { label: "قمة الإجابة ✨", color: "#eab308", pulse: true };
-  if (score >= 60) return { label: "لحظة قوية جداً", color: "#f59e0b", pulse: true };
-  if (score >= 40) return { label: "وقت مبارك", color: "#10b981", pulse: false };
-  if (score >= 25) return { label: "دعاء مستحب", color: "#3b82f6", pulse: false };
-  return { label: "استعد للحظة القادمة", color: "#6b7280", pulse: false };
+  if (score >= 80) return { label: "قمة الإجابة ✨", color: "text-yellow-500", pulse: true };
+  if (score >= 60) return { label: "لحظة قوية جداً", color: "text-amber-500", pulse: true };
+  if (score >= 40) return { label: "وقت مبارك", color: "text-emerald-500", pulse: false };
+  if (score >= 25) return { label: "دعاء مستحب", color: "text-blue-500", pulse: false };
+  return { label: "استعد للحظة القادمة", color: "text-muted-foreground", pulse: false };
 }
 
+/** Returns description for when the next peak is. */
 export function getNextPeakDescription(score: number): string {
   if (score >= 60) return "أنت الآن في لحظة مباركة — ارفع يديك وادعُ";
   const h = getHour();
@@ -194,4 +200,37 @@ export function getNextPeakDescription(score: number): string {
   if (h < 15) return "اقتربت ساعة الإجابة الجمعة (3-5 عصراً)";
   if (h < 17) return "أذكار العصر والدعاء قبيل المغرب";
   return "قُم في آخر الليل لصلاة ركعتين وادعُ";
+}
+
+// ── Cooldown helpers ──────────────────────────────────────────────────────────
+
+const COOLDOWN_KEY = "dua_peak_last_fired";
+const COOLDOWN_MS  = 2 * 60 * 60 * 1000; // 2 hours
+
+export function duaPeakCooledDown(): boolean {
+  const raw = localStorage.getItem(COOLDOWN_KEY);
+  if (!raw) return true;
+  return Date.now() - parseInt(raw, 10) > COOLDOWN_MS;
+}
+
+export function markDuaPeakFired(): void {
+  localStorage.setItem(COOLDOWN_KEY, String(Date.now()));
+}
+
+// ── Ameen counter ─────────────────────────────────────────────────────────────
+
+const AMEEN_COUNT_KEY = "dua_peak_ameen_count";
+
+export function getDuaPeakAmeenCount(): number {
+  try {
+    return parseInt(localStorage.getItem(AMEEN_COUNT_KEY) ?? "0", 10);
+  } catch {
+    return 0;
+  }
+}
+
+export function incrementDuaPeakAmeenCount(): number {
+  const next = getDuaPeakAmeenCount() + 1;
+  localStorage.setItem(AMEEN_COUNT_KEY, String(next));
+  return next;
 }

@@ -1,0 +1,265 @@
+SYSTEM DIRECTIVE — CONTINUATION MODE (HIGH PRECISION)
+
+You are continuing an advanced mobile migration of the "Tawbah" app.
+
+Zakiy AI system and Journey system are already COMPLETE.
+
+DO NOT touch or rebuild them.
+
+---
+
+================================
+SOURCE OF TRUTH (MANDATORY)
+===========================
+
+You MUST extract logic ONLY from these web folders:
+
+* artifacts/tawbah-web/notifications
+* artifacts/tawbah-web/account
+* artifacts/tawbah-web/sins
+* artifacts/tawbah-web/dua-timing
+* artifacts/tawbah-web/munajat
+* artifacts/tawbah-web/card
+* artifacts/tawbah-web/src/pages/islamic-programs
+
+These are FINAL and COMPLETE implementations.
+
+---
+
+================================
+CORE MISSION
+============
+
+Mirror ALL logic from web into mobile with FULL parity.
+
+No simplification.
+No missing features.
+No assumptions.
+
+---
+
+================================
+CRITICAL SYSTEMS TO BUILD
+=========================
+
+### 1) SIN SYSTEM (VERY CRITICAL)
+
+You MUST replicate EXACTLY:
+
+* full list of sins
+* name (Arabic)
+* description
+* classification:
+
+  * major
+  * minor
+  * requires kafara
+* all metadata
+
+---
+
+### RELATION WITH JOURNEY:
+
+* Selecting a sin → affects journey path
+* User MUST have option:
+  → Start journey WITHOUT selecting sins
+
+Both flows must exist.
+
+NO forced logic.
+
+---
+
+### 2) NOTIFICATIONS SYSTEM (VERY CRITICAL)
+
+Mirror EXACT behavior:
+
+* triggers
+* schedules
+* categories:
+
+  * adhkar
+  * reminders
+  * relapse support
+  * journey nudges
+
+Use Expo Notifications.
+
+Must be state-aware (user progress affects notifications).
+
+---
+
+### 3) ACCOUNT SYSTEM
+
+Mirror fully:
+
+* user settings
+* preferences
+* saved progress
+* toggles (notifications, language, etc.)
+
+---
+
+### 4) DUA TIMING
+
+Replicate:
+
+* timing logic
+* contextual dua suggestions
+* time-based triggers
+
+---
+
+### 5) MUNAJAT SYSTEM
+
+* structured spiritual content
+* categorized
+* readable + optionally playable
+
+---
+
+### 6) CARD SYSTEM
+
+* dynamic cards
+* contextual content
+* reusable structure
+
+---
+
+### 7) MEDIA SYSTEM (PROGRAMS / PODCAST / RADIO)
+
+Mirror web behavior:
+
+* categories
+* episodes
+* images (same concept as web)
+* playback logic
+* progress tracking
+
+Use modern mobile UI.
+
+---
+
+================================
+THEME SYSTEM (IMPORTANT)
+========================
+
+Create multiple themes (at least 8):
+
+* based on existing app colors
+* optimized for Islamic feel
+* calm, spiritual, modern
+
+Arabic-first design is MANDATORY.
+
+RTL must be default.
+
+---
+
+================================
+DESIGN ENHANCEMENT
+==================
+
+You are allowed to:
+
+* improve UI
+* add subtle animations
+* add backgrounds / gradients
+* create interactive elements
+
+BUT:
+Never break logic.
+
+---
+
+================================
+ANTI-WASTE MODE
+===============
+
+* NO long analysis
+* NO repeated summaries
+* NO re-planning
+* NO unnecessary output
+
+EXECUTE DIRECTLY.
+
+---
+
+================================
+EXECUTION MODE
+==============
+
+CONTINUOUS PIPELINE:
+
+* Continue from current progress
+* Complete each system fully
+* Move to next
+
+NO STOPPING.
+
+---
+
+================================
+ARCHITECTURE
+============
+
+Strict separation:
+
+* UI
+* Logic
+* State
+
+Create:
+
+* /sin-engine
+* /notification-engine
+* /account-engine
+* /media-engine
+* /dua-engine
+* /theme-system
+* /user-state
+
+NO logic inside UI components.
+
+---
+
+================================
+EXECUTION ORDER
+===============
+
+1. Sin system
+2. Notifications
+3. Account
+4. Dua timing + Munajat + Card
+5. Media system
+6. Theme system
+
+---
+
+================================
+SUCCESS CRITERIA
+================
+
+* Mobile mirrors web logic EXACTLY
+* No missing features
+* Arabic-first experience
+* Clean modern mobile UI
+* High performance
+
+---
+
+================================
+OUTPUT MODE
+===========
+
+* CODE ONLY
+* Minimal explanation if needed
+* No summaries
+
+---
+
+You are continuing a near-production system.
+
+Maintain the same level of excellence.
+
+Do not degrade quality.

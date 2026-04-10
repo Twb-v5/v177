@@ -7,7 +7,7 @@ import { SettingsProvider } from "@/providers/SettingsProvider";
 import { ZakiyModeProvider } from "@/providers/ZakiyModeProvider";
 import { NotificationsProvider } from "@/providers/NotificationsProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
-import { I18nManager } from "react-native";
+import { I18nManager, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts as useAmiriFonts, Amiri_400Regular, Amiri_700Bold } from "@expo-google-fonts/amiri";
@@ -18,7 +18,7 @@ import {
   IBMPlexSansArabic_700Bold,
 } from "@expo-google-fonts/ibm-plex-sans-arabic";
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient({
@@ -30,9 +30,18 @@ export default function RootLayout() {
     },
   }));
 
+  const [timedOut, setTimedOut] = useState(false);
+
   useEffect(() => {
     I18nManager.allowRTL(true);
     I18nManager.forceRTL(false);
+
+    const timer = setTimeout(() => {
+      setTimedOut(true);
+      SplashScreen.hideAsync().catch(() => {});
+    }, 3000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const [amiriLoaded, amiriError] = useAmiriFonts({
@@ -50,11 +59,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsReady) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsReady]);
 
-  if (!fontsReady) {
+  if (!fontsReady && !timedOut) {
     return null;
   }
 
