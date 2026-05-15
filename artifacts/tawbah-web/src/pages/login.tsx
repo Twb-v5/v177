@@ -27,12 +27,17 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState<"male" | "female">("male");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (mode === "register" && password !== confirmPassword) {
+      setError("كلمتا المرور غير متطابقتين");
+      return;
+    }
     setLoading(true);
     try {
       if (mode === "login") {
@@ -185,6 +190,25 @@ export default function LoginPage() {
               minLength={6}
             />
           </div>
+
+          {mode === "register" && (
+            <div>
+              <label className="text-xs font-bold text-muted-foreground block mb-1.5">
+                تأكيد كلمة المرور
+              </label>
+              <input
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                type="password"
+                className="w-full bg-background border border-border rounded-2xl px-4 py-3 text-sm outline-none focus:border-primary"
+                placeholder="••••••"
+                autoComplete="new-password"
+                required
+                dir="ltr"
+                minLength={6}
+              />
+            </div>
+          )}
 
           {error && (
             <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-2xl px-3 py-2">

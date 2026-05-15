@@ -499,6 +499,10 @@ router.post("/dhikr/increment", async (req, res) => {
     dhikr = created;
   }
 
+  const VALID_DHIKR_TYPES = ["istighfar", "tasbih", "sayyid"] as const;
+  if (!VALID_DHIKR_TYPES.includes(body.dhikrType as "istighfar" | "tasbih" | "sayyid")) {
+    return res.status(400).json({ error: "dhikrType must be one of: istighfar, tasbih, sayyid" });
+  }
   const col = body.dhikrType as "istighfar" | "tasbih" | "sayyid";
   const newVal = (dhikr[col] ?? 0) + body.amount;
 

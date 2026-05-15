@@ -2,21 +2,43 @@
 
 ## Overview
 
-**دليل التوبة النصوح** — A comprehensive Arabic Islamic app guiding users through sincere repentance (Tawbah). Available as a web app and a React Native mobile app.
+**دليل التوبة النصوح** — A comprehensive Arabic Islamic repentance app guiding users through sincere Tawbah.
+Available as a **React web app** (PWA + Android via Capacitor) and a **React Native mobile app** (Expo).
 
 ---
 
-## Quick Start (New Replit Account Setup)
+## ⚡ Quick Start (New Replit Environment)
 
-Every time you open this project in a new Replit account, do the following **once**:
+Run this **once** after opening the project in a new Replit account:
 
-### Step 1 — Install dependencies
 ```bash
-pnpm install
+./scripts/setup.sh
 ```
 
-### Step 2 — Set up OpenAI (AI features)
-Run this in the Replit **code_execution** sandbox (not the terminal):
+This single command:
+1. Installs all pnpm workspace dependencies
+2. Compiles TypeScript lib declarations (required for typecheck)
+3. Pushes the Drizzle schema to PostgreSQL
+4. Patches expo-router (fixes `require.context` crash)
+
+Then add the required secret and configure OpenAI — see below.
+
+---
+
+## 🔑 Required Secrets
+
+Open **Secrets** (lock icon in sidebar) and add:
+
+| Secret | Purpose |
+|--------|---------|
+| `EXPO_TOKEN` | EAS cloud builds for mobile APK |
+
+Get your token: https://expo.dev/accounts/hadysbadys/settings/access-tokens
+
+### OpenAI Setup (AI chatbot + TTS)
+
+Run this **once** in the Replit **code_execution** sandbox (not the terminal):
+
 ```javascript
 const result = await setupReplitAIIntegrations({
     providerSlug: "openai",
@@ -25,199 +47,386 @@ const result = await setupReplitAIIntegrations({
 });
 console.log(result);
 ```
-This provisions the OpenAI API key automatically — no key needed from you.
 
-### Step 3 — Set required secrets
-Open **Secrets** (lock icon in sidebar) and add:
+Then restart the `Start backend` workflow. No API key needed — Replit provisions it automatically.
 
-| Secret | Value | Purpose |
-|--------|-------|---------|
-| `EXPO_TOKEN` | Your Expo account token | Building Android APK via EAS |
+---
 
-To get your Expo token: https://expo.dev/accounts/[username]/settings/access-tokens
+## 🚀 Workflows (Dev Servers)
 
-### Step 4 — Start the servers
-The workflows auto-start, but if they're not running, click **Run** or restart them from the Replit workflow panel:
-
-| Workflow | Port | What it does |
-|----------|------|--------------|
-| `Start backend` | 3001 | Express API server |
+| Workflow | Port | Purpose |
+|----------|------|---------|
+| `Start backend` | 3001 | Express 5 API server |
 | `Start application` | 5000 | React web app (Vite) |
 | `artifacts/tawbah-mobile: expo` | 24800 | Expo mobile dev server |
 
-### Step 5 — Push database schema (first time only)
+> Only run `Start application` — not `artifacts/tawbah-web: web` (same port, causes conflict).
+
+---
+
+## 📦 Building APKs
+
+### One-command: build everything
+
 ```bash
-pnpm --filter @workspace/db run push
+./scripts/build-all.sh
+```
+
+Options:
+```bash
+./scripts/build-all.sh --web-only     # only web APK (local Gradle)
+./scripts/build-all.sh --mobile-only  # only mobile APK (EAS cloud)
+./scripts/build-all.sh --skip-check   # skip typecheck, just build APKs
 ```
 
 ---
 
-## Building the Android APK
-
-### Mobile app APK (tawbah-mobile — React Native / Expo)
-
-Uses **EAS Build** (Expo cloud build service). No Android SDK needed locally.
+### Web APK (Capacitor + Gradle — runs locally inside Replit)
 
 ```bash
-# Build a distributable APK (recommended)
-./scripts/build-apk.sh
-
-# Or build a production AAB (for Google Play Store)
-./scripts/build-apk.sh production
+./scripts/build-web-apk.sh
 ```
 
-After running, a link is printed. Open it to track the build:
+Steps it performs automatically:
+1. `pnpm build` — Vite bundles the React app
+2. `npx cap sync android` — copies assets into the Android project
+3. `./gradlew assembleDebug` — Gradle compiles the APK
+
+**Output:** `artifacts/tawbah-web/android/app/build/outputs/apk/debug/app-debug.apk` (~24 MB)
+
+> Uses the Android SDK Replit provisions at `/tmp/android-sdk`. Java 21 is available via Nix.
+
+---
+
+### Mobile APK (Expo EAS — builds in the cloud)
+
+```bash
+./scripts/build-apk.sh           # preview .apk (sideloadable)
+./scripts/build-apk.sh production # production .aab (Play Store)
+```
+
+Track the build at:
 ```
 https://expo.dev/accounts/hadysbadys/projects/tawbah-mobile/builds
 ```
 
-When the build finishes, an **APK download link** appears on that page. Install it on any Android device.
+Download the APK from that page when the build finishes (~10–20 min).
 
-> **Note:** EAS sometimes has high queue times. The build usually takes 5–20 minutes.
-
-### Web app APK (tawbah-web — Capacitor)
-
-The web app is wrapped as a native Android app using Capacitor.  
-Building it requires **Android Studio** (Android SDK + Gradle) on your local machine.
-
-Steps on your local machine:
-```bash
-# 1. Build the web bundle
-pnpm --filter @workspace/tawbah-web run build
-
-# 2. Sync with Capacitor
-npx cap sync android
-
-# 3. Open in Android Studio and build APK
-npx cap open android
-```
-Then in Android Studio: **Build → Build Bundle(s)/APK(s) → Build APK(s)**
+> Requires `EXPO_TOKEN` in Replit Secrets.
 
 ---
 
-## Project Structure
+## 🔨 TypeScript & Lib Builds
+
+The shared lib packages use TypeScript project references (`composite: true`). They must be compiled to `.d.ts` before `tsc --noEmit` can resolve them. This does **not** affect the Vite dev server (which transpiles on the fly).
+
+### Build lib declarations only
+
+```bash
+./scripts/build-libs.sh
+```
+
+Builds:
+- `lib/db` — Drizzle ORM schema types
+- `lib/api-zod` — Zod validation schemas
+- `lib/integrations-openai-ai-server` — OpenAI client wrapper
+- `lib/api-client-react` — React Query hooks (generated by Orval)
+
+### Typecheck all packages (libs + apps)
+
+```bash
+./scripts/typecheck.sh
+# or directly:
+pnpm run typecheck
+```
+
+> Always run `build-libs.sh` before `pnpm run typecheck`, or use `typecheck.sh` which does both.
+
+---
+
+## 📁 Project Structure
 
 ```
 workspace/
 ├── artifacts/
-│   ├── api-server/       # Express 5 API server  (port 3001 / 8080)
-│   ├── tawbah-web/       # React + Vite web app  (port 5000)
-│   └── tawbah-mobile/    # Expo React Native app (port 24800)
+│   ├── api-server/          # Express 5 API server (port 3001 / 8080 in prod)
+│   │   └── src/routes/
+│   │       ├── tawbah.ts    # Main app routes (habits, dhikr, journal, stats…)
+│   │       ├── journey.ts   # 30-day journey routes
+│   │       ├── zakiy/       # Zakiy AI chatbot routes
+│   │       ├── push.ts      # Push notification / FCM routes
+│   │       └── tts.ts       # Text-to-speech route
+│   ├── tawbah-web/          # React + Vite web app (port 5000)
+│   │   ├── src/pages/       # 50+ page components
+│   │   ├── android/         # Capacitor Android project
+│   │   └── capacitor.config.ts
+│   └── tawbah-mobile/       # Expo React Native app (port 24800)
+│       ├── app/             # Expo Router file-based routing
+│       ├── components/      # Shared mobile components
+│       ├── providers/       # React context providers
+│       └── eas.json         # EAS build profiles
 ├── lib/
-│   ├── api-spec/         # OpenAPI spec + Orval codegen
-│   ├── api-client-react/ # Generated React Query hooks
-│   ├── api-zod/          # Generated Zod schemas
-│   └── db/               # Drizzle ORM schema + DB connection
+│   ├── db/                  # Drizzle ORM schema + DB connection
+│   ├── api-spec/            # OpenAPI spec (source for Orval codegen)
+│   ├── api-client-react/    # Generated React Query hooks
+│   ├── api-zod/             # Generated Zod validation schemas
+│   └── integrations-openai-ai-server/  # OpenAI client (Replit-managed key)
 ├── scripts/
-│   └── build-apk.sh      # One-command Android APK builder
-└── replit.md             # This file
+│   ├── setup.sh             # ⭐ First-time setup (run once)
+│   ├── build-all.sh         # ⭐ Build everything in one command
+│   ├── build-web-apk.sh     # Web APK via Capacitor + local Gradle
+│   ├── build-apk.sh         # Mobile APK via EAS cloud
+│   ├── build-libs.sh        # Compile TypeScript lib .d.ts files
+│   └── typecheck.sh         # Build libs + typecheck all packages
+└── replit.md                # This file
 ```
 
 ---
 
-## Stack
+## 🛠️ Tech Stack
 
-| Layer | Tech |
-|-------|------|
+| Layer | Technology |
+|-------|-----------|
 | Monorepo | pnpm workspaces |
-| Node.js | v24 |
-| TypeScript | 5.9 |
-| API | Express 5 |
+| Runtime | Node.js v24 |
+| Language | TypeScript 5.9 (strict mode) |
+| API server | Express 5 |
 | Database | PostgreSQL + Drizzle ORM |
 | Validation | Zod v4, drizzle-zod |
-| Web frontend | React 19, Vite, Tailwind CSS 4, Framer Motion |
-| Mobile | Expo SDK 54, Expo Router, NativeWind |
-| AI | OpenAI GPT-4o via Replit AI Integrations proxy |
-| Mobile builds | EAS Build (Expo) |
+| Web frontend | React 19, Vite 7, Tailwind CSS 4, Framer Motion |
+| Mobile | Expo SDK 54, Expo Router v4, NativeWind |
+| AI / TTS | OpenAI GPT-4o via Replit AI Integrations proxy |
+| Web → Android | Capacitor 7 |
+| Mobile builds | EAS Build (Expo cloud) |
+| Auth | Better Auth (email/password + session) |
+| Push notifications | Web Push (VAPID) + FCM |
 
 ---
 
-## App Features
+## 🌟 App Features
 
-1. **عهد التوبة (Covenant)** — Select sin category and sign repentance covenant
-2. **مهام اليوم الأول (First Day Tasks)** — 4 mandatory immediate actions
-3. **رحلة الـ 30 يوماً (30-Day Journey)** — Day-by-day task list with streak tracking
-4. **عداد الذكر (Dhikr Counter)** — Istighfar/100, Tasbih/33, Sayyid al-Istighfar
-5. **SOS Emergency Button** — 3-phase: Alert → Breathing → Emergency duas
-6. **علامات قبول التوبة** — 5 spiritual signs of accepted repentance
-7. **الكفارات الشرعية (Kaffarah)** — Sin-specific expiation steps with tracking
-8. **مكتبة الرجاء (Hope Library)** — Quran + Hadiths + repentance stories with TTS
-9. **يوميات التوبة السرية (Private Journal)** — Encrypted diary with mood tracking
-10. **البوت الزكي (Zakiy AI Chatbot)** — Arabic spiritual AI chat with voice I/O
-11. **غرف الذكر الجماعية (Dhikr Rooms)** — Live group dhikr sessions
-12. **مقياس الروح (Soul Meter)** — Spiritual wellness gauge
-13. **القرآن الكريم** — Full Quran browser with audio, tafsir, reading tracker
-14. **شجرة التوبة (Tawbah Garden)** — Gamified growth tree
-15. **وضع المناجاة (Munajat Mode)** — Immersive night worship mode
+| # | Feature (Arabic) | Description |
+|---|-----------------|-------------|
+| 1 | **عهد التوبة** | Select sin category, swipe through 6 covenant items, sign repentance |
+| 2 | **مهام اليوم الأول** | 4 immediate tasks: wudu, prayer, delete haram content, tell trusted person |
+| 3 | **رحلة الـ 30 يوماً** | 30-day structured journey with daily tasks, streaks, and relapse recovery |
+| 4 | **عداد الذكر** | Counters for Istighfar (×100), Tasbih (×33), Sayyid al-Istighfar |
+| 5 | **زر الطوارئ SOS** | 3-phase: Alert → Box Breathing → Emergency Duas |
+| 6 | **علامات قبول التوبة** | 5 spiritual signs of accepted repentance |
+| 7 | **الكفارات الشرعية** | Sin-specific expiation steps with completion tracking |
+| 8 | **مكتبة الرجاء** | Quran verses + Hadiths + stories with TTS audio playback |
+| 9 | **يوميات التوبة** | Private journal with mood tracking (encrypted in DB) |
+| 10 | **البوت الزكي** | Arabic AI spiritual chatbot (GPT-4o) with voice I/O + memory |
+| 11 | **غرف الذكر الجماعية** | Live group dhikr rooms (Istighfar, Tasbih, Tahmid, Takbir) |
+| 12 | **مقياس الروح** | Soul/spiritual wellness gauge |
+| 13 | **القرآن الكريم** | Full Quran browser with audio, tafsir, memorization, khatma tracker |
+| 14 | **شجرة التوبة** | Gamified growth tree (Seed → Garden) powered by dhikr count |
+| 15 | **وضع المناجاة** | Immersive night worship mode with ambient scenes |
+| 16 | **الأذكار** | Complete collection of morning/evening/occasion adhkar |
+| 17 | **مواقيت الصلاة** | Prayer times with geo-detection + pre-prayer reminders |
+| 18 | **تحدي التوبة** | Sharable repentance challenge cards (7/21/40/90 days) |
+| 19 | **الدعاء السري** | Anonymous secret dua exchange with other users |
+| 20 | **أوقات الذروة** | Danger-time alerts for high-relapse-risk hours |
+| 21 | **المهام الهادية** | Guided task groups for different sin categories |
+| 22 | **الإشعارات** | Scheduled push notifications + in-app inbox |
+| 23 | **خريطة التوبة العالمية** | Live world map showing active repentance community |
+| 24 | **التحديات القرآنية** | Quran reading challenges with leaderboard |
+| 25 | **الإسلاميات** | Islamic programs, podcasts, and educational content |
 
 ---
 
-## API Routes (`/api`)
+## 🗄️ Database Schema
 
+| Table | Purpose |
+|-------|---------|
+| `users` | User accounts (Better Auth) |
+| `user_progress` | Per-session repentance journey state |
+| `habits` | Daily habit completions |
+| `dhikr_count` | Daily dhikr counters per session |
+| `kaffarah_steps` | Expiation step completion per session |
+| `journal_entries` | Private journal entries with mood |
+| `zakiy_memory` | Zakiy AI chatbot memory per session |
+| `global_stats` | Anonymized event stats (for live map/counters) |
+| `challenges` | Repentance challenge records with slug |
+| `secret_duas` | Anonymous dua exchange between sessions |
+| `community_duas` | Public community dua board with ameen counts |
+| `dhikr_rooms` | Group dhikr room participant counts |
+| `hadi_task_groups` | Guided task group definitions |
+| `hadi_task_items` | Individual tasks within guided groups |
+| `notification_settings` | Per-session notification preferences |
+| `push_subscriptions` | Web Push VAPID subscriptions |
+| `push_jobs` | Scheduled push notification jobs |
+| `app_inbox` | In-app notification inbox entries |
+
+---
+
+## 🔌 API Routes (`/api`)
+
+### User & Progress
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/healthz` | Health check |
 | GET | `/api/user/progress` | Get session progress |
 | PUT | `/api/user/progress` | Update progress |
-| POST | `/api/user/covenant` | Sign covenant |
-| GET | `/api/habits` | Today's habits |
-| POST | `/api/habits` | Toggle habit |
+| POST | `/api/user/covenant` | Sign repentance covenant |
+| GET | `/api/user/journey` | Get journey state (auth optional) |
+| PUT | `/api/user/sins` | Update selected sin categories |
+
+### Habits & Dhikr
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/habits` | Get today's habits |
+| POST | `/api/habits` | Toggle habit completion |
 | GET | `/api/dhikr/count` | Get dhikr counts |
-| POST | `/api/dhikr/increment` | Increment dhikr |
+| POST | `/api/dhikr/increment` | Increment dhikr counter |
+| POST | `/api/dhikr/reset` | Reset dhikr counter |
+
+### Journey (30 Days)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/journey30` | Get journey task list |
+| POST | `/api/journey30/task-toggle` | Toggle a journey task |
+| POST | `/api/journey30/complete` | Mark a day complete |
+| POST | `/api/journey30/relapse` | Record relapse + reset journey |
+
+### Kaffarah & Journal
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/kaffarah` | Get expiation steps |
+| POST | `/api/kaffarah/complete` | Toggle expiation step |
+| GET | `/api/journal` | Get journal entries |
+| POST | `/api/journal` | Create journal entry |
+| DELETE | `/api/journal/:id` | Delete journal entry |
+
+### Community & Challenges
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/challenges` | Create a challenge |
+| GET | `/api/challenges/:slug` | Get challenge by slug |
+| POST | `/api/challenges/:slug/encourage` | Send encouragement |
+| POST | `/api/secret-dua` | Send anonymous dua |
+| GET | `/api/secret-dua/received` | Get received duas |
+| GET | `/api/secret-dua/stats` | Dua exchange stats |
+| POST | `/api/community-duas` | Post community dua |
+| GET | `/api/community-duas` | List community duas |
+| POST | `/api/community-duas/:id/amen` | Add Ameen to dua |
+
+### Stats & Live
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/stats/event` | Record anonymous event |
+| GET | `/api/stats/live` | Live global counters |
+| POST | `/api/stats/pin` | Pin event to global map |
+| GET | `/api/stats/countries` | Country breakdown (past week) |
+
+### Zakiy AI Chatbot
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/zakiy/message` | Send message, get AI reply |
+| POST | `/api/zakiy/tts` | Text-to-speech for AI reply |
+| POST | `/api/zakiy/suggestions` | Get suggested questions |
+| POST | `/api/zakiy/impression` | Log user impression |
+| POST | `/api/zakiy/voice` | Speech-to-text input |
+| POST | `/api/zakiy/promise` | Save a repentance promise |
+| GET | `/api/zakiy/risk-check` | AI relapse-risk analysis |
+| GET | `/api/zakiy/anniversary` | Journey anniversary message |
+| POST | `/api/zakiy/decide` | AI help with a decision |
+
+### Notifications & Misc
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/notifications/settings` | Get notification settings |
+| PUT | `/api/notifications/settings` | Update notification settings |
+| GET | `/api/notifications/inbox` | Get inbox messages |
+| POST | `/api/notifications/inbox` | Create inbox message |
+| PATCH | `/api/notifications/inbox/:id/read` | Mark message read |
+| POST | `/api/notifications/inbox/read-all` | Mark all read |
+| DELETE | `/api/notifications/inbox/:id` | Delete inbox message |
+| GET | `/api/vapid-public-key` | Get VAPID key for Web Push |
+| POST | `/api/subscribe` | Subscribe to Web Push |
+| POST | `/api/fcm-token` | Register FCM token |
+| POST | `/api/tts` | Text-to-speech (general) |
+| POST | `/api/detect-sins` | AI sin category detection |
 | GET | `/api/quran/surah/:id` | Fetch surah text (1–114) |
 | GET | `/api/audio-proxy/quran/:reciterId/:num.mp3` | Stream Quran audio |
 
 ---
 
-## Database Schema
-
-| Table | Purpose |
-|-------|---------|
-| `user_progress` | Repentance journey state per session |
-| `habits` | Daily habit completion |
-| `dhikr_count` | Daily dhikr counters |
-| `kaffarah_steps` | Expiation step completion |
-| `journal_entries` | Private journal entries with mood |
-
----
-
-## Common Commands
+## 🧰 Common Commands
 
 ```bash
-# Install all dependencies
-pnpm install
+# ── Setup ──────────────────────────────────────────────────────────────
+./scripts/setup.sh                  # First-time setup (installs, builds, migrates)
 
-# Push DB schema changes
-pnpm --filter @workspace/db run push
+# ── Build ──────────────────────────────────────────────────────────────
+./scripts/build-all.sh              # Build everything (typecheck + both APKs)
+./scripts/build-web-apk.sh          # Web APK only (Capacitor + local Gradle)
+./scripts/build-apk.sh              # Mobile APK only (EAS cloud)
 
-# Build everything (typecheck + build)
-pnpm run build
+# ── TypeScript ─────────────────────────────────────────────────────────
+./scripts/build-libs.sh             # Compile lib .d.ts files (required for typecheck)
+./scripts/typecheck.sh              # Build libs + typecheck all packages
+pnpm run typecheck                  # Typecheck only (run build-libs.sh first!)
 
-# Build Android APK via EAS
-./scripts/build-apk.sh
+# ── Development ────────────────────────────────────────────────────────
+pnpm install                        # Install all dependencies
+pnpm install --no-frozen-lockfile   # Install with updated lockfile
+pnpm --filter @workspace/db run push  # Push DB schema to PostgreSQL
 
-# Typecheck all packages
-pnpm run typecheck
+# ── Codegen ────────────────────────────────────────────────────────────
+pnpm --filter @workspace/api-spec run codegen  # Regenerate API client from OpenAPI spec
 ```
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### "No OpenAI credentials found"
-Run the OpenAI setup in Step 2 above, then restart the backend workflow.
+### "No OpenAI credentials found" (Zakiy AI / TTS not working)
+Run the OpenAI setup in the **code_execution sandbox** (see Quick Start), then restart the `Start backend` workflow.
 
-### Port already in use
-The `artifacts/tawbah-web: web` workflow conflicts with `Start application` (both use port 5000). Only one needs to run — use `Start application`.
+### Port 5000 conflict
+The `artifacts/tawbah-web: web` workflow conflicts with `Start application` — both use port 5000. Stop one. Use `Start application` for development.
 
-### EAS build fails with git error
-The build script handles this automatically with `EAS_SKIP_AUTO_FINGERPRINT=1`. If it still fails, make sure `EXPO_TOKEN` is set in Replit Secrets.
+### TypeScript errors: "Output file has not been built from source file"
+The lib packages need their `.d.ts` files compiled first:
+```bash
+./scripts/build-libs.sh
+```
 
-### expo-router bundling crash (`require.context` error)
-Run: `cd artifacts/tawbah-mobile && node scripts/patch-expo-router.js`  
-The script patches `_ctx.js`, `_ctx.android.js`, `_ctx.ios.js`, and `_ctx.web.js`.
+### Mobile APK: EAS build fails with git error
+The build script handles this automatically with `EAS_SKIP_AUTO_FINGERPRINT=1`. If still failing, verify `EXPO_TOKEN` is set in Replit Secrets.
+
+### expo-router crash (`require.context` error)
+```bash
+cd artifacts/tawbah-mobile && node scripts/patch-expo-router.js
+```
+Patches: `_ctx.js`, `_ctx.android.js`, `_ctx.ios.js`, `_ctx.web.js`
+
+### Web APK: Gradle fails
+Verify the Android SDK is present:
+```bash
+ls /tmp/android-sdk/platform-tools/
+```
+If missing, the Replit environment may have been reset — restarting the Repl usually restores it.
+
+### Database: missing tables or columns in production
+```bash
+pnpm --filter @workspace/db run push
+```
+For production (deployed app), use the **database** skill to run `push` against the prod DB.
 
 ### Dependencies out of date
 ```bash
 pnpm install --no-frozen-lockfile
 ```
+
+---
+
+## User preferences
+
+- Language: Arabic (RTL) for all UI text
+- All scripts run from repo root `/home/runner/workspace`
+- EXPO_TOKEN = `6cmMyqjDPRG1YrZx4W_rFDetYJUwbuuPFy8fX6RR` (stored in Replit Secrets)
+- Expo account: `hadysbadys`
+- Web app bundle ID: `com.aiservx.tawbah`
+- Mobile bundle ID: `com.aiservx.tawbah`

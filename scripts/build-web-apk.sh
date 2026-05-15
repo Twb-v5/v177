@@ -1,77 +1,75 @@
 #!/usr/bin/env bash
 # =============================================================================
-# build-web-apk.sh — Build Android APK for the WEB app (Capacitor)
+# build-web-apk.sh — Build Android APK for tawbah-web (Capacitor + Gradle)
 # =============================================================================
-# Usage (run from repo root):
+# Builds the web app into a native Android APK using the Android SDK that
+# Replit auto-provisions at /tmp/android-sdk.
+#
+# Usage (from repo root):
 #   ./scripts/build-web-apk.sh
 #
+# Output:
+#   artifacts/tawbah-web/android/app/build/outputs/apk/debug/app-debug.apk
+#
 # Requirements:
-#   - EXPO_TOKEN secret must be set in Replit Secrets
-#
-# How it works:
-#   1. Copies only the web-relevant parts of the monorepo to /tmp
-#   2. Initialises a fresh git repo in /tmp (avoids workspace git locks)
-#   3. Submits an EAS custom build that runs:
-#      Vite build → cap sync → Gradle assembleDebug → APK
-#
-# Track the build at:
-#   https://expo.dev/accounts/hadysbadys/projects/workspace/builds
+#   - Must run INSIDE Replit (Android SDK lives at /tmp/android-sdk)
+#   - Java 21 available via Nix — checked automatically below
 # =============================================================================
 set -e
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-BUILD_DIR="/tmp/tawbah-web-eas-build"
+WEB_DIR="$REPO_ROOT/artifacts/tawbah-web"
+ANDROID_DIR="$WEB_DIR/android"
+APK_OUT="$ANDROID_DIR/app/build/outputs/apk/debug/app-debug.apk"
 
-if [ -z "$EXPO_TOKEN" ]; then
-  echo "EXPO_TOKEN is not set. Add it in Replit Secrets (lock icon in sidebar)."
+ANDROID_HOME="/tmp/android-sdk"
+JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(which java)")")")"
+export ANDROID_HOME JAVA_HOME
+
+echo "============================================"
+echo "  التوبة النصوح — Web APK Build (Capacitor)"
+echo "============================================"
+echo ""
+
+# ── 1. Verify Android SDK ────────────────────────────────────────────────────
+if [ ! -d "$ANDROID_HOME/platform-tools" ]; then
+  echo "❌  Android SDK not found at $ANDROID_HOME"
+  echo "    This script is designed to run inside Replit."
   exit 1
 fi
-
-echo "Preparing slim build directory (web-only files)..."
-rm -rf "$BUILD_DIR"
-mkdir -p "$BUILD_DIR"
-
-# Copy root-level config files individually (fast, no heavy dirs)
-for f in package.json pnpm-workspace.yaml pnpm-lock.yaml \
-          tsconfig.json tsconfig.base.json \
-          eas.json app.json .easignore .eas; do
-  [ -e "$REPO_ROOT/$f" ] && cp -r "$REPO_ROOT/$f" "$BUILD_DIR/$f"
-done
-
-# Copy only the packages needed for the web APK build
-mkdir -p "$BUILD_DIR/artifacts" "$BUILD_DIR/lib"
-cp -r "$REPO_ROOT/artifacts/tawbah-web"  "$BUILD_DIR/artifacts/tawbah-web"
-cp -r "$REPO_ROOT/lib"                   "$BUILD_DIR/lib"
-[ -d "$REPO_ROOT/scripts" ] && cp -r "$REPO_ROOT/scripts" "$BUILD_DIR/scripts"
-
-echo "Linking root node_modules (for EAS local config resolution)..."
-ln -sf "$REPO_ROOT/node_modules" "$BUILD_DIR/node_modules"
-
-echo "Build directory size:"
-du -sh "$BUILD_DIR" 2>/dev/null
-
-echo "Initialising temporary git repo for EAS archiving..."
-cd "$BUILD_DIR"
-git -c init.defaultBranch=main init
-git config user.email "build@tawbah.app"
-git config user.name "Tawbah Build"
-git add -A
-git commit --quiet -m "web apk build snapshot"
-
-echo ""
-echo "Submitting EAS custom build (web APK via Capacitor)..."
-echo "EAS servers have Android SDK — Gradle will build the APK there."
+echo "✔  Java:         $(java -version 2>&1 | head -1)"
+echo "✔  ANDROID_HOME: $ANDROID_HOME"
 echo ""
 
-EXPO_TOKEN="$EXPO_TOKEN" \
-EAS_SKIP_AUTO_FINGERPRINT=1 \
-npx eas-cli build \
-  --platform android \
-  --profile web-apk \
-  --non-interactive \
-  --no-wait
-
+# ── 2. Build Vite web bundle ─────────────────────────────────────────────────
+echo "📦  [1/3] Building Vite web bundle..."
+cd "$WEB_DIR"
+pnpm run build
+echo "    ✓ Bundle ready → dist/public/"
 echo ""
-echo "Build submitted!"
-echo "Track it at: https://expo.dev/accounts/hadysbadys/projects/workspace/builds"
-echo "APK download link appears there when done (~10-20 min)."
+
+# ── 3. Sync Capacitor ────────────────────────────────────────────────────────
+echo "🔄  [2/3] Capacitor sync → Android..."
+npx cap sync android
+echo "    ✓ Sync complete"
+echo ""
+
+# ── 4. Gradle build ──────────────────────────────────────────────────────────
+echo "🏗️   [3/3] Gradle assembleDebug..."
+echo "sdk.dir=$ANDROID_HOME" > "$ANDROID_DIR/local.properties"
+cd "$ANDROID_DIR"
+./gradlew assembleDebug --no-daemon -x test
+echo ""
+
+# ── 5. Result ────────────────────────────────────────────────────────────────
+if [ -f "$APK_OUT" ]; then
+  SIZE=$(du -h "$APK_OUT" | cut -f1)
+  echo "============================================"
+  echo "  ✅  APK built successfully!"
+  echo "      Size : $SIZE"
+  echo "      Path : $APK_OUT"
+  echo "============================================"
+else
+  echo "❌  APK not found. Check Gradle output above."
+  exit 1
+fi

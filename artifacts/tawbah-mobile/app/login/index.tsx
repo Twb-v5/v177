@@ -86,7 +86,7 @@ export default function LoginScreen() {
                     backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
                     borderWidth: 1.5, borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
                     color: c.text, fontSize: 15, fontFamily: "IBMPlexSansArabic_400Regular",
-                    textAlign: "left",
+                    textAlign: "right",
                   }}
                 />
               </View>

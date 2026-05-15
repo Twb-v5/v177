@@ -58,6 +58,9 @@ export default function IslamicPrograms() {
     };
     a.onerror = () => {
       console.error("[Radio] audio error", resolvedUrl, a.error);
+      setIsAudioPlaying(false);
+      setActiveRadioId(null);
+      setActiveEpisodeId(null);
     };
 
     await setAudioSrc(a, resolvedUrl, !useRadioProxy);
