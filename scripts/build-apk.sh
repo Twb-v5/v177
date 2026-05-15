@@ -10,8 +10,13 @@
 #   - EXPO_TOKEN secret must be set in Replit Secrets (lock icon in sidebar)
 #   - Run from the repo root: /home/runner/workspace
 #
-# Where to download the APK after the build:
-#   https://expo.dev/accounts/hadysbadys/projects/tawbah-mobile/builds
+# EAS account: aiservx1
+# Where to download the build after it finishes:
+#   https://expo.dev/accounts/aiservx1/projects/tawbah-mobile/builds
+#
+# Note: The EAS free plan allows 1 Android build per month.
+#       If the quota is exhausted, the build will be rejected by EAS.
+#       Upgrade at: https://expo.dev/accounts/aiservx1/settings/billing
 # =============================================================================
 set -e
 
@@ -24,7 +29,7 @@ if [ -z "$EXPO_TOKEN" ]; then
   echo ""
   echo "❌ EXPO_TOKEN is not set."
   echo "   Add it in Replit Secrets (lock icon in sidebar)."
-  echo "   Get your token from: https://expo.dev/accounts/hadysbadys/settings/access-tokens"
+  echo "   Get your token from: https://expo.dev/accounts/aiservx1/settings/access-tokens"
   echo ""
   exit 1
 fi
@@ -60,6 +65,7 @@ echo ""
 
 EXPO_TOKEN="$EXPO_TOKEN" \
 EAS_SKIP_AUTO_FINGERPRINT=1 \
+EAS_BUILD_NO_EXPO_GO_WARNING=true \
 npx eas-cli build \
   --platform android \
   --profile "$PROFILE" \
@@ -70,6 +76,18 @@ echo ""
 echo "✅ Build submitted to EAS Cloud!"
 echo ""
 echo "   Track it at:"
-echo "   https://expo.dev/accounts/hadysbadys/projects/tawbah-mobile/builds"
+echo "   https://expo.dev/accounts/aiservx1/projects/tawbah-mobile/builds"
 echo ""
-echo "   Once done (~10-20 min), an APK download link appears on that page."
+if [ "$PROFILE" = "production" ]; then
+  echo "   Profile: production (AAB — Play Store ready)"
+  echo "   Once done (~10-20 min), the .aab file appears on that page."
+  echo ""
+  echo "   To submit to the Play Store (requires google-play-key.json):"
+  echo "   Copy google-play-key.json.template → google-play-key.json, fill in your"
+  echo "   Google Play service account credentials, then run:"
+  echo "   eas submit --platform android --profile production"
+else
+  echo "   Profile: preview (APK — sideloadable)"
+  echo "   Once done (~10-20 min), an APK download link appears on that page."
+fi
+echo ""
