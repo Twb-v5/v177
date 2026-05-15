@@ -21,11 +21,11 @@ export function FatwaCard({ seg }: { seg: MessageSegment }) {
         <span className="text-[12px] font-bold text-white tracking-wide">حكم شرعي</span>
         {seg.source && <span className="mr-auto text-[10px] text-white/65 truncate">📚 {seg.source}</span>}
       </div>
-      <div className="bg-white px-4 py-3.5">
-        <p className="text-[13px] leading-relaxed text-stone-700 text-right">
+      <div className="bg-card px-4 py-3.5">
+        <p className="text-[13px] leading-relaxed text-card-foreground text-right">
           {expanded ? seg.text : preview}
         </p>
-        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-stone-100">
+        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-border">
           {(seg.text?.length ?? 0) > 120 && (
             <button
               onClick={() => setExpanded(!expanded)}

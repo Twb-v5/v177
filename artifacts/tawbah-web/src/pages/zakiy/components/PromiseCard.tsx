@@ -38,13 +38,13 @@ export function PromiseCard({ seg, sessionId }: { seg: MessageSegment; sessionId
         <span className="text-[13px] font-bold text-white tracking-wide">وعد أمام الله</span>
         <span className="mr-auto text-lg">🤝</span>
       </div>
-      <div className="bg-white px-4 py-5">
+      <div className="bg-card px-4 py-5">
         <div
           className="relative px-4 py-3 rounded-xl mb-4 text-right"
-          style={{ background: "linear-gradient(135deg,#fffbeb,#fef3c7)", border: "1px solid rgba(245,158,11,0.2)" }}
+          style={{ background: "linear-gradient(135deg,rgba(255,251,235,0.8),rgba(254,243,199,0.8))", border: "1px solid rgba(245,158,11,0.2)" }}
         >
           <span className="absolute top-1 right-2 text-amber-200/60 text-3xl font-serif leading-none">"</span>
-          <p className="text-[13px] leading-relaxed text-stone-700 font-medium relative z-10 pt-2">
+          <p className="text-[13px] leading-relaxed text-card-foreground font-medium relative z-10 pt-2">
             {seg.text}
           </p>
         </div>

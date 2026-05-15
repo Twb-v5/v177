@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "dev": "node scripts/patch-web.js && EXPO_ROUTER_APP_ROOT=/home/runner/workspace/artifacts/tawbah-mobile/app expo start --web --port 24800",
-    "start": "expo start",
+    "postinstall": "node scripts/patch-expo-router.js",
+    "dev": "node scripts/patch-expo-router.js && EXPO_ROUTER_APP_ROOT=/home/runner/workspace/artifacts/tawbah-mobile/app expo start --web --port 24800",
+    "start": "node scripts/patch-expo-router.js && expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",

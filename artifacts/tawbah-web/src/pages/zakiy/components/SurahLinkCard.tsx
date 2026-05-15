@@ -19,10 +19,10 @@ export function SurahLinkCard({ seg }: { seg: MessageSegment }) {
         </div>
         <span className="text-[12px] font-bold text-white tracking-wide">السورة كاملة</span>
       </div>
-      <div className="bg-white px-4 py-3.5 flex items-center justify-between gap-3">
+      <div className="bg-card px-4 py-3.5 flex items-center justify-between gap-3">
         <div>
-          <p className="text-[13px] font-bold text-stone-800">سورة {seg.text}</p>
-          <p className="text-[11px] text-stone-500 mt-0.5">تابع من الآية {seg.ayah}</p>
+          <p className="text-[13px] font-bold text-card-foreground">سورة {seg.text}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">تابع من الآية {seg.ayah}</p>
         </div>
         <a
           href={seg.url}

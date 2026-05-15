@@ -23,8 +23,8 @@ export function ImpressionPanel({ impression, onClose }: { impression: string; o
           <X size={14} />
         </button>
       </div>
-      <div className="bg-white px-4 py-4">
-        <p className="text-[13px] leading-relaxed text-stone-700 text-right whitespace-pre-wrap">
+      <div className="bg-card px-4 py-4">
+        <p className="text-[13px] leading-relaxed text-card-foreground text-right whitespace-pre-wrap">
           {impression}
         </p>
       </div>
