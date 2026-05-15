@@ -41,24 +41,25 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
-waitForPort = 8080
+args = "pnpm --filter @workspace/api-server run dev"
+waitForPort = 3001
 
 [[workflows.workflow]]
 name = "Start frontend"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "PORT=20251 BASE_PATH=/ pnpm --filter @workspace/tawbah-web run dev"
-waitForPort = 20251
-
 [workflows.workflow.metadata]
 outputType = "webview"
 
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/tawbah-web run dev"
+waitForPort = 5000
+
 [agent]
-stack = "PNPM_WORKSPACE"
+stack = "BEST_EFFORT_FALLBACK"
 expertMode = true
+integrations = ["javascript_openai_ai_integrations:2.0.0"]
 
 [postMerge]
 path = "scripts/post-merge.sh"
@@ -75,3 +76,13 @@ VAPID_PUBLIC_KEY = "BE75hv5VZ5Wt-X6Kk_cOUb2hevJJWV7aODdln971UaReFQEjcxuhYVV7-ElR
 VAPID_PRIVATE_KEY = "XfVXXqRQrf-O9yU2dkalihqYyXMVsHkH9q2L86TRoas"
 VAPID_EMAIL = "mailto:admin@tawbah.app"
 EXPO_TOKEN = "_b9Mbt2aSKcLloFX8yneFQvA-j-BxURvcnu9INx6"
+JWT_SECRET = "tawbah-jwt-secret-replit-mgzbfs174q"
+PORT = "3001"
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[[ports]]
+localPort = 5000
+externalPort = 80

@@ -1,0 +1,564 @@
+اريد مراجعه شامله ودقيقه لجيع صفحات الموبايل والويب واخد المنطق والصفحات والمميزات من الويب الغير موجوده في الموبايل وتوحيد منطقهم امكانياتهم وتمام وانشاء الامكانيات والصفحات والمميزات للموبايل اذا لم تكن موجوده بحيث يتم توحيد الموبايل والويب تماما بكافة الامكانيات والمميزات وتكملة بناء صفحة البروفايل والاعدادات والاشعارات والتسجيل وتسجيل الدخول ومزامنة البيانات بالكامل في تطبيق الموبايل من قاعدة البيانات وازالة اي بيانات ثابته او تجريبيبه وجعل جميع البياانات من قاعدة البيانات
+
+25 minutes ago
+
+Show less
+
+Planning overall project scope
+This is a large task. The user wants:
+
+A comprehensive review of ALL mobile and web pages
+Extract logic/pages/features from web that are missing in mobile
+Unify them completely (same features/capabilities)
+Complete building profile, settings, notifications, registration, login, data sync from database
+Remove all static/mock data and use real database data
+Let me start by:
+
+Creating a session plan
+Getting an overview of both the web and mobile apps
+Identifying gaps
+Let me use the explore subagent to do a comprehensive analysis of both apps in parallel while I read some key files.
+
+هذه مهمة ضخمة جداً. سأبدأ بمراجعة شاملة ومتوازية لكلا التطبيقين أولاً قبل البناء.
+
+
+Show less
+
+Documented web app pages routes features
+
+Documented mobile app routes and data handling
+
+Documented API routes and database schema
+
+Planning background task execution
+Let me wait for the background tasks to complete and also start the necessary workflows while waiting.
+
+أشغّل الخدمات بالتوازي مع انتظار نتائج المراجعة:
+
+
+Show less
+
+Restarted artifacts/api-server: API Server
+
+Planning workflow and exploration
+Let me wait for the background exploration tasks to complete while also starting the necessary workflows.
+
+Waited 39 seconds for background jobs to complete
+
+Planning web and mobile gap analysis (19 seconds)
+Excellent! Now I have a comprehensive picture. Let me analyze the gaps between web and mobile, and create a detailed session plan.
+
+Web pages vs Mobile pages comparison:
+Web has, Mobile MISSING completely:
+/login - Login page ❌
+
+/kaffarah - Kaffarah system ❌
+
+/rajaa + /raja-libr - Rajaa library ❌
+
+/danger-times - Danger times ❌
+
+/card → /tawbah-card - exists ✅
+
+/challenge/create + /challenge/:slug ❌
+
+/map - Tawbah map ❌ (quran/map exists but it's mosque map)
+
+/dhikr-rooms - exists ✅ (community/rooms)
+
+/secret-dua - ❌
+
+/ameen - exists ✅ (community/ameen)
+
+/sins - exists ✅
+
+/eid - ❌
+
+/inbox - ❌
+
+/dua-timing - exists ✅
+
+/islamic-programs - exists ✅ (programs)
+
+/munaj - continuing through the rest of the feature inventory...
+
+Now I'm looking at the API integration gaps between mobile and web. Mobile is relying on local AsyncStorage for habits, dhikr counts, and journal entries while web has actual API endpoints, which is a significant mismatch. Journey has partial API support, but there are several features like user progress, covenant, and kaffarah that either aren't synced properly or are missing entirely from the mobile implementation.
+
+The auth system is particularly problematic—mobile has an AuthProvider but no actual login or registration screens, and there are missing endpoints for authentication across the board. I need to prioritize this strategically since the scope is massive. The critical path should focus on getting authentication working first, then establishing proper data synchronization for the core features like habits and dhikr before tackling the secondary features. I'm seeing the rest of the task breakdown—more pages to build and enhancements to implement. This is definitely a substantial project, so I need to map out a systematic approach. Let me start by checking what journal API routes already exist on the backend and reviewing the current authentication setup in the mobile app.
+
+لقد حصلت على صورة كاملة الآن. أُنشئ خطة جلسة تفصيلية وأبدأ البناء فوراً.
+
+تحليل الفجوات:
+صفحات موجودة في الويب وغائبة عن الموبايل: /login, /kaffarah, /rajaa, /danger-times, /secret-dua, /inbox, /day-one, /eid, /challenge/create, /challenge/:slug
+
+بيانات تستخدم AsyncStorage بدلاً من API حقيقي: habits, dhikr, journal, hadi-tasks, covenant
+
+Auth موجود في API لكن بدون شاشات في الموبايل
+
+
+Show less
+
+Ran ls
+
+Ran cat
+
+Ran ls
+
+Planning mobile authentication implementation (13 seconds)
+Let me analyze the situation and create a comprehensive plan. Based on the exploration results, I have a clear picture of the gaps. Let me now create a detailed session plan and start building systematically.
+
+Key findings:
+1. Auth - Mobile AuthProvider uses localStorage (WRONG - uses localStorage instead of AsyncStorage) and is completely mock
+The API has real auth: /api/auth/register, /api/auth/login, /api/auth/logout, /api/auth/me
+Mobile needs: real auth screens (login/register), wire to API, use AsyncStorage
+2. Data sync gaps (AsyncStorage instead of API):
+Habits: Mobile uses habits_v1_{date} AsyncStorage → should use /api/habits
+
+Dhikr: Mobile uses dhikr_total_v1 AsyncStorage → should use /api/dhikr/count
+
+Journal: Mobile uses journal_entries_v1 AsyncStorage → need to check if /api/journal exists
+
+hadi-tasks: Mobile uses hadi_tasks_v1 AsyncStorage → should use /api/hadi-tasks
+
+3. Missing API route for journal - need to add to api-server
+4. Missing mobile pages:
+/login + /register (auth)
+/kaffarah
+/rajaa (Rajaa library)
+/danger-times
+/secret-dua
+/inbox
+/day-one
+5. AuthProvider uses localStorage instead of AsyncStorage
+I'm mapping out the work in priority order: fix the auth system to use AsyncStorage and real API calls, build the login and register screens, add the missing journal endpoint to the server, then migrate each data store from local storage to API calls, and finally build out the remaining pages and complete the profile section with live data.
+
+Let me dig into the existing API routes to see what's already there for journals.
+
+I'm checking the grep results for journal references and looking at the tawbah.ts and admin.ts files to understand what endpoints already exist.
+
+ممتاز، الصورة واضحة الآن. أُنشئ خطة الجلسة وأبدأ البناء بالتوازي الكامل:
+
+
+Show less
+
+Ran grep
+
+Ran cat
+
+Ran wc
+
+Ran cat
+
+Planning session and build steps (9 seconds)
+Now I have a clear picture. Let me create a session plan and start building systematically. Let me write the session plan first, then start the parallel builds.
+
+Key issues to fix:
+
+AuthProvider uses localStorage instead of AsyncStorage - fix immediately
+
+Wire AuthProvider to real API (/api/auth/register, /api/auth/login, /api/auth/logout, /api/auth/me)
+
+Build Login + Register screens in mobile
+
+Migrate Habits from AsyncStorage → /api/habits
+
+Migrate Dhikr from AsyncStorage → /api/dhikr/count + /api/dhikr/increment
+
+Migrate Journal from AsyncStorage → /api/journal
+
+Migrate hadi-tasks from AsyncStorage → /api/hadi-tasks
+
+Add missing pages: kaffarah, rajaa, danger-times, secret-dua, inbox, day-one
+
+Complete Account/Profile with real user data
+
+Before I start building, I need to check the current state of the session ID generation, habits, journal, and dhikr implementations to understand what I'm working with.
+
+أبدأ البناء الآن. أول شيء: أقرأ الملفات الحرجة بالتوازي لأعرف الوضع الدقيق قبل التعديل:
+
+
+Show less
+
+Opened index.tsx
+
+Opened index.tsx
+
+Opened index.tsx
+
+Opened session.ts
+
+Ran cat
+
+Planning feature implementation roadmap (9 seconds)
+Now I have a complete picture. Let me create the session plan and start building everything in parallel.
+
+Plan:
+Priority 1: Fix AuthProvider (localStorage → AsyncStorage + real API)
+Priority 2: Build Login + Register screens
+Priority 3: Migrate Habits/Journal/Dhikr/hadi-tasks to real API
+Priority 4: Build missing pages (kaffarah, rajaa, danger-times, secret-dua, inbox, day-one)
+Priority 5: Complete Account/Profile with real data
+Let me start the most critical work:
+
+Fix AuthProvider - Replace localStorage with AsyncStorage, wire to real API
+
+Build Login screen - Create /login and /register routes
+
+Migrate data layers - Switch Habits, Journal, hadi-tasks, and Dhikr from AsyncStorage to their respective API endpoints
+
+Build remaining pages - Add kaffarah, rajaa, danger-times, secret-dua, inbox pages
+
+Update account page - Connect to real user data
+
+Let me start building
+
+. I'll create a session plan file first, then tackle the AuthProvider with real API integration and AsyncStorage fallback, build out the Login and Register screens, and migrate the core data modules to use the actual API endpoints. Before I dive in, I need to check what format the habits API expects and returns so I can structure the migrations correctly.
+
+الآن لدي الصورة الكاملة. أُنشئ خطة الجلسة وأبدأ البناء فوراً بتوازي أقصى:
+
+
+Show less
+
+Ran grep
+
+Ran grep
+
+Ran sed
+
+Ran cat
+
+Planning data migration strategy (40 seconds)
+Now I have all the information I need. Let me create the session plan and start building everything systematically. Here's what I need to do:
+
+Session Plan
+T001: Fix AuthProvider (localStorage → AsyncStorage + real API)
+T002: Build Login + Register screens
+T003: Migrate Journal to real API
+T004: Migrate Habits to real API
+T005: Migrate Dhikr to real API
+T006: Build missing pages: kaffarah, rajaa, danger-times, secret-dua, inbox, day-one
+T007: Update Account page with real user data
+T008: Add missing pages to more/index.tsx navigation
+I'll tackle the auth setup and login/register screens first, then work through the data migrations in parallel. Let me document the API endpoints I've gathered—the Habits API returns completed status by date, the Dhikr API tracks counts for different types of remembrance, and I need to make sure all these integrate properly with the session management. Completing the auth endpoints with optional gender field, then I'm mapping out the implementation strategy—I need to handle the AsyncStorage migration for auth, rebuild the core screens to use real API calls, and coordinate the data flow since the server will be selecting habits based on session progress rather than the client deciding them.
+
+The key insight is that the API uses sessionId as the primary identifier rather than userId, so I can keep the session-based approach for now and link it to a user account when they authenticate. Since mobile doesn't handle JWT cookies well, I'll use token-based auth with headers instead, but the existing endpoints already expect sessionId as a query parameter, so the strategy is to maintain session-based access for habits, journal, and dhikr data while using auth for the login flow and eventually linking sessions to user accounts by prefixing the sessionId with the userId once logged in. the habits API route handles this - does it use sessionId or auth?
+
+Looking at line 372: const sessionId = req.query.sessionId as string; - it uses sessionId query param.
+
+So the current approach is session-based, not user-based. Auth is separate from data access.
+
+For the migration strategy:
+
+Keep using getSessionId() from src/lib/session.ts for API calls
+Fix AuthProvider to use real API + AsyncStorage (not localStorage)
+Auth login/register screens are for additional functionality
+Now I'm mapping out the full migration - each feature needs to swap from AsyncStorage to API calls. Habits will fetch from the endpoint with sessionId and date params, then POST changes back. Journal follows the same pattern with GET/POST/DELETE endpoints. The dhikr counter increments through a dedicated endpoint. For hadi-tasks, I need to figure out the API structure since it's cut off. I'm reconsidering the scope here—the user wants a comprehensive review, feature migration, real database integration, and new screens built out. So I should prioritize the highest-impact changes: fixing the AuthProvider to use AsyncStorage and real API calls, building the login and register screens, then migrating the core features like habits, journal, and dhikr to use the actual API instead of mock data. I also need to check what the habits API returns to ensure I'm mapping the data correctly. Now I'm mapping out the full implementation plan - I need to fix the AuthProvider first, then build the login and register screens, followed by migrating the existing features to use the API endpoints. After that, I'll create all the new pages for Kaffarah, Rajaa, Danger-times, Secret-dua, Inbox, and Day-one, update the Account page with real user data, and finally wire everything into the navigation.
+
+لدي كل المعلومات الضرورية. أُنشئ خطة الجلسة وأبدأ البناء بالتوازي الأقصى:
+
+
+Show less
+
+Ran sed
+
+Ran grep
+
+Ran cat
+
+Opened index.tsx
+
+Planning parallel feature development (19 seconds)
+Now I have all the information I need. Let me write the session plan and start building everything in parallel. I'll organize the work into multiple simultaneous writes:
+
+AuthProvider - Fix localStorage → AsyncStorage + real API calls
+
+Login screen - New /login screen
+
+Register screen - New /register screen
+
+Journal migration - Use real /api/journal API
+
+Habits migration - Use real /api/habits API
+
+Dhikr migration - Use real /api/dhikr/count + /api/dhikr/increment
+
+Kaffarah page - New page with real API
+
+Rajaa page - New page with content
+
+Danger-times page - New page
+
+Secret-dua page - New page
+
+Inbox page - New page
+
+Day-one page - New page
+
+I'll prioritize the critical infrastructure first, then batch the remaining pages into parallel writes to move quickly.
+
+Starting with the authentication layer and core features: I need to handle the API's JWT cookie approach, but since mobile doesn't persist cookies reliably, I'll store the token in AsyncStorage and pass it as an Authorization header instead. Let me examine how the auth middleware handles this to make sure I'm implementing it correctly. carefully - it uses cookies. For mobile, we need to either configure fetch with credentials or modify the API to accept Bearer tokens. Let me go with the simpler cookie approach using credentials: 'include' in fetch calls, since React Native's fetch should handle cookies through the native networking layer.
+
+Actually, the most straightforward path for mobile is to extract the JWT on login, store it in AsyncStorage, and send it as an Authorization header instead. But the API uses cookie-based auth, so I need to check if it also supports Bearer tokens. Without easily reading more files, let me take a pragmatic approach: I'll make real API calls for auth operations, store user info in AsyncStorage, and rely on cookie-based auth since React Native fetch supports cookies natively. The data APIs use sessionId anyway, so they'll work regardless of auth state. The main benefit of auth is showing the user's profile and eventually linking session data to their account.
+
+
+Ran cat
+
+Ran sed
+
+Strategizing authentication flow options (22 seconds)
+The API supports both cookie-based auth AND Bearer token auth. This means I can:
+
+On mobile, store the JWT token in AsyncStorage
+Send it as Authorization: Bearer <token> header in API calls
+Also check cookies if available
+This is perfect. Now I have everything I need. Let me start building all the files simultaneously.
+
+Plan:
+Batch 1 (write simultaneously):
+AuthProvider - Fix: AsyncStorage + real API + Bearer token
+
+Login screen (app/login/index.tsx) - New screen
+
+Register screen (app/register/index.tsx) - New screen
+
+Session plan (.local/session_plan.md)
+
+Batch 2 (write simultaneously):
+Journal migration - Rewrite app/journal/index.tsx to use real API
+Habits migration - Rewrite app/habits/index.tsx to use real API
+Dhikr migration - Rewrite dhikr counter to sync with API
+hadi-tasks migration - Rewrite to use real API
+Batch 3 (write simultaneously):
+Kaffar
+Now I'm mapping out the remaining pages to migrate: the kaffarah, rajaa, day-one, and inbox screens, followed by danger-times, secret-dua, and the account page with real user data, plus updating the navigation menu. Starting with Batch 1, I need to set up the directories and fix the AuthProvider to use AsyncStorage instead of localStorage, then wire it up to call the actual auth endpoints and store the JWT token.
+
+For the token strategy, I'm realizing that since the data APIs rely on sessionId and don't require authentication, I can keep auth separate—just using the JWT for profile operations. So the AuthProvider will check for a stored token on mount and call /api/auth/me to fetch user info, handle login and signup by posting to their respective endpoints and storing the returned token, and clear it on logout.
+
+But there's a problem: the API currently only returns the user object in the response, not the token itself. Since it's set as a cookie, I need to modify the auth endpoint to also include the token in the response body so I can store it in AsyncStorage on the mobile side.
+
+My approach is to keep auth separate from the data APIs—the habits, journal, and dhikr endpoints use sessionId and won't be affected. I'll modify the auth endpoint to return the token, store both the user and token in AsyncStorage, and then include the Bearer token when calling protected endpoints like /api/auth/me. The data endpoints remain unchanged.
+
+Now I'm ready to start implementing this plan.
+
+الـ API يدعم Bearer token أيضاً. ممتاز — سأبدأ ببناء الكل بالتوازي. أُنشئ خطة الجلسة أولاً:
+
+
+Show less
+
+Ran mkdir
+
+Planning feature development integration (6 seconds)
+Let me continue with the task. I need to:
+
+Fix auth.ts to return token in body
+Fix AuthProvider (localStorage → AsyncStorage + real API)
+Build Login/Register screens
+Migrate Journal to real API
+Migrate Habits to real API
+Migrate Dhikr to real API
+Build kaffarah, rajaa, day-one, inbox, danger-times, secret-dua pages
+Update account page + more navigation
+Let me start writing all these files in parallel. I'll do as many simultaneous writes as possible.
+
+First batch - the most critical/foundational:
+
+Fix auth.ts (API) - return token in body
+Fix AuthProvider.tsx (mobile) - use AsyncStorage + real API
+Login screen
+Journal migration
+Habits migration
+Second batch:
+6. Register screen
+
+Dhikr migration
+kaffarah page
+rajaa page
+day-one page
+Third batch:
+11. inbox page
+
+danger-times page
+secret-dua page
+hadi-tasks migration
+account update + more navigation
+Let me check the session plan first to see what's already been done.
+
+
+Opened session_plan.md
+
+Opened index.tsx
+
+Opened index.tsx
+
+Planning parallel task execution (15 seconds)
+Now I have all the information I need. Let me start building everything in parallel. I'll organize this into batches:
+
+Batch 1 (all independent, write simultaneously):
+
+Fix auth.ts - return token in body
+Fix AuthProvider.tsx - AsyncStorage + real API
+Migrate Journal to real API
+Migrate Habits to real API
+Migrate Dhikr index to use API counts
+Batch 2 (after batch 1):
+6. Login screen
+
+Register screen
+
+Kaffarah page
+
+Rajaa page
+
+Day-one page
+
+Inbox page
+
+Danger-times page
+
+Secret-dua page
+
+hadi-tasks migration
+
+Account page update
+
+More navigation update
+
+Let me start batch 1 now. I'm updating the auth endpoint to include the token in the response body, switching AuthProvider to use AsyncStorage with real API calls and exposing a token getter for Bearer authentication, and then migrating the Journal, Habits, and Dhikr index components to use the actual API instead of local storage.
+
+For the journal migration, I need to account for the fact that the API returns integer IDs from the database while the current implementation uses string IDs based on timestamps. With habits, the API returns a curated list based on session and date rather than the full library of 18 habits that's currently shown. I'm starting to write these migrations now, beginning with the auth modifications.
+
+Looking at the habits API response...
+
+Writing the migration files...
+
+الآن أبني كل شيء بالتوازي الكامل — 5 ملفات دفعة واحدة:
+
+
+Show less
+
+Edited auth.ts
+
+Planning next development steps
+Let me continue with the task. I need to:
+
+Write the AuthProvider (after reading it first)
+Write login screen
+Write register screen
+Migrate journal to API
+Migrate habits to API
+Migrate dhikr to API
+Build missing pages
+I already read the AuthProvider earlier (lines 1-60 of the file). Let me now write the updated version and continue with all the other files simultaneously.
+
+Let me also fix the login auth.ts - need to add token to login response too.
+
+أُكمل البناء — أقرأ الملفات المطلوبة ثم أكتب الجميع بالتوازي:
+
+
+Show less
+
+Opened AuthProvider.tsx
+
+Ran sed
+
+Opened index.tsx
+
+Planning file writing and API migration (4 seconds)
+Let me continue with the task. I need to write all the files now. Let me batch everything into parallel writes.
+
+Fix AuthProvider.tsx (already read it)
+Fix auth.ts login endpoint (add token to response)
+Write Login screen
+Migrate Journal to API
+Migrate Habits to API
+Migrate Dhikr index to use API
+Build kaffarah, rajaa, day-one, inbox, danger-times, secret-dua pages
+Update account page with real user data
+Update more navigation
+Let me write everything in parallel batches. First batch: AuthProvider, auth.ts login fix, Login screen, Journal migration, Habits migration.
+
+أبني الكل بالتوازي الكامل — الدفعة الأولى:
+
+
+Show less
+
+Edited AuthProvider.tsx
+
+Edited auth.ts
+
+Created index.tsx
+
+Created index.tsx
+
+Edited index.tsx
+
+Edited index.tsx
+
+Planning next session tasks (9 seconds)
+The work is continuing. Let me proceed with the remaining tasks in the session plan. I need to:
+
+Migrate Dhikr to real API (app/dhikr/index.tsx)
+Build kaffarah page
+Build rajaa page
+Build day-one page
+Build inbox page
+Build danger-times page
+Build secret-dua page
+Update account page
+Update more navigation
+Migrate hadi-tasks to real API
+Let me do as much in parallel as possible. Let me write all these files simultaneously.
+
+For the dhikr migration - the dhikr/index.tsx uses AsyncStorage for total count. I need to change it to use the API.
+
+Now I'm reviewing the dhikr component to understand the current AsyncStorage implementation, then I'll start writing out all the remaining pages in parallel, beginning with the API migration for dhikr and the new kaffarah, rajaa, and day-one pages.
+
+Looking at the dhikr structure, the hub displays totals from AsyncStorage while the counter page handles the actual API calls through the useAdhkar hook, so I need to align the hub to fetch from the API instead.
+
+المرحلة الأولى اكتملت. الآن أبني الدفعة الثانية — الهجرة إلى API وبناء الصفحات المفقودة:
+
+
+Show less
+
+Opened index.tsx
+
+Opened index.tsx
+Optimized Agent memory
+
+Planning parallel feature development (6 seconds)
+Let me continue building. I need to:
+
+Migrate Dhikr to real API (app/dhikr/index.tsx)
+Build kaffarah page
+Build rajaa page
+Build day-one page
+Build inbox page
+Build danger-times page
+Build secret-dua page
+Update account page with real user data + auth integration
+Update more navigation
+Migrate hadi-tasks to real API
+Let me do these all in parallel. I have enough context from my reads to write everything without more reads.
+
+For dhikr/index.tsx - the main change is replacing the AsyncStorage total count with API data.
+
+I'll start by fetching the dhikr count from the API on mount and updating the UI with that data, then move through all the remaining pages simultaneously.
+
+أُكمل الدفعة الثانية — بناء جميع الصفحات المتبقية بالتوازي الكامل:
+
+
+Show less
+
+Edited index.tsx
+
+Created index.tsx
+
+Created index.tsx
+
+Created index.tsx
+
+Created index.tsx
+
+Created index.tsx
+
+Created index.tsx
