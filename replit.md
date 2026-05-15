@@ -20,6 +20,7 @@ This single command:
 2. Compiles TypeScript lib declarations (required for typecheck)
 3. Pushes the Drizzle schema to PostgreSQL
 4. Patches expo-router (fixes `require.context` crash)
+5. Installs Android SDK at `/tmp/android-sdk` if missing (required for web APK builds)
 
 Then add the required secret and configure OpenAI — see below.
 
@@ -94,7 +95,7 @@ Steps it performs automatically:
 
 **Output:** `artifacts/tawbah-web/android/app/build/outputs/apk/debug/app-debug.apk` (~24 MB)
 
-> Uses the Android SDK Replit provisions at `/tmp/android-sdk`. Java 21 is available via Nix.
+> The Android SDK is installed automatically by `./scripts/setup.sh` at `/tmp/android-sdk`. Java 21 is available via Nix.
 
 ---
 
@@ -107,7 +108,7 @@ Steps it performs automatically:
 
 Track the build at:
 ```
-https://expo.dev/accounts/omarkaremksa/projects/tawbah-mobile/builds
+https://expo.dev/accounts/omarkaremksa/projects/o/builds
 ```
 
 Download the APK from that page when the build finishes (~10–20 min).
@@ -407,7 +408,10 @@ Verify the Android SDK is present:
 ```bash
 ls /tmp/android-sdk/platform-tools/
 ```
-If missing, the Replit environment may have been reset — restarting the Repl usually restores it.
+If missing (Replit resets `/tmp` on restart), re-run setup to reinstall it automatically:
+```bash
+./scripts/setup.sh
+```
 
 ### Database: missing tables or columns in production
 ```bash

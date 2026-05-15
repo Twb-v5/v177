@@ -12,7 +12,7 @@
 #
 # EAS account: omarkaremksa
 # Where to download the build after it finishes:
-#   https://expo.dev/accounts/omarkaremksa/projects/tawbah-mobile/builds
+#   https://expo.dev/accounts/omarkaremksa/projects/o/builds
 #
 # Note: The EAS free plan allows 1 Android build per month.
 #       If the quota is exhausted, the build will be rejected by EAS.
@@ -76,7 +76,7 @@ echo ""
 echo "✅ Build submitted to EAS Cloud!"
 echo ""
 echo "   Track it at:"
-echo "   https://expo.dev/accounts/omarkaremksa/projects/tawbah-mobile/builds"
+echo "   https://expo.dev/accounts/omarkaremksa/projects/o/builds"
 echo ""
 if [ "$PROFILE" = "production" ]; then
   echo "   Profile: production (AAB — Play Store ready)"
