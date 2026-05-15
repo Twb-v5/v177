@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Tawbah",
-    "slug": "tawbah-mobile",
+    "slug": "o",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -61,9 +61,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "60205486-3640-4acd-aa42-b21cb5a05080"
+        "projectId": "69e40858-1a23-4a13-8437-09d05b938677"
       }
     },
-    "owner": "aiservx1"
+    "owner": "omarkaremksa"
   }
 }
