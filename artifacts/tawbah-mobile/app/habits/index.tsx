@@ -93,7 +93,7 @@ function HabitCard({ habit, meta, isCompleted, isRTL, isDark, c, onToggle, loadi
             {meta?.timing && <Text style={{ fontSize: 10, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>{meta.timing}</Text>}
           </View>
         </View>
-        {isCompleted ? <CheckSquare size={22} color="#10b981" /> : <Square size={22} color={isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"} />}
+        {isCompleted ? <CheckSquare size={22} color={c.emerald} /> : <Square size={22} color={isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"} />}
       </Pressable>
     </Animated.View>
   );
@@ -178,14 +178,14 @@ export default function HabitsScreen() {
           <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <Text style={{ fontSize: 14, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold" }}>إنجاز اليوم</Text>
             <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 6 }}>
-              <Flame size={16} color="#F59E0B" />
-              <Text style={{ fontSize: 16, fontWeight: "900", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>{completedToday}</Text>
+              <Flame size={16} color={c.accent} />
+              <Text style={{ fontSize: 16, fontWeight: "900", color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold" }}>{completedToday}</Text>
             </View>
           </View>
           <View style={{ height: 8, borderRadius: 8, backgroundColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(16,185,129,0.15)", overflow: "hidden" }}>
-            <View style={{ height: "100%", borderRadius: 8, backgroundColor: "#10b981", width: `${totalPct}%` }} />
+            <View style={{ height: "100%", borderRadius: 8, backgroundColor: c.primary, width: `${totalPct}%` }} />
           </View>
-          <Text style={{ fontSize: 11, color: "#10b981", fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 6, textAlign: isRTL ? "right" : "left" }}>
+          <Text style={{ fontSize: 11, color: c.primary, fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 6, textAlign: isRTL ? "right" : "left" }}>
             {Math.round(totalPct)}% من عاداتك اليومية
           </Text>
         </View>
@@ -194,7 +194,7 @@ export default function HabitsScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 8, marginBottom: 16 }}>
           {LEVEL_FILTERS.map(lf => (
             <Pressable key={lf.id} onPress={() => { setFilter(lf.id); Haptics.selectionAsync(); }}
-              style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: filter === lf.id ? (isDark ? c.primary : "#2D6A4F") : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"), borderWidth: 1, borderColor: filter === lf.id ? "transparent" : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)") }}>
+              style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: filter === lf.id ? c.primary : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"), borderWidth: 1, borderColor: filter === lf.id ? "transparent" : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)") }}>
               <Text style={{ fontSize: 12, fontWeight: "700", color: filter === lf.id ? "#fff" : c.textSecondary, fontFamily: "IBMPlexSansArabic_700Bold" }}>{lf.labelAr}</Text>
             </Pressable>
           ))}
@@ -228,8 +228,8 @@ export default function HabitsScreen() {
 
         {completedToday >= 5 && !initialLoading && (
           <Animated.View entering={FadeInDown.delay(200).springify()} style={{ padding: 18, borderRadius: 20, alignItems: "center", marginTop: 8, backgroundColor: "rgba(245,158,11,0.08)", borderWidth: 1, borderColor: "rgba(245,158,11,0.22)" }}>
-            <Trophy size={28} color="#F59E0B" />
-            <Text style={{ fontSize: 16, fontWeight: "800", color: "#F59E0B", fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 8 }}>
+            <Trophy size={28} color={c.accent} />
+            <Text style={{ fontSize: 16, fontWeight: "800", color: c.accent, fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 8 }}>
               {completedToday >= habits.length ? "أحسنت! أتممت كل عاداتك 🎉" : `أحسنت! أكملت ${completedToday} عادة`}
             </Text>
           </Animated.View>

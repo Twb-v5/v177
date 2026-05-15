@@ -75,10 +75,10 @@ function KhatmaCard({ khatma, isRTL, isDark, c }: { khatma: GroupKhatma; isRTL: 
                   <Users size={11} color={c.textMuted} />
                   <Text style={{ fontSize: 10, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>{khatma.members}</Text>
                 </View>
-                <Text style={{ fontSize: 10, color: isComplete ? "#10b981" : acc, fontWeight: "700", fontFamily: "IBMPlexSansArabic_700Bold" }}>{khatma.deadline}</Text>
+                <Text style={{ fontSize: 10, color: isComplete ? c.emerald : acc, fontWeight: "700", fontFamily: "IBMPlexSansArabic_700Bold" }}>{khatma.deadline}</Text>
               </View>
             </View>
-            {isComplete && <CheckCircle2 size={22} color="#10b981" />}
+            {isComplete && <CheckCircle2 size={22} color={c.emerald} />}
           </View>
 
           <View style={{ height: 8, borderRadius: 8, backgroundColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", overflow: "hidden", marginBottom: 6 }}>
@@ -128,7 +128,7 @@ export default function QuranKhatmatPage() {
         rightAction={
           <Pressable onPress={() => { setShowNew(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
             style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: "rgba(16,185,129,0.14)", borderWidth: 1, borderColor: "rgba(16,185,129,0.25)", alignItems: "center", justifyContent: "center" }}>
-            <Plus size={18} color="#10b981" />
+            <Plus size={18} color={c.primary} />
           </Pressable>
         }
       />
@@ -159,7 +159,7 @@ export default function QuranKhatmatPage() {
                 <Text style={{ fontSize: 13, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular" }}>إلغاء</Text>
               </Pressable>
               <Pressable onPress={() => { setShowNew(false); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }}
-                style={{ flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: "center", backgroundColor: "#2D6A4F" }}>
+                style={{ flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: "center", backgroundColor: c.primary }}>
                 <Text style={{ fontSize: 13, fontWeight: "800", color: "#fff", fontFamily: "IBMPlexSansArabic_700Bold" }}>إنشاء</Text>
               </Pressable>
             </View>
@@ -174,12 +174,12 @@ export default function QuranKhatmatPage() {
 
         <View style={{ padding: 18, borderRadius: 20, backgroundColor: isDark ? "rgba(16,185,129,0.05)" : "#F0FDF4", borderWidth: 1, borderColor: "rgba(16,185,129,0.15)", marginTop: 4 }}>
           <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 10 }}>
-            <Trophy size={20} color="#10b981" />
+            <Trophy size={20} color={c.primary} />
             <Text style={{ flex: 1, fontSize: 14, fontFamily: "Amiri_400Regular", color: c.text, lineHeight: 28, textAlign: isRTL ? "right" : "left" }}>
               «مَثَلُ الَّذِي يَقْرَأُ الْقُرْآنَ وَهُوَ حَافِظٌ لَهُ مَعَ السَّفَرَةِ الْكِرَامِ الْبَرَرَةِ»
             </Text>
           </View>
-          <Text style={{ fontSize: 11, color: "#10b981", fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 6, textAlign: isRTL ? "right" : "left" }}>متفق عليه</Text>
+          <Text style={{ fontSize: 11, color: c.primary, fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 6, textAlign: isRTL ? "right" : "left" }}>متفق عليه</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

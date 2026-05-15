@@ -99,15 +99,15 @@ function StepRow({ step, isCompleted, onToggle, isDark, c, isRTL, isLoading }: {
     >
       <View style={{ marginTop: 2 }}>
         {isLoading
-          ? <ActivityIndicator size="small" color="#10b981" />
+          ? <ActivityIndicator size="small" color={c.emerald} />
           : isCompleted
-            ? <CheckCircle size={22} color="#10b981" />
+            ? <CheckCircle size={22} color={c.emerald} />
             : <Circle size={22} color={isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"} />
         }
       </View>
       <View style={{ flex: 1 }}>
         <Text style={{
-          fontSize: 13, fontWeight: "700", color: isCompleted ? "#10b981" : c.text,
+          fontSize: 13, fontWeight: "700", color: isCompleted ? c.emerald : c.text,
           fontFamily: "IBMPlexSansArabic_700Bold", textAlign: isRTL ? "right" : "left",
           textDecorationLine: isCompleted ? "line-through" : "none",
         }}>
@@ -250,7 +250,7 @@ export default function KaffarahScreen() {
         {totalCompleted === totalAll && totalAll > 0 && (
           <Animated.View entering={FadeInDown.delay(200).springify()} style={{ padding: 20, borderRadius: 20, alignItems: "center", marginTop: 8, backgroundColor: "rgba(16,185,129,0.08)", borderWidth: 1, borderColor: "rgba(16,185,129,0.22)" }}>
             <Text style={{ fontSize: 36, marginBottom: 8 }}>🎉</Text>
-            <Text style={{ fontSize: 16, fontWeight: "800", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center" }}>
+            <Text style={{ fontSize: 16, fontWeight: "800", color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center" }}>
               أتممت جميع الكفارات — بارك الله فيك
             </Text>
             <Text style={{ fontSize: 13, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: "center", marginTop: 6, lineHeight: 20 }}>

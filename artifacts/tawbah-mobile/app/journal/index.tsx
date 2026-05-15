@@ -192,9 +192,9 @@ export default function JournalScreen() {
             </Pressable>
             <Pressable
               onPress={() => { setWriting(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-              style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: "rgba(16,185,129,0.14)", borderWidth: 1, borderColor: "rgba(16,185,129,0.25)", alignItems: "center", justifyContent: "center" }}
+              style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: isDark ? "rgba(16,185,129,0.14)" : "rgba(16,185,129,0.1)", borderWidth: 1, borderColor: isDark ? "rgba(16,185,129,0.25)" : "rgba(16,185,129,0.2)", alignItems: "center", justifyContent: "center" }}
             >
-              <PenLine size={18} color="#10b981" />
+              <PenLine size={18} color={c.primary} />
             </Pressable>
           </View>
         }
@@ -232,7 +232,7 @@ export default function JournalScreen() {
                   <Text style={{ fontSize: 14, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular" }}>إلغاء</Text>
                 </Pressable>
                 <Pressable onPress={saveEntry} disabled={!content.trim() || saving}
-                  style={{ flex: 2, paddingVertical: 12, borderRadius: 14, alignItems: "center", backgroundColor: content.trim() && !saving ? "#2D6A4F" : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)") }}>
+                  style={{ flex: 2, paddingVertical: 12, borderRadius: 14, alignItems: "center", backgroundColor: content.trim() && !saving ? c.primary : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)") }}>
                   {saving ? <ActivityIndicator size="small" color="#fff" /> : <Text style={{ fontSize: 14, fontWeight: "800", color: content.trim() ? "#fff" : c.textMuted, fontFamily: "IBMPlexSansArabic_700Bold" }}>حفظ في السر</Text>}
                 </Pressable>
               </View>
@@ -252,7 +252,7 @@ export default function JournalScreen() {
                 سجّل أفكارك وأحاسيسك في رحلتك مع الله — هذا المكان لك وحدك
               </Text>
               <Pressable onPress={() => { setWriting(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                style={{ marginTop: 20, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16, backgroundColor: "#2D6A4F" }}>
+                style={{ marginTop: 20, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16, backgroundColor: c.primary }}>
                 <Text style={{ fontSize: 14, fontWeight: "800", color: "#fff", fontFamily: "IBMPlexSansArabic_700Bold" }}>ابدأ أول تدوينة</Text>
               </Pressable>
             </View>

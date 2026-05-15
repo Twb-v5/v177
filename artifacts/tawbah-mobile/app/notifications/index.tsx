@@ -121,7 +121,7 @@ export default function NotificationsScreen() {
   const cardBg = isDark ? "rgba(255,255,255,0.05)" : "#fff";
   const borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
   const subColor = isDark ? "#9ca3af" : "#6b7280";
-  const accentColor = "#10b981";
+  const accentColor = c.primary;
   const ADVANCE_OPTIONS = [0, 5, 10, 15, 20];
 
   return (

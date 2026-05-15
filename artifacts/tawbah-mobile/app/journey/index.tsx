@@ -33,7 +33,7 @@ function DayCard({ day, isDark, c, onComplete, isCompletingDay }: DayCardProps) 
 
   const emoji = DAY_EMOJIS[day.day] ?? "✨";
   const isToday = day.isCurrent && !day.completed;
-  const accent = day.completed ? "#10b981" : isToday ? "#F59E0B" : "#6B7280";
+  const accent = day.completed ? c.emerald : isToday ? c.accent : c.textMuted;
 
   const completedTaskCount = (day.taskChecks ?? []).filter(Boolean).length;
   const totalTasks = day.tasks.length;
@@ -57,8 +57,8 @@ function DayCard({ day, isDark, c, onComplete, isCompletingDay }: DayCardProps) 
           overflow: "hidden",
         }}
       >
-        {day.completed && <View style={{ height: 2, backgroundColor: "#10b981" }} />}
-        {isToday && <View style={{ height: 2, backgroundColor: "#F59E0B" }} />}
+        {day.completed && <View style={{ height: 2, backgroundColor: c.emerald }} />}
+        {isToday && <View style={{ height: 2, backgroundColor: c.accent }} />}
 
         <Pressable
           onPressIn={() => { if (!day.isLocked) scale.value = withSpring(0.98); }}
@@ -77,7 +77,7 @@ function DayCard({ day, isDark, c, onComplete, isCompletingDay }: DayCardProps) 
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            {day.completed && <CheckCircle2 size={20} color="#10b981" />}
+            {day.completed && <CheckCircle2 size={20} color={c.emerald} />}
             {!day.completed && !day.isLocked && (
               expanded
                 ? <ChevronUp size={18} color={c.textMuted} />
@@ -92,8 +92,8 @@ function DayCard({ day, isDark, c, onComplete, isCompletingDay }: DayCardProps) 
                 اليوم {day.day}
               </Text>
               {isToday && (
-                <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, backgroundColor: "rgba(245,158,11,0.15)" }}>
-                  <Text style={{ fontSize: 9, fontWeight: "800", color: "#F59E0B", fontFamily: "IBMPlexSansArabic_700Bold" }}>اليوم</Text>
+                <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, backgroundColor: isDark ? "rgba(245,158,11,0.15)" : "rgba(245,158,11,0.12)" }}>
+                  <Text style={{ fontSize: 9, fontWeight: "800", color: c.accent, fontFamily: "IBMPlexSansArabic_700Bold" }}>اليوم</Text>
                 </View>
               )}
             </View>
@@ -102,8 +102,8 @@ function DayCard({ day, isDark, c, onComplete, isCompletingDay }: DayCardProps) 
             </Text>
             {isToday && totalTasks > 0 && (
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
-                <View style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: "rgba(245,158,11,0.2)", overflow: "hidden", maxWidth: 80 }}>
-                  <View style={{ height: "100%", borderRadius: 2, backgroundColor: "#F59E0B", width: `${taskProgress * 100}%` }} />
+                <View style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: isDark ? "rgba(245,158,11,0.18)" : "rgba(245,158,11,0.15)", overflow: "hidden", maxWidth: 80 }}>
+                  <View style={{ height: "100%", borderRadius: 2, backgroundColor: c.accent, width: `${taskProgress * 100}%` }} />
                 </View>
                 <Text style={{ fontSize: 10, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>
                   {completedTaskCount}/{totalTasks}
@@ -115,8 +115,8 @@ function DayCard({ day, isDark, c, onComplete, isCompletingDay }: DayCardProps) 
           <View
             style={{
               width: 48, height: 48, borderRadius: 16,
-              backgroundColor: `${accent}15`,
-              borderWidth: 1, borderColor: `${accent}25`,
+              backgroundColor: isDark ? `${accent}18` : `${accent}12`,
+              borderWidth: 1, borderColor: `${accent}28`,
               alignItems: "center", justifyContent: "center",
             }}
           >
@@ -133,7 +133,7 @@ function DayCard({ day, isDark, c, onComplete, isCompletingDay }: DayCardProps) 
 
             {day.verse ? (
               <View style={{ marginBottom: 12, padding: 12, borderRadius: 12, backgroundColor: isDark ? "rgba(5,150,105,0.08)" : "rgba(5,150,105,0.05)", borderWidth: 1, borderColor: "rgba(5,150,105,0.2)" }}>
-                <Text style={{ fontSize: 13, color: "#059669", textAlign: "right", fontFamily: "Amiri_400Regular", lineHeight: 22 }}>
+                <Text style={{ fontSize: 13, color: c.primary, textAlign: "right", fontFamily: "Amiri_400Regular", lineHeight: 22 }}>
                   {day.verse}
                 </Text>
               </View>
@@ -156,7 +156,7 @@ function DayCard({ day, isDark, c, onComplete, isCompletingDay }: DayCardProps) 
                 <View
                   style={{
                     width: 8, height: 8, borderRadius: 4,
-                    backgroundColor: day.taskChecks?.[i] ? "#10b981" : accent,
+                    backgroundColor: day.taskChecks?.[i] ? c.emerald : accent,
                   }}
                 />
               </View>
@@ -175,7 +175,7 @@ function DayCard({ day, isDark, c, onComplete, isCompletingDay }: DayCardProps) 
                   paddingVertical: 12,
                   borderRadius: 14,
                   alignItems: "center",
-                  backgroundColor: "#F59E0B",
+                  backgroundColor: c.accent,
                   opacity: isCompletingDay ? 0.7 : 1,
                 }}
               >
@@ -256,7 +256,7 @@ export default function JourneyScreen() {
           <View style={{ height: 2, backgroundColor: c.primary, marginBottom: 24 }} />
           <Animated.View entering={FadeIn.duration(600)} style={{ alignItems: "center", padding: 32, borderRadius: 24, backgroundColor: isDark ? "rgba(16,185,129,0.08)" : "rgba(16,185,129,0.06)", borderWidth: 1.5, borderColor: "rgba(16,185,129,0.25)" }}>
             <Text style={{ fontSize: 64 }}>🏆</Text>
-            <Text style={{ fontSize: 22, fontWeight: "900", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center", marginTop: 12 }}>
+            <Text style={{ fontSize: 22, fontWeight: "900", color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center", marginTop: 12 }}>
               تهانينا! أتممت الرحلة
             </Text>
             <Text style={{ fontSize: 13, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: "center", lineHeight: 22, marginTop: 8 }}>
@@ -264,7 +264,7 @@ export default function JourneyScreen() {
             </Text>
             <View style={{ flexDirection: "row", gap: 4, marginTop: 16 }}>
               {[0, 1, 2, 3, 4].map((i) => (
-                <Star key={i} size={20} color="#f59e0b" fill="#f59e0b" />
+                <Star key={i} size={20} color={c.accent} fill={c.accent} />
               ))}
             </View>
             <View style={{ marginTop: 16, padding: 12, borderRadius: 14, backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)", width: "100%" }}>
@@ -282,7 +282,7 @@ export default function JourneyScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={["top"]}>
       <PageHeader titleAr="رحلة ٣٠ يوماً" subtitleAr="طريقك إلى التوبة النصوح" />
 
-      <View style={{ height: 3, backgroundColor: "rgba(0,0,0,0.06)" }}>
+      <View style={{ height: 3, backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
         <Animated.View
           style={{
             height: "100%",
@@ -310,14 +310,14 @@ export default function JourneyScreen() {
             </Text>
             <View style={{ alignItems: "flex-end" }}>
               <Text style={{ fontSize: 13, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>تقدمك في الرحلة</Text>
-              <Text style={{ fontSize: 26, fontWeight: "900", color: "#F59E0B", fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 2 }}>
+              <Text style={{ fontSize: 26, fontWeight: "900", color: c.accent, fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 2 }}>
                 {completedCount} / 30
               </Text>
             </View>
           </View>
 
           <View style={{ height: 10, borderRadius: 10, backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(245,158,11,0.15)", overflow: "hidden", marginBottom: 10 }}>
-            <View style={{ height: "100%", borderRadius: 10, backgroundColor: "#F59E0B", width: `${progress}%` }} />
+            <View style={{ height: "100%", borderRadius: 10, backgroundColor: c.accent, width: `${progress}%` }} />
           </View>
 
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -325,13 +325,13 @@ export default function JourneyScreen() {
               <Text style={{ fontSize: 12, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>
                 {30 - completedCount} يوم متبقٍ
               </Text>
-              <Star size={13} color="#F59E0B" />
+              <Star size={13} color={c.accent} />
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-              <Text style={{ fontSize: 12, color: "#F59E0B", fontFamily: "IBMPlexSansArabic_700Bold", fontWeight: "700" }}>
+              <Text style={{ fontSize: 12, color: c.accent, fontFamily: "IBMPlexSansArabic_700Bold", fontWeight: "700" }}>
                 {streakDays} يوم متواصل
               </Text>
-              <Flame size={13} color="#F59E0B" />
+              <Flame size={13} color={c.accent} />
             </View>
           </View>
         </View>
@@ -346,10 +346,10 @@ export default function JourneyScreen() {
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, justifyContent: "flex-end", marginBottom: 10 }}>
-              <Text style={{ fontSize: 15, fontWeight: "900", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>
+              <Text style={{ fontSize: 15, fontWeight: "900", color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold" }}>
                 أحسنت! مهام اليوم مكتملة ✅
               </Text>
-              <CheckCircle2 size={22} color="#10b981" />
+              <CheckCircle2 size={22} color={c.primary} />
             </View>
             <Text style={{ fontSize: 13, color: c.textSecondary, textAlign: "right", fontFamily: "IBMPlexSansArabic_400Regular", marginBottom: 14 }}>
               {currentDay.title} — اليوم {currentDay.day} من ٣٠
@@ -363,7 +363,7 @@ export default function JourneyScreen() {
               style={{
                 paddingVertical: 13, borderRadius: 15,
                 alignItems: "center",
-                backgroundColor: "#10b981",
+                backgroundColor: c.primary,
                 opacity: isCompletingDay ? 0.7 : 1,
               }}
             >

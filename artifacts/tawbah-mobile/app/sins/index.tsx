@@ -28,6 +28,7 @@ function SinDetailModal({
   onClose: () => void;
   isDark: boolean;
 }) {
+  const c = useColors();
   const bg = isDark ? "#0f0f1a" : "#fff";
   const textColor = isDark ? "#f9fafb" : "#111827";
   const subColor = isDark ? "#9ca3af" : "#6b7280";
@@ -86,12 +87,12 @@ function SinDetailModal({
 
           <View style={{ backgroundColor: isDark ? "rgba(16,185,129,0.08)" : "rgba(16,185,129,0.06)", borderRadius: 14, padding: 14, marginBottom: 14 }}>
             <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <Shield size={14} color="#10b981" />
-              <Text style={{ fontSize: 12, fontWeight: "700", color: "#10b981" }}>شروط التوبة</Text>
+              <Shield size={14} color={c.primary} />
+              <Text style={{ fontSize: 12, fontWeight: "700", color: c.primary }}>شروط التوبة</Text>
             </View>
             {sin.conditions.map((cond, i) => (
               <View key={i} style={{ flexDirection: "row-reverse", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
-                <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: "#10b981", alignItems: "center", justifyContent: "center" }}>
+                <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: c.primary, alignItems: "center", justifyContent: "center" }}>
                   <Text style={{ fontSize: 11, fontWeight: "700", color: "#fff" }}>{i + 1}</Text>
                 </View>
                 <Text style={{ fontSize: 13, color: textColor, textAlign: "right", lineHeight: 22, flex: 1 }}>{cond}</Text>
@@ -175,7 +176,8 @@ function SinCard({
 }
 
 export default function SinsScreen() {
-  const { isDark } = useColors();
+  const c = useColors();
+  const isDark = c.isDark;
   const [activeCategory, setActiveCategory] = useState<SinCategory | "all">("all");
   const [search, setSearch] = useState("");
   const [selectedSin, setSelectedSin] = useState<Sin | null>(null);
@@ -255,13 +257,13 @@ export default function SinsScreen() {
                   style={{
                     paddingHorizontal: 14, paddingVertical: 7,
                     borderRadius: 20, borderWidth: 1.5,
-                    borderColor: isActive ? (meta?.color || "#10b981") : borderColor,
+                    borderColor: isActive ? (meta?.color || c.primary) : borderColor,
                     backgroundColor: isActive ? (meta?.bg || "rgba(16,185,129,0.12)") : (isDark ? "rgba(255,255,255,0.04)" : "#fff"),
                   }}
                 >
                   <Text style={{
                     fontSize: 12, fontWeight: "700",
-                    color: isActive ? (meta?.color || "#10b981") : subColor,
+                    color: isActive ? (meta?.color || c.primary) : subColor,
                   }}>
                     {CATEGORY_LABELS[cat]}
                   </Text>

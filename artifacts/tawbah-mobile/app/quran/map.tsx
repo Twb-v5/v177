@@ -51,8 +51,8 @@ function MosqueCard({ mosque, isRTL, isDark, c }: { mosque: Mosque; isRTL: boole
 
         <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 16, marginTop: 12 }}>
           <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 4 }}>
-            <MapPin size={12} color="#10b981" />
-            <Text style={{ fontSize: 11, color: "#10b981", fontFamily: "IBMPlexSansArabic_400Regular" }}>{mosque.distance}</Text>
+            <MapPin size={12} color={c.primary} />
+            <Text style={{ fontSize: 11, color: c.primary, fontFamily: "IBMPlexSansArabic_400Regular" }}>{mosque.distance}</Text>
           </View>
           <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 4 }}>
             <Star size={12} color="#F59E0B" />
@@ -66,8 +66,8 @@ function MosqueCard({ mosque, isRTL, isDark, c }: { mosque: Mosque; isRTL: boole
 
         <Pressable onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
           style={{ marginTop: 12, paddingVertical: 9, borderRadius: 12, alignItems: "center", backgroundColor: "rgba(16,185,129,0.1)", borderWidth: 1, borderColor: "rgba(16,185,129,0.2)", flexDirection: "row", justifyContent: "center", gap: 6 }}>
-          <Navigation size={13} color="#10b981" />
-          <Text style={{ fontSize: 12, fontWeight: "700", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>الاتجاهات</Text>
+          <Navigation size={13} color={c.primary} />
+          <Text style={{ fontSize: 12, fontWeight: "700", color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold" }}>الاتجاهات</Text>
         </Pressable>
       </Pressable>
     </Animated.View>
@@ -106,7 +106,7 @@ export default function QuranMapPage() {
               أعطنا إذن الوصول لموقعك لنعرض لك أقرب المساجد وأوقات الصلاة
             </Text>
             <Pressable onPress={requestLocation}
-              style={{ paddingHorizontal: 28, paddingVertical: 14, borderRadius: 16, backgroundColor: "#2D6A4F", flexDirection: "row", alignItems: "center", gap: 8 }}>
+              style={{ paddingHorizontal: 28, paddingVertical: 14, borderRadius: 16, backgroundColor: c.primary, flexDirection: "row", alignItems: "center", gap: 8 }}>
               {loading ? <ActivityIndicator size="small" color="#fff" /> : <Navigation size={16} color="#fff" />}
               <Text style={{ fontSize: 14, fontWeight: "800", color: "#fff", fontFamily: "IBMPlexSansArabic_700Bold" }}>
                 {loading ? "جارٍ التحديد..." : "تحديد موقعي"}
@@ -120,8 +120,8 @@ export default function QuranMapPage() {
         ) : (
           <View style={{ padding: 14, borderRadius: 16, flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 10, marginBottom: 16,
             backgroundColor: "rgba(16,185,129,0.08)", borderWidth: 1, borderColor: "rgba(16,185,129,0.2)" }}>
-            <MapPin size={16} color="#10b981" />
-            <Text style={{ flex: 1, fontSize: 12, color: "#10b981", fontFamily: "IBMPlexSansArabic_400Regular" }}>تم تحديد موقعك · عرض {MOCK_MOSQUES.length} مساجد قريبة</Text>
+            <MapPin size={16} color={c.primary} />
+            <Text style={{ flex: 1, fontSize: 12, color: c.primary, fontFamily: "IBMPlexSansArabic_400Regular" }}>تم تحديد موقعك · عرض {MOCK_MOSQUES.length} مساجد قريبة</Text>
           </View>
         )}
 

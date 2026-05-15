@@ -3,7 +3,6 @@ import { View, Text, ScrollView, Pressable, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, {
   FadeIn, FadeInDown,
   useSharedValue, useAnimatedStyle,
@@ -81,8 +80,6 @@ export default function DhikrScreen() {
         return;
       }
     } catch {}
-    const v = await AsyncStorage.getItem("dhikr_total_v1");
-    if (v) setTotalDhikr(parseInt(v, 10) || 0);
   }, []);
 
   useEffect(() => {

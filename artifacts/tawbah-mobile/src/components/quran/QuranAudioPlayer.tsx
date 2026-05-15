@@ -5,10 +5,9 @@ import Animated, {
   useAnimatedStyle, 
   withSpring,
   withTiming,
-  runOnJS 
 } from "react-native-reanimated";
 import { useQuranAudio } from "@/hooks/useQuranAudio";
-import { useSettings } from "@/providers/SettingsProvider";
+import { useColors } from "@/hooks/useColors";
 
 interface QuranAudioPlayerProps {
   surahName: string;
@@ -17,8 +16,8 @@ interface QuranAudioPlayerProps {
 }
 
 export function QuranAudioPlayer({ surahName, visible, onClose }: QuranAudioPlayerProps) {
-  const { resolvedTheme } = useSettings();
-  const isDark = resolvedTheme === "dark";
+  const c = useColors();
+  const isDark = c.isDark;
   const audio = useQuranAudio();
   
   const translateY = useSharedValue(300);
@@ -56,17 +55,26 @@ export function QuranAudioPlayer({ surahName, visible, onClose }: QuranAudioPlay
   if (!visible) return null;
 
   return (
-    <Animated.View 
+    <Animated.View
       style={[
-        styles.container, 
-        { backgroundColor: isDark ? "#1e293b" : "#ffffff" },
-        animatedStyle
+        styles.container,
+        {
+          backgroundColor: c.surface,
+          shadowColor: c.shadow,
+          shadowOpacity: 0.3,
+          shadowRadius: 20,
+          shadowOffset: { width: 0, height: -4 },
+          elevation: 12,
+          borderTopWidth: 1,
+          borderColor: c.border,
+        },
+        animatedStyle,
       ]}
     >
       {/* Progress Bar */}
-      <View style={[styles.progressTrack, { backgroundColor: isDark ? "#334155" : "#e2e8f0" }]}>
-        <Animated.View 
-          style={[styles.progressFill, { backgroundColor: "#1a4731" }, progressStyle]} 
+      <View style={[styles.progressTrack, { backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)" }]}>
+        <Animated.View
+          style={[styles.progressFill, { backgroundColor: c.primary }, progressStyle]}
         />
       </View>
 
@@ -74,58 +82,64 @@ export function QuranAudioPlayer({ surahName, visible, onClose }: QuranAudioPlay
       <View style={styles.content}>
         {/* Surah Info */}
         <View style={styles.surahInfo}>
-          <Text style={[styles.surahName, { color: isDark ? "#f1f5f9" : "#1e293b" }]} numberOfLines={1}>
+          <Text style={[styles.surahName, { color: c.text, fontFamily: "IBMPlexSansArabic_700Bold" }]} numberOfLines={1}>
             {surahName}
           </Text>
-          <Text style={[styles.ayahInfo, { color: isDark ? "#94a3b8" : "#64748b" }]}>
-            Ayah {audio.currentAyah || 1}
+          <Text style={[styles.ayahInfo, { color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }]}>
+            الآية {audio.currentAyah || 1}
           </Text>
         </View>
 
         {/* Time Display */}
         <View style={styles.timeDisplay}>
-          <Text style={[styles.timeText, { color: isDark ? "#94a3b8" : "#64748b" }]}>
+          <Text style={[styles.timeText, { color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }]}>
             {formatTime(audio.position)}
           </Text>
-          <Text style={[styles.timeText, { color: isDark ? "#94a3b8" : "#64748b" }]}>
+          <Text style={[styles.timeText, { color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }]}>
             {formatTime(audio.duration)}
           </Text>
         </View>
 
         {/* Controls */}
         <View style={styles.controls}>
-          <Pressable onPress={() => audio.skipToPrevious()} style={styles.controlBtn}>
-            <Text style={[styles.controlBtnText, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>««</Text>
+          <Pressable onPress={() => audio.skipToPrevious()} style={[styles.controlBtn, { backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", borderRadius: 12 }]}>
+            <Text style={[styles.controlBtnText, { color: c.text }]}>‹‹</Text>
           </Pressable>
-          
-          <Pressable 
-            onPress={() => audio.isPlaying ? audio.pause() : audio.resume()} 
-            style={[styles.playBtn, { backgroundColor: "#1a4731" }]}
+
+          <Pressable
+            onPress={() => audio.isPlaying ? audio.pause() : audio.resume()}
+            style={[styles.playBtn, { backgroundColor: c.primary, shadowColor: c.primary, shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6 }]}
           >
             {audio.isLoading ? (
               <ActivityIndicator color="#ffffff" size="small" />
             ) : (
-              <Text style={styles.playBtnText}>{audio.isPlaying ? "||" : "»"}</Text>
+              <Text style={[styles.playBtnText, { color: c.textInverse }]}>{audio.isPlaying ? "⏸" : "▶"}</Text>
             )}
           </Pressable>
-          
-          <Pressable onPress={() => audio.skipToNext()} style={styles.controlBtn}>
-            <Text style={[styles.controlBtnText, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>»»</Text>
+
+          <Pressable onPress={() => audio.skipToNext()} style={[styles.controlBtn, { backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", borderRadius: 12 }]}>
+            <Text style={[styles.controlBtnText, { color: c.text }]}>››</Text>
           </Pressable>
         </View>
 
         {/* Speed Control */}
         <View style={styles.speedControl}>
-          <Pressable onPress={() => audio.setPlaybackSpeed(0.75)} style={styles.speedBtn}>
-            <Text style={[styles.speedText, { color: isDark ? "#64748b" : "#94a3b8" }]}>0.75x</Text>
-          </Pressable>
-          <Pressable onPress={() => audio.setPlaybackSpeed(1)} style={styles.speedBtn}>
-            <Text style={[styles.speedText, { color: isDark ? "#22c55e" : "#1a4731" }]}>1x</Text>
-          </Pressable>
-          <Pressable onPress={() => audio.setPlaybackSpeed(1.5)} style={styles.speedBtn}>
-            <Text style={[styles.speedText, { color: isDark ? "#64748b" : "#94a3b8" }]}>1.5x</Text>
-          </Pressable>
+          {[0.75, 1, 1.5, 2].map((speed) => (
+            <Pressable key={speed} onPress={() => audio.setPlaybackSpeed(speed)} style={[styles.speedBtn, {
+              backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.07)",
+            }]}>
+              <Text style={[styles.speedText, { color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }]}>{speed}×</Text>
+            </Pressable>
+          ))}
         </View>
+
+        {/* Close */}
+        <Pressable onPress={onClose} style={[styles.closeBtn, { backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)", borderRadius: 10 }]}>
+          <Text style={[styles.closeText, { color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }]}>إغلاق</Text>
+        </Pressable>
       </View>
     </Animated.View>
   );
@@ -139,77 +153,24 @@ const styles = StyleSheet.create({
     end: 0,
     borderTopStartRadius: 24,
     borderTopEndRadius: 24,
-    elevation: 12,
     overflow: "hidden",
   },
-  progressTrack: {
-    height: 3,
-    width: "100%",
-  },
-  progressFill: {
-    height: "100%",
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 36,
-  },
-  surahInfo: {
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  surahName: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  ayahInfo: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  timeDisplay: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  timeText: {
-    fontSize: 12,
-  },
-  controls: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 24,
-    marginBottom: 16,
-  },
-  controlBtn: {
-    padding: 12,
-  },
-  controlBtnText: {
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  playBtn: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  playBtnText: {
-    color: "#ffffff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  speedControl: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 20,
-  },
-  speedBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  speedText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
+  progressTrack: { height: 3, width: "100%" },
+  progressFill: { height: "100%" },
+  content: { padding: 20, paddingBottom: 32 },
+  surahInfo: { alignItems: "center", marginBottom: 12 },
+  surahName: { fontSize: 18, fontWeight: "bold" },
+  ayahInfo: { fontSize: 13, marginTop: 2 },
+  timeDisplay: { flexDirection: "row", justifyContent: "space-between", marginBottom: 16 },
+  timeText: { fontSize: 12 },
+  controls: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 24, marginBottom: 16 },
+  controlBtn: { padding: 12 },
+  controlBtnText: { fontSize: 20, fontWeight: "bold" },
+  playBtn: { width: 64, height: 64, borderRadius: 32, alignItems: "center", justifyContent: "center" },
+  playBtnText: { fontSize: 22, fontWeight: "bold" },
+  speedControl: { flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 12 },
+  speedBtn: { paddingHorizontal: 14, paddingVertical: 6 },
+  speedText: { fontSize: 13, fontWeight: "600" },
+  closeBtn: { alignSelf: "center", paddingHorizontal: 24, paddingVertical: 8, marginTop: 4 },
+  closeText: { fontSize: 13 },
 });

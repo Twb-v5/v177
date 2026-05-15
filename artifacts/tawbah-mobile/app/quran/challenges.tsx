@@ -63,7 +63,7 @@ function ChallengeCard({ challenge, isRTL, isDark, c }: { challenge: Challenge; 
 
   const typeLabel = challenge.type === "completed" ? "مكتمل" : challenge.type === "upcoming" ? "قريباً" : "جارٍ";
   const typeBg = challenge.type === "completed" ? "rgba(16,185,129,0.15)" : challenge.type === "upcoming" ? "rgba(100,100,100,0.15)" : `${accent}18`;
-  const typeColor = challenge.type === "completed" ? "#10b981" : challenge.type === "upcoming" ? c.textMuted : accent;
+  const typeColor = challenge.type === "completed" ? c.emerald : challenge.type === "upcoming" ? c.textMuted : accent;
 
   return (
     <Animated.View style={[animStyle, { marginBottom: 12 }]}>
@@ -168,7 +168,7 @@ export default function QuranChallengesPage() {
           {[{ id: "active" as const, label: "نشطة" }, { id: "all" as const, label: "الكل" }].map(tab => (
             <Pressable key={tab.id} onPress={() => setActiveTab(tab.id)}
               style={{ flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: "center",
-                backgroundColor: activeTab === tab.id ? (isDark ? "rgba(16,185,129,0.2)" : "#2D6A4F") : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"),
+                backgroundColor: activeTab === tab.id ? c.primary : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"),
                 borderWidth: 1, borderColor: activeTab === tab.id ? "rgba(16,185,129,0.4)" : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)") }}>
               <Text style={{ fontSize: 13, fontWeight: "700", color: activeTab === tab.id ? "#fff" : c.textSecondary, fontFamily: "IBMPlexSansArabic_700Bold" }}>{tab.label}</Text>
             </Pressable>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, Map } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronRight, Map, Clock, BookOpen, X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useSettings } from "@/context/SettingsContext";
 

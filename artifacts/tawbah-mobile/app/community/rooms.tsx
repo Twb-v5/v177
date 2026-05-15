@@ -113,7 +113,7 @@ export default function DhikrRoomsScreen() {
         <View style={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 10, marginBottom: 16 }}>
           {[
             { label: "حلقات نشطة", value: liveRooms.length.toString(), color: "#ef4444", icon: "🔴" },
-            { label: "في الحلقات الآن", value: totalMembers.toString(), color: "#10b981", icon: "👥" },
+            { label: "في الحلقات الآن", value: totalMembers.toString(), color: c.primary, icon: "👥" },
             { label: "الذكر الجماعي", value: "∞", color: "#F59E0B", icon: "📿" },
           ].map((stat, i) => (
             <View key={i} style={{ flex: 1, padding: 12, borderRadius: 14, backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)", borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", alignItems: "center" }}>
@@ -134,7 +134,7 @@ export default function DhikrRoomsScreen() {
           <Text style={{ fontSize: 15, fontFamily: "Amiri_400Regular", color: c.text, textAlign: "center", lineHeight: 32 }}>
             «مَا جَلَسَ قَوْمٌ يَذْكُرُونَ اللهَ إِلَّا حَفَّتْهُمُ الْمَلَائِكَةُ»
           </Text>
-          <Text style={{ fontSize: 11, color: "#10b981", fontFamily: "IBMPlexSansArabic_400Regular", textAlign: "center", marginTop: 6 }}>رواه مسلم</Text>
+          <Text style={{ fontSize: 11, color: c.primary, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: "center", marginTop: 6 }}>رواه مسلم</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

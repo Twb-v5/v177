@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, Platform } from "react-native";
 import { useSettings } from "@/providers/SettingsProvider";
+import { apiUrl } from "@/lib/api";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -108,7 +109,7 @@ export function IslamicHero() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const res = await fetch("https://tawbah.ai/api/hero-content");
+        const res = await fetch(apiUrl("/hero-content"));
         if (!res.ok) return;
         const data = (await res.json()) as {
           items?: {

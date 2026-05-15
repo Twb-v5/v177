@@ -86,7 +86,7 @@ function SignCard({ sign, isChecked, isRTL, isDark, c, onToggle }: {
     <Animated.View style={[animStyle, { marginBottom: 8 }]}>
       <View style={{ borderRadius: 18, backgroundColor: isDark ? "rgba(14,14,14,0.92)" : "#fff", borderWidth: 1,
         borderColor: isChecked ? "rgba(16,185,129,0.3)" : (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"), overflow: "hidden" }}>
-        <View style={{ height: 2, backgroundColor: isChecked ? "#10b981" : sev.color }} />
+        <View style={{ height: 2, backgroundColor: isChecked ? c.emerald : sev.color }} />
 
         <Pressable
           onPressIn={() => { scale.value = withSpring(0.99); }}
@@ -104,7 +104,7 @@ function SignCard({ sign, isChecked, isRTL, isDark, c, onToggle }: {
           </View>
           <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 8 }}>
             <Pressable onPress={() => { onToggle(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}>
-              {isChecked ? <CheckCircle2 size={22} color="#10b981" /> : <Circle size={22} color={isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"} />}
+              {isChecked ? <CheckCircle2 size={22} color={c.emerald} /> : <Circle size={22} color={isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"} />}
             </Pressable>
             {expanded ? <ChevronUp size={16} color={c.textMuted} /> : <ChevronDown size={16} color={c.textMuted} />}
           </View>
@@ -118,8 +118,8 @@ function SignCard({ sign, isChecked, isRTL, isDark, c, onToggle }: {
             </Text>
             <View style={{ padding: 12, borderRadius: 12, backgroundColor: "rgba(16,185,129,0.07)", borderWidth: 1, borderColor: "rgba(16,185,129,0.18)" }}>
               <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                <Shield size={12} color="#10b981" />
-                <Text style={{ fontSize: 10, fontWeight: "700", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>الحل الفوري</Text>
+                <Shield size={12} color={c.emerald} />
+                <Text style={{ fontSize: 10, fontWeight: "700", color: c.emerald, fontFamily: "IBMPlexSansArabic_700Bold" }}>الحل الفوري</Text>
               </View>
               <Text style={{ fontSize: 13, color: c.text, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: isRTL ? "right" : "left", lineHeight: 22 }}>
                 {sign.solutionAr}
@@ -207,7 +207,7 @@ export default function SignsScreen() {
           <Text style={{ fontSize: 15, fontFamily: "Amiri_400Regular", color: c.text, textAlign: "center", lineHeight: 32 }}>
             «وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ»
           </Text>
-          <Text style={{ fontSize: 11, color: "#10b981", fontFamily: "IBMPlexSansArabic_400Regular", textAlign: "center", marginTop: 6 }}>الذاريات: ٥٥</Text>
+          <Text style={{ fontSize: 11, color: c.primary, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: "center", marginTop: 6 }}>الذاريات: ٥٥</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

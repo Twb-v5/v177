@@ -220,7 +220,7 @@ export default function CovenantScreen() {
             style={{
               paddingHorizontal: 32, paddingVertical: 14,
               borderRadius: 18,
-              backgroundColor: isDark ? c.primary : "#2D6A4F",
+              backgroundColor: c.primary,
             }}
           >
             <Text style={{ color: "#fff", fontWeight: "800", fontSize: 15, fontFamily: "IBMPlexSansArabic_700Bold" }}>
@@ -264,7 +264,7 @@ export default function CovenantScreen() {
         <View style={{ alignItems: "center", paddingVertical: 24 }}>
           <View style={{
             width: 80, height: 80, borderRadius: 40,
-            backgroundColor: isDark ? "#0A1F14" : "#2D6A4F",
+            backgroundColor: isDark ? "#0A1F14" : c.primary,
             alignItems: "center", justifyContent: "center", marginBottom: 12,
           }}>
             <Text style={{ fontSize: 36 }}>🤝</Text>
@@ -328,7 +328,7 @@ export default function CovenantScreen() {
               onPress={handleSign}
               style={{
                 padding: 18, borderRadius: 22,
-                backgroundColor: isDark ? c.primary : "#2D6A4F",
+                backgroundColor: c.primary,
                 alignItems: "center",
               }}
             >

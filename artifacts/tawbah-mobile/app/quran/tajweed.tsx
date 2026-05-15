@@ -170,8 +170,8 @@ export default function TajweedScreen() {
           {/* Intro Banner */}
           <Animated.View entering={FadeInDown.delay(40).springify()} style={{ borderRadius: 20, padding: 18, marginBottom: 20, backgroundColor: isDark ? "rgba(16,185,129,0.08)" : "rgba(16,185,129,0.06)", borderWidth: 1.5, borderColor: "rgba(16,185,129,0.25)", overflow: "hidden" }}>
             <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <BookOpen size={18} color="#10b981" />
-              <Text style={{ fontSize: 15, fontWeight: "800", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>
+              <BookOpen size={18} color={c.primary} />
+              <Text style={{ fontSize: 15, fontWeight: "800", color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold" }}>
                 تعلّم التجويد
               </Text>
             </View>

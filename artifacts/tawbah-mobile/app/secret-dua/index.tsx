@@ -89,7 +89,7 @@ export default function SecretDuaScreen() {
         rightAction={
           <Pressable onPress={() => { setWriting(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
             style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: "rgba(16,185,129,0.14)", borderWidth: 1, borderColor: "rgba(16,185,129,0.25)", alignItems: "center", justifyContent: "center" }}>
-            <PenLine size={18} color="#10b981" />
+            <PenLine size={18} color={c.primary} />
           </Pressable>
         }
       />
@@ -98,7 +98,7 @@ export default function SecretDuaScreen() {
 
           {/* Hero */}
           <Animated.View entering={FadeInDown.delay(0).springify()} style={{ borderRadius: 20, padding: 20, marginBottom: 18, backgroundColor: isDark ? "rgba(16,185,129,0.06)" : "rgba(16,185,129,0.04)", borderWidth: 1, borderColor: isDark ? "rgba(16,185,129,0.15)" : "rgba(16,185,129,0.15)", alignItems: "center" }}>
-            <Moon size={28} color="#10b981" style={{ marginBottom: 10 }} />
+            <Moon size={28} color={c.primary} style={{ marginBottom: 10 }} />
             <Text style={{ fontSize: 15, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center", marginBottom: 6 }}>
               همسك إلى الله
             </Text>
@@ -111,8 +111,8 @@ export default function SecretDuaScreen() {
           {writing && (
             <Animated.View entering={FadeIn.duration(300)} style={{ borderRadius: 20, backgroundColor: isDark ? "rgba(14,14,14,0.95)" : "#fff", borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)", padding: 16, marginBottom: 16 }}>
               <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 6, marginBottom: 10 }}>
-                <Lock size={14} color="#10b981" />
-                <Text style={{ fontSize: 12, color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>دعاء سري — لك ولربك فقط</Text>
+                <Lock size={14} color={c.primary} />
+                <Text style={{ fontSize: 12, color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold" }}>دعاء سري — لك ولربك فقط</Text>
               </View>
               <Text style={{ fontSize: 12, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: isRTL ? "right" : "left", marginBottom: 10, fontStyle: "italic" }}>
                 💭 {prompt}
@@ -123,7 +123,7 @@ export default function SecretDuaScreen() {
                 <Pressable onPress={() => { setWriting(false); setText(""); }} style={{ flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: "center", backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)" }}>
                   <Text style={{ fontSize: 14, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular" }}>إلغاء</Text>
                 </Pressable>
-                <Pressable onPress={addDua} disabled={!text.trim()} style={{ flex: 2, paddingVertical: 12, borderRadius: 14, alignItems: "center", backgroundColor: text.trim() ? "#2D6A4F" : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)") }}>
+                <Pressable onPress={addDua} disabled={!text.trim()} style={{ flex: 2, paddingVertical: 12, borderRadius: 14, alignItems: "center", backgroundColor: text.trim() ? c.primary : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)") }}>
                   <Text style={{ fontSize: 14, fontWeight: "800", color: text.trim() ? "#fff" : c.textMuted, fontFamily: "IBMPlexSansArabic_700Bold" }}>ارفع دعاءك</Text>
                 </Pressable>
               </View>
@@ -155,7 +155,7 @@ export default function SecretDuaScreen() {
             <Text style={{ fontSize: 13, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold", textAlign: isRTL ? "right" : "left", marginBottom: 10, marginTop: 8 }}>أدعية من القرآن والسنة</Text>
             {QURAN_DUAS.map((dua, i) => (
               <Animated.View key={dua.title} entering={FadeInDown.delay(i * 50).springify()} style={{ borderRadius: 16, padding: 14, marginBottom: 10, backgroundColor: isDark ? "rgba(16,185,129,0.05)" : "rgba(16,185,129,0.04)", borderWidth: 1, borderColor: isDark ? "rgba(16,185,129,0.15)" : "rgba(16,185,129,0.15)" }}>
-                <Text style={{ fontSize: 12, fontWeight: "700", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold", textAlign: isRTL ? "right" : "left", marginBottom: 8 }}>{dua.title}</Text>
+                <Text style={{ fontSize: 12, fontWeight: "700", color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold", textAlign: isRTL ? "right" : "left", marginBottom: 8 }}>{dua.title}</Text>
                 <Text style={{ fontSize: 15, color: c.text, fontFamily: "IBMPlexSansArabic_400Regular", lineHeight: 28, textAlign: "right" }}>{dua.text}</Text>
                 <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 5, marginTop: 8 }}>
                   <Star size={11} color={c.accent} />

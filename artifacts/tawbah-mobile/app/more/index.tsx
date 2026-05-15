@@ -208,11 +208,11 @@ export default function MoreScreen() {
       title: "رحلتي الروحية",
       items: [
         {
-          icon: <Target size={18} color="#2D6A4F" />,
+          icon: <Target size={18} color={c.primary} />,
           labelAr: "رحلة ٣٠ يوم",
           labelEn: "30-Day Journey",
           href: "/journey",
-          color: "#2D6A4F",
+          color: c.primary,
           bg: "#E8F5EE",
           bgDark: "#0A1F18",
           badge: "جديد",

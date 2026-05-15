@@ -186,8 +186,8 @@ export default function AmeenScreen() {
               <Text style={{ fontSize: 9, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>إجمالي آمين</Text>
             </View>
             <View style={{ flex: 1, padding: 12, borderRadius: 14, backgroundColor: isDark ? "rgba(16,185,129,0.07)" : "#F0FDF4", borderWidth: 1, borderColor: "rgba(16,185,129,0.2)", alignItems: "center" }}>
-              <Users size={14} color="#10b981" />
-              <Text style={{ fontSize: 16, fontWeight: "900", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 2 }}>{duas.length}</Text>
+              <Users size={14} color={c.primary} />
+              <Text style={{ fontSize: 16, fontWeight: "900", color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 2 }}>{duas.length}</Text>
               <Text style={{ fontSize: 9, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>دعاء منشور</Text>
             </View>
           </View>
@@ -216,7 +216,7 @@ export default function AmeenScreen() {
               <Pressable
                 onPress={handlePost}
                 disabled={!newDua.trim() || posting}
-                style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: newDua.trim() ? "#10b981" : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)") }}
+                style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: newDua.trim() ? c.primary : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)") }}
               >
                 {posting ? <ActivityIndicator size="small" color="#fff" /> : <Send size={14} color={newDua.trim() ? "#fff" : c.textMuted} />}
                 <Text style={{ fontSize: 12, fontWeight: "700", color: newDua.trim() ? "#fff" : c.textMuted, fontFamily: "IBMPlexSansArabic_700Bold" }}>نشر</Text>
@@ -262,7 +262,7 @@ export default function AmeenScreen() {
         {!showCompose && (
           <Pressable
             onPress={() => { setShowCompose(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); }}
-            style={{ position: "absolute", bottom: 24, left: 24, width: 52, height: 52, borderRadius: 26, backgroundColor: "#10b981", alignItems: "center", justifyContent: "center", elevation: 8, shadowColor: "#10b981", shadowOpacity: 0.4, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}
+            style={{ position: "absolute", bottom: 24, left: 24, width: 52, height: 52, borderRadius: 26, backgroundColor: c.primary, alignItems: "center", justifyContent: "center", elevation: 8, shadowColor: c.primary, shadowOpacity: 0.4, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}
           >
             <PenLine size={22} color="#fff" />
           </Pressable>

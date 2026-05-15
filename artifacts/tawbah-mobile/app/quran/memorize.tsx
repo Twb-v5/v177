@@ -296,7 +296,7 @@ function MemorizeSession({ surah, onBack }: { surah: SurahInfo; onBack: () => vo
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
               {Array.from(memorized).sort((a, b) => a - b).map(idx => (
                 <View key={idx} style={{ width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(16,185,129,0.15)", borderWidth: 1, borderColor: "rgba(16,185,129,0.3)" }}>
-                  <Text style={{ fontSize: 10, color: "#10b981", fontFamily: "Amiri_400Regular" }}>{toEA(idx + 1)}</Text>
+                  <Text style={{ fontSize: 10, color: c.primary, fontFamily: "Amiri_400Regular" }}>{toEA(idx + 1)}</Text>
                 </View>
               ))}
             </View>

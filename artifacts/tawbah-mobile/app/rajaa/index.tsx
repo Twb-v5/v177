@@ -70,7 +70,7 @@ function ContentCard({ item, isDark, c, isRTL }: { item: ContentItem; isDark: bo
 
   return (
     <View style={{ marginBottom: 10, borderRadius: 18, backgroundColor: isDark ? "rgba(14,14,14,0.92)" : "#fff", borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", overflow: "hidden" }}>
-      <View style={{ height: 2, backgroundColor: "#10b981", opacity: 0.6 }} />
+      <View style={{ height: 2, backgroundColor: c.primary, opacity: 0.6 }} />
       <Pressable
         onPress={() => { setExpanded(e => !e); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
         style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", padding: 14, gap: 12 }}
@@ -80,7 +80,7 @@ function ContentCard({ item, isDark, c, isRTL }: { item: ContentItem; isDark: bo
           {item.category && (
             <View style={{ alignSelf: isRTL ? "flex-end" : "flex-start", marginTop: 4 }}>
               <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, backgroundColor: "rgba(16,185,129,0.1)" }}>
-                <Text style={{ fontSize: 9, color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>{item.category}</Text>
+                <Text style={{ fontSize: 9, color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold" }}>{item.category}</Text>
               </View>
             </View>
           )}
@@ -134,11 +134,11 @@ export default function RajaaScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 10, paddingHorizontal: 16, marginBottom: 16 }}>
           {TABS.map(tab => (
             <Pressable key={tab.id} onPress={() => { setActiveTab(tab.id); Haptics.selectionAsync(); }}
-              style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, backgroundColor: activeTab === tab.id ? (isDark ? "rgba(16,185,129,0.2)" : "rgba(45,106,79,0.1)") : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"), borderWidth: 1, borderColor: activeTab === tab.id ? "#10b981" : c.divider }}>
+              style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, backgroundColor: activeTab === tab.id ? (isDark ? "rgba(16,185,129,0.2)" : "rgba(45,106,79,0.1)") : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"), borderWidth: 1, borderColor: activeTab === tab.id ? c.primary : c.divider }}>
               <Text style={{ fontSize: 14 }}>{tab.emoji}</Text>
-              <Text style={{ fontSize: 12, fontWeight: "700", color: activeTab === tab.id ? "#10b981" : c.textSecondary, fontFamily: "IBMPlexSansArabic_700Bold" }}>{tab.labelAr}</Text>
+              <Text style={{ fontSize: 12, fontWeight: "700", color: activeTab === tab.id ? c.primary : c.textSecondary, fontFamily: "IBMPlexSansArabic_700Bold" }}>{tab.labelAr}</Text>
               <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8, backgroundColor: activeTab === tab.id ? "rgba(16,185,129,0.2)" : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)") }}>
-                <Text style={{ fontSize: 9, color: activeTab === tab.id ? "#10b981" : c.textMuted, fontFamily: "IBMPlexSansArabic_700Bold" }}>{tab.count}</Text>
+                <Text style={{ fontSize: 9, color: activeTab === tab.id ? c.primary : c.textMuted, fontFamily: "IBMPlexSansArabic_700Bold" }}>{tab.count}</Text>
               </View>
             </Pressable>
           ))}

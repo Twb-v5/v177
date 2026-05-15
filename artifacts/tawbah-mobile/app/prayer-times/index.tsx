@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { usePrayerTimes, PrayerTimes } from "@/hooks/usePrayerTimes";
 import { useSettings } from "@/providers/SettingsProvider";
+import { useColors } from "@/hooks/useColors";
 import { Magnetometer } from "expo-sensors";
 import * as Haptics from "expo-haptics";
 
@@ -29,10 +30,11 @@ const PRAYER_ORDER = [
 
 export default function PrayerTimesScreen() {
   const router = useRouter();
-  const { resolvedTheme } = useSettings();
-  const isDark = resolvedTheme === "dark";
-  const isRTL = I18nManager.isRTL;
-  
+  const c = useColors();
+  const { language } = useSettings();
+  const isDark = c.isDark;
+  const isRTL = I18nManager.isRTL || language === "ar";
+
   const { prayerTimes, loading, error, location, locationPermission, refresh, scheduleAllNotifications } = usePrayerTimes();
   const [nextPrayer, setNextPrayer] = useState<string | null>(null);
 
@@ -120,7 +122,7 @@ export default function PrayerTimesScreen() {
     if (prayerTimes) {
       const now = new Date();
       const currentTime = now.getHours() * 60 + now.getMinutes();
-      
+
       const getMinutes = (time: string) => {
         const [h, m] = time.split(":").map(Number);
         return h * 60 + m;
@@ -140,27 +142,31 @@ export default function PrayerTimesScreen() {
   const renderPrayerRow = (prayer: typeof PRAYER_ORDER[0]) => {
     const time = prayerTimes?.[prayer.key as keyof PrayerTimes] || "--:--";
     const isActive = nextPrayer === prayer.key;
-    
+
     return (
-      <View 
+      <View
         key={prayer.key}
         style={[
           styles.prayerRow,
-          { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" },
-          isActive && { backgroundColor: isDark ? "#166534" : "#dcfce7", borderColor: "#22c55e" }
+          {
+            backgroundColor: isActive
+              ? isDark ? "rgba(16,185,129,0.15)" : "rgba(16,185,129,0.08)"
+              : c.surface,
+            borderColor: isActive ? c.emerald : c.border,
+          },
         ]}
       >
         <View style={styles.prayerInfo}>
-          <Text style={[styles.prayerLabel, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
+          <Text style={[styles.prayerLabel, { color: c.text }]}>
             {isRTL ? prayer.labelAr : prayer.label}
           </Text>
           {isActive && (
-            <View style={[styles.activeBadge, { backgroundColor: "#22c55e" }]}>
+            <View style={[styles.activeBadge, { backgroundColor: c.emerald }]}>
               <Text style={styles.activeBadgeText}>{isRTL ? "القادمة" : "Next"}</Text>
             </View>
           )}
         </View>
-        <Text style={[styles.prayerTime, { color: isDark ? "#22c55e" : "#1a4731" }]}>
+        <Text style={[styles.prayerTime, { color: c.primary }]}>
           {time}
         </Text>
       </View>
@@ -169,10 +175,10 @@ export default function PrayerTimesScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#0f172a" : "#f8fafc" }]}> 
+      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDark ? "#22c55e" : "#1a4731"} />
-          <Text style={[styles.loadingText, { color: isDark ? "#94a3b8" : "#64748b" }]}>
+          <ActivityIndicator size="large" color={c.primary} />
+          <Text style={[styles.loadingText, { color: c.textMuted }]}>
             {isRTL ? "...جاري تحديد الموقع ومواقيت الصلاة" : "Getting location & prayer times..."}
           </Text>
         </View>
@@ -182,15 +188,15 @@ export default function PrayerTimesScreen() {
 
   if (!locationPermission) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#0f172a" : "#f8fafc" }]}> 
+      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]}>
         <View style={styles.errorContainer}>
-          <Text style={[styles.errorTitle, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
+          <Text style={[styles.errorTitle, { color: c.text }]}>
             {isRTL ? "الموقع مطلوب" : "Location Required"}
           </Text>
-          <Text style={[styles.errorText, { color: isDark ? "#94a3b8" : "#64748b" }]}>
+          <Text style={[styles.errorText, { color: c.textMuted }]}>
             {isRTL ? "فعّل الموقع للحصول على مواقيت دقيقة" : "Please enable location to get accurate prayer times"}
           </Text>
-          <Pressable onPress={refresh} style={[styles.retryBtn, { backgroundColor: "#1a4731" }]}>
+          <Pressable onPress={refresh} style={[styles.retryBtn, { backgroundColor: c.primary }]}>
             <Text style={styles.retryBtnText}>{isRTL ? "تفعيل الموقع" : "Enable Location"}</Text>
           </Pressable>
         </View>
@@ -199,19 +205,19 @@ export default function PrayerTimesScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#0f172a" : "#f8fafc" }]} edges={["top"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={["top"]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}> 
+      <View style={[styles.header, { backgroundColor: c.surface, borderColor: c.border }]}>
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={[styles.backBtnText, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
+          <Text style={[styles.backBtnText, { color: c.text }]}>
             {isRTL ? "»" : "«"}
           </Text>
         </Pressable>
-        <Text style={[styles.headerTitle, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
+        <Text style={[styles.headerTitle, { color: c.text }]}>
           {isRTL ? "مواقيت الصلاة" : "Prayer Times"}
         </Text>
         <Pressable onPress={scheduleAllNotifications} style={styles.notifyBtn}>
-          <Text style={[styles.notifyBtnText, { color: isDark ? "#22c55e" : "#1a4731" }]}>
+          <Text style={[styles.notifyBtnText, { color: c.primary }]}>
             {isRTL ? "تنبيه" : "Notify"}
           </Text>
         </Pressable>
@@ -219,11 +225,11 @@ export default function PrayerTimesScreen() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Date */}
-        <View style={[styles.dateCard, { backgroundColor: isDark ? "#1e293b" : "#ffffff" }]}> 
-          <Text style={[styles.dateText, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
+        <View style={[styles.dateCard, { backgroundColor: c.surface }]}>
+          <Text style={[styles.dateText, { color: c.text }]}>
             {prayerTimes?.date || "Today"}
           </Text>
-          <Text style={[styles.locationText, { color: isDark ? "#94a3b8" : "#64748b" }]}>
+          <Text style={[styles.locationText, { color: c.textMuted }]}>
             {isRTL ? "حسب موقعك الحالي" : "Based on your location"}
           </Text>
         </View>
@@ -233,13 +239,13 @@ export default function PrayerTimesScreen() {
           style={[
             styles.qiblaCard,
             {
-              backgroundColor: isDark ? "#1e293b" : "#ffffff",
-              borderColor: isDark ? "#334155" : "#e2e8f0",
+              backgroundColor: c.surface,
+              borderColor: c.border,
             },
           ]}
         >
           <View style={styles.qiblaHeaderRow}>
-            <Text style={[styles.qiblaTitle, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
+            <Text style={[styles.qiblaTitle, { color: c.text }]}>
               {isRTL ? "اتجاه القبلة" : "Qibla"}
             </Text>
             {isAligned && (
@@ -259,18 +265,18 @@ export default function PrayerTimesScreen() {
               style={[
                 styles.compassOuter,
                 {
-                  borderColor: isDark ? "rgba(251,191,36,0.35)" : "rgba(251,191,36,0.45)",
+                  borderColor: "rgba(251,191,36,0.35)",
                   backgroundColor: isDark ? "rgba(2,132,199,0.06)" : "rgba(2,132,199,0.03)",
                 },
               ]}
             >
-              <View style={[styles.compassInner, { borderColor: isDark ? "rgba(34,197,94,0.25)" : "rgba(34,197,94,0.25)" }]}>
+              <View style={[styles.compassInner, { borderColor: "rgba(34,197,94,0.25)" }]}>
                 <View style={styles.northMark}>
                   <Text style={[styles.northText, { color: isDark ? "#fbbf24" : "#b45309" }]}>N</Text>
                 </View>
 
                 <Animated.View style={[styles.qiblaArrow, arrowAnimatedStyle]}>
-                  <Animated.View style={[styles.arrowHead, { backgroundColor: isAligned ? "#fbbf24" : "#fbbf24" }]} />
+                  <Animated.View style={[styles.arrowHead, { backgroundColor: "#fbbf24" }]} />
                   <Animated.View style={[styles.arrowShaft, { backgroundColor: isAligned ? "#fbbf24" : "#22c55e" }]} />
                 </Animated.View>
 
@@ -279,7 +285,7 @@ export default function PrayerTimesScreen() {
             </View>
           </View>
 
-          <Text style={[styles.qiblaHint, { color: isDark ? "#94a3b8" : "#64748b" }]}>
+          <Text style={[styles.qiblaHint, { color: c.textMuted }]}>
             {isRTL
               ? "إذا كان الاتجاه غير دقيق، حرّك الجهاز على شكل 8 لمعايرة الحساس."
               : "If the direction feels off, move your phone in a figure-8 to calibrate."}
@@ -292,8 +298,8 @@ export default function PrayerTimesScreen() {
         </View>
 
         {/* Refresh Button */}
-        <Pressable onPress={refresh} style={[styles.refreshBtn, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}> 
-          <Text style={[styles.refreshBtnText, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
+        <Pressable onPress={refresh} style={[styles.refreshBtn, { backgroundColor: c.surface, borderColor: c.border }]}>
+          <Text style={[styles.refreshBtnText, { color: c.text }]}>
             {isRTL ? "تحديث" : "Refresh"}
           </Text>
         </Pressable>

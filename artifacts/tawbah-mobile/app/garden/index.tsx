@@ -164,8 +164,8 @@ export default function GardenScreen() {
         {/* Stats */}
         <View style={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 10, marginBottom: 16 }}>
           {[
-            { label: "أذكار اليوم",   value: apiDhikr.toLocaleString(),   color: "#10b981" },
-            { label: "أيام الرحلة",   value: journeyDays.toString(),        color: "#F59E0B" },
+            { label: "أذكار اليوم",   value: apiDhikr.toLocaleString(),   color: c.primary },
+            { label: "أيام الرحلة",   value: journeyDays.toString(),        color: c.accent },
             { label: "أيام التتابع",  value: streakDays.toString(),          color: "#8B5CF6" },
           ].map((stat, i) => (
             <View key={i} style={{ flex: 1, padding: 12, borderRadius: 14, backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)", borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", alignItems: "center" }}>
@@ -180,10 +180,10 @@ export default function GardenScreen() {
           <View style={{ marginBottom: 16 }}>
             <View style={{ flexDirection: isRTL ? "row-reverse" : "row", justifyContent: "space-between", marginBottom: 6 }}>
               <Text style={{ fontSize: 11, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>التقدم للمرحلة التالية</Text>
-              <Text style={{ fontSize: 11, color: "#10b981", fontWeight: "700", fontFamily: "IBMPlexSansArabic_700Bold" }}>{Math.round(progressToNext())}%</Text>
+              <Text style={{ fontSize: 11, color: c.primary, fontWeight: "700", fontFamily: "IBMPlexSansArabic_700Bold" }}>{Math.round(progressToNext())}%</Text>
             </View>
             <View style={{ height: 8, borderRadius: 8, backgroundColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(16,185,129,0.12)", overflow: "hidden" }}>
-              <View style={{ height: "100%", borderRadius: 8, backgroundColor: "#10b981", width: `${progressToNext()}%` }} />
+              <View style={{ height: "100%", borderRadius: 8, backgroundColor: c.primary, width: `${progressToNext()}%` }} />
             </View>
           </View>
         )}
@@ -191,7 +191,7 @@ export default function GardenScreen() {
         {/* Tap button */}
         <Pressable onPress={handleTap} style={{ height: 80, borderRadius: 22, alignItems: "center", justifyContent: "center", marginBottom: 16, backgroundColor: isDark ? "rgba(52,211,153,0.1)" : "rgba(16,185,129,0.09)", borderWidth: 2, borderColor: isDark ? "rgba(52,211,153,0.25)" : "rgba(16,185,129,0.25)" }}>
           <Text style={{ fontSize: 28 }}>📿</Text>
-          <Text style={{ fontSize: 12, fontWeight: "700", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 2 }}>
+          <Text style={{ fontSize: 12, fontWeight: "700", color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold", marginTop: 2 }}>
             اضغط للتسبيح {tapCount > 0 ? `(${tapCount} هذه الجلسة)` : ""}
           </Text>
         </Pressable>

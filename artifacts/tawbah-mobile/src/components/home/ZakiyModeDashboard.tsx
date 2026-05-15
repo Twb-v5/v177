@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from "react-native";
 import { useState } from "react";
 import { useZakiyMode } from "@/providers/ZakiyModeProvider";
-import { useSettings } from "@/providers/SettingsProvider";
+import { useColors } from "@/hooks/useColors";
 
 interface Message {
   id: string;
@@ -11,11 +11,11 @@ interface Message {
 
 export function ZakiyModeDashboard() {
   const { toggleAiMode } = useZakiyMode();
-  const { resolvedTheme } = useSettings();
-  const isDark = resolvedTheme === "dark";
+  const c = useColors();
+  const isDark = c.isDark;
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
-    { id: "1", role: "assistant", content: "Assalamu Alaikum! I'm Zakiy, your spiritual companion. How can I help you on your journey today?" },
+    { id: "1", role: "assistant", content: "السلام عليكم! أنا زكي، مرافقك الروحي. كيف أساعدك في رحلتك اليوم؟" },
   ]);
 
   const sendMessage = () => {
@@ -24,44 +24,54 @@ export function ZakiyModeDashboard() {
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setTimeout(() => {
-      setMessages((prev) => [...prev, { 
-        id: (Date.now() + 1).toString(), 
-        role: "assistant", 
-        content: "May Allah guide you. I'm here to support you in your spiritual journey. Keep making du'a and stay connected to the Quran." 
+      setMessages((prev) => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "هداك الله وسدد خطاك. أنا هنا لدعمك في رحلتك الروحية. استمر في الذكر والتوبة والتقرب من الله."
       }]);
     }, 1000);
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? "#0f172a" : "#f8fafc" }]}>
-      <View style={[styles.header, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
-        <Text style={[styles.headerTitle, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>Zakiy - Spiritual Assistant</Text>
-        <Pressable onPress={toggleAiMode} style={[styles.exitBtn, { backgroundColor: isDark ? "#334155" : "#f1f5f9" }]}>
-          <Text style={[styles.exitText, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>Exit AI Mode</Text>
+    <View style={[styles.container, { backgroundColor: c.background }]}>
+      <View style={[styles.header, { backgroundColor: c.surface, borderColor: c.border }]}>
+        <Text style={[styles.headerTitle, { color: c.text, fontFamily: "IBMPlexSansArabic_700Bold" }]}>زكي — المستشار الروحي</Text>
+        <Pressable onPress={toggleAiMode} style={[styles.exitBtn, { backgroundColor: c.primaryGlow, borderWidth: 1, borderColor: c.border }]}>
+          <Text style={[styles.exitText, { color: c.primary, fontFamily: "IBMPlexSansArabic_400Regular" }]}>خروج</Text>
         </Pressable>
       </View>
       <ScrollView style={styles.messages} contentContainerStyle={styles.messagesContent}>
         {messages.map((msg) => (
           <View key={msg.id} style={[
-            styles.message, 
+            styles.message,
             msg.role === "user" ? styles.userMsg : styles.assistantMsg,
-            { backgroundColor: msg.role === "user" ? (isDark ? "#1e293b" : "#ffffff") : (isDark ? "#166534" : "#dcfce7") }
+            {
+              backgroundColor: msg.role === "user"
+                ? (isDark ? c.surfaceElevated : c.card)
+                : (isDark ? c.primaryGlow : "rgba(45,106,79,0.08)"),
+              borderWidth: 1,
+              borderColor: msg.role === "user" ? c.border : (isDark ? "rgba(16,185,129,0.2)" : "rgba(45,106,79,0.15)"),
+            }
           ]}>
-            <Text style={[styles.messageText, { color: msg.role === "user" ? (isDark ? "#f1f5f9" : "#1e293b") : (isDark ? "#dcfce7" : "#166534") }]}>{msg.content}</Text>
+            <Text style={[styles.messageText, {
+              color: msg.role === "user" ? c.text : (isDark ? c.primaryLight : c.primary),
+              fontFamily: "IBMPlexSansArabic_400Regular",
+            }]}>{msg.content}</Text>
           </View>
         ))}
       </ScrollView>
-      <View style={[styles.inputContainer, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
+      <View style={[styles.inputContainer, { backgroundColor: c.surface, borderColor: c.border }]}>
         <TextInput
-          style={[styles.input, { backgroundColor: isDark ? "#0f172a" : "#f1f5f9", color: isDark ? "#f1f5f9" : "#1e293b" }]}
-          placeholder="Ask Zakiy..."
-          placeholderTextColor={isDark ? "#64748b" : "#94a3b8"}
+          style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, borderWidth: 1, fontFamily: "IBMPlexSansArabic_400Regular" }]}
+          placeholder="اكتب رسالتك لزكي..."
+          placeholderTextColor={c.textMuted}
           value={input}
           onChangeText={setInput}
           onSubmitEditing={sendMessage}
+          textAlign="right"
         />
-        <Pressable onPress={sendMessage} style={[styles.sendBtn, { backgroundColor: "#1a4731" }]}>
-          <Text style={styles.sendText}>Send</Text>
+        <Pressable onPress={sendMessage} style={[styles.sendBtn, { backgroundColor: c.primary }]}>
+          <Text style={[styles.sendText, { fontFamily: "IBMPlexSansArabic_700Bold" }]}>إرسال</Text>
         </Pressable>
       </View>
     </View>
@@ -71,17 +81,17 @@ export function ZakiyModeDashboard() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, borderBottomWidth: 1 },
-  headerTitle: { fontSize: 18, fontWeight: "bold" },
-  exitBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  exitText: { fontSize: 12, fontWeight: "600" },
+  headerTitle: { fontSize: 17, fontWeight: "bold" },
+  exitBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10 },
+  exitText: { fontSize: 13, fontWeight: "600" },
   messages: { flex: 1 },
-  messagesContent: { padding: 16, gap: 12 },
-  message: { padding: 12, borderRadius: 12, maxWidth: "80%" },
-  userMsg: { alignSelf: "flex-end" },
-  assistantMsg: { alignSelf: "flex-start" },
-  messageText: { fontSize: 14, lineHeight: 20 },
+  messagesContent: { padding: 16, gap: 10 },
+  message: { padding: 12, borderRadius: 16, maxWidth: "82%" },
+  userMsg: { alignSelf: "flex-start" },
+  assistantMsg: { alignSelf: "flex-end" },
+  messageText: { fontSize: 14, lineHeight: 22 },
   inputContainer: { flexDirection: "row", padding: 12, gap: 8, borderTopWidth: 1 },
-  input: { flex: 1, padding: 12, borderRadius: 12, fontSize: 14 },
-  sendBtn: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, justifyContent: "center" },
-  sendText: { color: "#ffffff", fontWeight: "600", fontSize: 14 },
+  input: { flex: 1, padding: 12, borderRadius: 14, fontSize: 14 },
+  sendBtn: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: 14, justifyContent: "center" },
+  sendText: { color: "#ffffff", fontWeight: "700", fontSize: 14 },
 });

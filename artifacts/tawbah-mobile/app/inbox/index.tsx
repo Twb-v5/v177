@@ -154,7 +154,7 @@ export default function InboxScreen() {
           <View style={{ flexDirection: "row", gap: 8 }}>
             {unreadCount > 0 && (
               <Pressable onPress={markAllRead} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, backgroundColor: "rgba(16,185,129,0.12)", borderWidth: 1, borderColor: "rgba(16,185,129,0.2)" }}>
-                <Text style={{ fontSize: 11, color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>قراءة الكل</Text>
+                <Text style={{ fontSize: 11, color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold" }}>قراءة الكل</Text>
               </Pressable>
             )}
             <Pressable onPress={fetchNotifs} style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)", alignItems: "center", justifyContent: "center" }}>

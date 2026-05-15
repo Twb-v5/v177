@@ -159,15 +159,13 @@ export default function DhikrCounterScreen() {
 
   const progressStyle = useAnimatedStyle(() => ({
     width: `${progressAnim.value * 100}%` as any,
-    backgroundColor: displayCompleted ? "#22C55E" : c.primary,
+    backgroundColor: displayCompleted ? c.emerald : c.primary,
   }));
 
   const completedStyle = useAnimatedStyle(() => ({
     opacity: completedAnim.value,
     transform: [{ scale: completedAnim.value }],
   }));
-
-  const primaryBtn = isDark ? c.primary : "#2D6A4F";
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={["top"]}>
@@ -245,7 +243,7 @@ export default function DhikrCounterScreen() {
           <Animated.View style={[completedStyle, { alignItems: "center" }]}>
             <Text style={{ fontSize: 48, marginBottom: 12 }}>✅</Text>
             <Text style={{
-              fontSize: 20, fontWeight: "800", color: "#22C55E",
+              fontSize: 20, fontWeight: "800", color: c.emerald,
               fontFamily: "IBMPlexSansArabic_700Bold",
               textAlign: "center",
             }}>
@@ -256,7 +254,7 @@ export default function DhikrCounterScreen() {
                 onPress={handleNext}
                 style={{
                   marginTop: 20, paddingHorizontal: 28, paddingVertical: 12,
-                  borderRadius: 16, backgroundColor: primaryBtn,
+                  borderRadius: 16, backgroundColor: c.primary,
                 }}
               >
                 <Text style={{ color: "#fff", fontWeight: "700", fontFamily: "IBMPlexSansArabic_700Bold", fontSize: 14 }}>
@@ -307,11 +305,11 @@ export default function DhikrCounterScreen() {
               height: 160,
               borderRadius: 32,
               backgroundColor: displayCompleted
-                ? isDark ? "#16302B" : "#D1FAE5"
+                ? isDark ? "rgba(16,185,129,0.12)" : "rgba(16,185,129,0.08)"
                 : isDark ? c.surface : "#FFFFFF",
               borderWidth: 2,
               borderColor: displayCompleted
-                ? "#22C55E"
+                ? c.emerald
                 : isDark ? c.border : "rgba(45,106,79,0.16)",
               alignItems: "center",
               justifyContent: "center",
@@ -323,7 +321,7 @@ export default function DhikrCounterScreen() {
             <Text
               style={{
                 fontSize: 72, fontWeight: "900",
-                color: displayCompleted ? "#22C55E" : c.primary,
+                color: displayCompleted ? c.emerald : c.primary,
                 lineHeight: 80,
               }}
             >
@@ -354,7 +352,7 @@ export default function DhikrCounterScreen() {
             onPress={handlePrev}
             style={{
               flex: 1, paddingVertical: 13, borderRadius: 14,
-              backgroundColor: isDark ? c.surface : "#F1F5F9",
+              backgroundColor: isDark ? c.surface : c.background,
               borderWidth: 1, borderColor: c.divider,
               alignItems: "center", justifyContent: "center",
             }}
@@ -368,7 +366,7 @@ export default function DhikrCounterScreen() {
             onPress={handleNext}
             style={{
               flex: 1, paddingVertical: 13, borderRadius: 14,
-              backgroundColor: primaryBtn,
+              backgroundColor: c.primary,
               alignItems: "center", justifyContent: "center",
             }}
           >

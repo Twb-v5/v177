@@ -65,8 +65,8 @@ export function useZakiy() {
     async function checkAnniversaryAndRisk() {
       try {
         const [annRes, riskRes] = await Promise.all([
-          fetch(aiUrl(`/api/zakiy/anniversary?sessionId=${encodeURIComponent(sessionId)}`)),
-          fetch(aiUrl(`/api/zakiy/risk-check?sessionId=${encodeURIComponent(sessionId)}`)),
+          fetch(aiUrl(`/zakiy/anniversary?sessionId=${encodeURIComponent(sessionId)}`)),
+          fetch(aiUrl(`/zakiy/risk-check?sessionId=${encodeURIComponent(sessionId)}`)),
         ]);
         if (cancelled) return;
 
@@ -108,7 +108,7 @@ export function useZakiy() {
 
   async function fetchSuggestions(history: ApiHistory[], msgId: string) {
     try {
-      const res = await fetch(aiUrl("/api/zakiy/suggestions"), {
+      const res = await fetch(aiUrl("/zakiy/suggestions"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ history, sessionId }),
@@ -177,7 +177,7 @@ export function useZakiy() {
     setChatState("thinking");
 
     try {
-      const res = await fetch(aiUrl("/api/zakiy/message"), {
+      const res = await fetch(aiUrl("/zakiy/message"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -270,7 +270,7 @@ export function useZakiy() {
       formData.append("voiceProfile", voiceProfileId);
 
       const history = buildHistory();
-      const res = await fetch(aiUrl("/api/zakiy/voice"), {
+      const res = await fetch(aiUrl("/zakiy/voice"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

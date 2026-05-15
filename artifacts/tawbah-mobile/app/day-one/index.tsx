@@ -154,11 +154,11 @@ export default function DayOneScreen() {
         {/* Progress */}
         <Animated.View entering={FadeInDown.delay(0).springify()} style={{ borderRadius: 20, padding: 18, marginBottom: 16, backgroundColor: isDark ? "rgba(16,185,129,0.07)" : "#F0FDF4", borderWidth: 1, borderColor: isDark ? "rgba(16,185,129,0.18)" : "rgba(16,185,129,0.25)" }}>
           <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <Text style={{ fontSize: 13, color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>{completedCount}/{TODAY_TASKS.length}</Text>
+            <Text style={{ fontSize: 13, color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold" }}>{completedCount}/{TODAY_TASKS.length}</Text>
             <Text style={{ fontSize: 15, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold" }}>بداية رحلتك</Text>
           </View>
           <View style={{ height: 8, borderRadius: 8, backgroundColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(16,185,129,0.15)", overflow: "hidden" }}>
-            <View style={{ height: "100%", borderRadius: 8, backgroundColor: "#10b981", width: `${(completedCount / TODAY_TASKS.length) * 100}%` }} />
+            <View style={{ height: "100%", borderRadius: 8, backgroundColor: c.primary, width: `${(completedCount / TODAY_TASKS.length) * 100}%` }} />
           </View>
         </Animated.View>
 
@@ -186,7 +186,7 @@ export default function DayOneScreen() {
         {allDone && !initialLoading && (
           <Animated.View entering={FadeIn.duration(400)} style={{ padding: 24, borderRadius: 22, alignItems: "center", marginTop: 8, backgroundColor: "rgba(16,185,129,0.08)", borderWidth: 1, borderColor: "rgba(16,185,129,0.22)" }}>
             <Text style={{ fontSize: 40, marginBottom: 10 }}>🎉</Text>
-            <Text style={{ fontSize: 17, fontWeight: "800", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center", marginBottom: 6 }}>
+            <Text style={{ fontSize: 17, fontWeight: "800", color: c.primary, fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center", marginBottom: 6 }}>
               أتممت يومك الأول — بارك الله فيك!
             </Text>
             <Text style={{ fontSize: 13, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: "center", lineHeight: 22 }}>

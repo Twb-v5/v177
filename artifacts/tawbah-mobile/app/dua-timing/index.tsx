@@ -103,13 +103,14 @@ function WindowCard({
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const c = useColors();
   const cardBg = win.active || win.alwaysActive
     ? (isDark ? "rgba(16,185,129,0.12)" : "rgba(16,185,129,0.08)")
     : (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)");
   const borderColor = win.active || win.alwaysActive
     ? "rgba(16,185,129,0.4)"
     : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)");
-  const accentColor = win.active || win.alwaysActive ? "#10b981" : (isDark ? "#6b7280" : "#9ca3af");
+  const accentColor = win.active || win.alwaysActive ? c.primary : (isDark ? "#6b7280" : "#9ca3af");
   const textColor = isDark ? "#f9fafb" : "#111827";
   const subColor = isDark ? "#9ca3af" : "#6b7280";
 
@@ -146,7 +147,7 @@ function WindowCard({
         <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 8, marginRight: 8 }}>
           <View style={{
             paddingHorizontal: 8, paddingVertical: 3,
-            backgroundColor: win.active || win.alwaysActive ? "#10b981" : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)"),
+            backgroundColor: win.active || win.alwaysActive ? c.primary : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)"),
             borderRadius: 8,
           }}>
             <Text style={{ fontSize: 11, fontWeight: "700", color: win.active || win.alwaysActive ? "#fff" : subColor }}>
@@ -172,7 +173,7 @@ function WindowCard({
             backgroundColor: isDark ? "rgba(16,185,129,0.08)" : "rgba(16,185,129,0.06)",
             borderRadius: 10, padding: 10,
           }}>
-            <Text style={{ fontSize: 11, fontWeight: "700", color: "#10b981", marginBottom: 4, textAlign: "right" }}>
+            <Text style={{ fontSize: 11, fontWeight: "700", color: c.primary, marginBottom: 4, textAlign: "right" }}>
               أفضل دعاء الآن:
             </Text>
             <Text style={{ fontSize: 13, color: textColor, textAlign: "right", lineHeight: 22 }}>
@@ -186,7 +187,8 @@ function WindowCard({
 }
 
 export default function DuaTimingScreen() {
-  const { isDark } = useColors();
+  const c = useColors();
+  const isDark = c.isDark;
   const { language } = useSettings();
   const [score, setScore] = useState(0);
   const [windows, setWindows] = useState<DuaWindow[]>([]);
@@ -249,8 +251,8 @@ export default function DuaTimingScreen() {
         {activeWindows.length > 0 && (
           <View style={{ marginBottom: 16 }}>
             <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 8, marginBottom: 10 }}>
-              <Star size={16} color="#10b981" />
-              <Text style={{ fontSize: 14, fontWeight: "700", color: "#10b981" }}>
+              <Star size={16} color={c.primary} />
+              <Text style={{ fontSize: 14, fontWeight: "700", color: c.primary }}>
                 أوقات نشطة الآن ({activeWindows.length})
               </Text>
             </View>
