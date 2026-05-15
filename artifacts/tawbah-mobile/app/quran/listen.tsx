@@ -5,13 +5,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS, AVPlaybackStatus } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, {
-  useSharedValue, useAnimatedStyle, withTiming, withRepeat,
-  Easing,
-} from "react-native-reanimated";
 import { useSettings } from "@/providers/SettingsProvider";
 import { useColors } from "@/hooks/useColors";
 
@@ -253,21 +248,6 @@ function PlayerScreen({
   useEffect(() => { loopRef.current = loop; }, [loop]);
   useEffect(() => { reciterRef.current = reciterId; }, [reciterId]);
 
-  // Pulse animation for playing indicator
-  const pulse = useSharedValue(1);
-  useEffect(() => {
-    if (isPlaying) {
-      pulse.value = withRepeat(
-        withTiming(1.15, { duration: 700, easing: Easing.inOut(Easing.sine) }),
-        -1,
-        true
-      );
-    } else {
-      pulse.value = withTiming(1, { duration: 200 });
-    }
-  }, [isPlaying]);
-  const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
-
   // Setup audio mode
   useEffect(() => {
     Audio.setAudioModeAsync({
@@ -429,12 +409,8 @@ function PlayerScreen({
   const surahName = SURAH_NAMES[surah.number] || surah.name;
   const reciter = QURAN_RECITERS.find(r => r.id === reciterId);
 
-  // gradient colors — deep Islamic green
-  const gradientColors: [string, string, string] = ["#021a10", "#042b18", "#062e1a"];
-
   return (
     <View style={{ flex: 1, backgroundColor: "#021a10" }}>
-      <LinearGradient colors={gradientColors} style={StyleSheet.absoluteFillObject} />
 
       {/* Header */}
       <SafeAreaView edges={["top"]} style={{ zIndex: 2 }}>
@@ -460,7 +436,7 @@ function PlayerScreen({
         ) : error ? (
           <Text style={styles.pError}>{error}</Text>
         ) : currentAyah ? (
-          <Animated.View style={[{ alignItems: "center", paddingHorizontal: 20 }, isPlaying ? {} : {}]}>
+          <View style={{ alignItems: "center", paddingHorizontal: 20 }}>
             <Text style={styles.pAyahText} textBreakStrategy="simple">
               {currentAyah.text}
               {"  "}
@@ -469,7 +445,7 @@ function PlayerScreen({
             <Text style={styles.pAyahCounter}>
               آية {currentAyah.numberInSurah} من {surah.numberOfAyahs}
             </Text>
-          </Animated.View>
+          </View>
         ) : null}
       </View>
 

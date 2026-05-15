@@ -1,8 +1,7 @@
 import { useMemo, useRef, useState, useEffect, useCallback } from "react";
-import { View, Text, Pressable, StyleSheet, Dimensions, Platform, ScrollView } from "react-native";
+import { View, Text, Pressable, StyleSheet, Dimensions, Platform, ScrollView, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { FlashList } from "@shopify/flash-list";
 import * as Haptics from "expo-haptics";
 import Animated, {
   Easing,
@@ -26,7 +25,6 @@ import {
   Play,
   Plus,
   X,
-  ChevronDown,
 } from "lucide-react-native";
 import { useAyahs, Ayah } from "@/hooks/useQuranData";
 import { useQuranAudio } from "@/hooks/useQuranAudio";
@@ -432,13 +430,12 @@ export default function QuranReadScreen() {
       </View>
 
       {/* Ayah List */}
-      <FlashList
+      <FlatList
         data={paginatedAyahs}
         renderItem={renderAyah}
         keyExtractor={(item) => item.number.toString()}
         contentContainerStyle={styles.ayahList}
         showsVerticalScrollIndicator={false}
-        estimatedItemSize={140}
       />
 
       {/* Bottom Controls */}
