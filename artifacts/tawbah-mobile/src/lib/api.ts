@@ -3,7 +3,10 @@ import { Platform } from "react-native";
 
 const PRODUCTION_API = "https://tawbah.replit.app/api";
 
+const EXPO_PUBLIC_API = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 function detectDevApiBase(): string {
+  if (EXPO_PUBLIC_API) return EXPO_PUBLIC_API;
   if (Platform.OS === "web" && typeof window !== "undefined") {
     return `${window.location.origin}/api`;
   }

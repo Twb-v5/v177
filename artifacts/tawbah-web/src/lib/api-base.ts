@@ -76,6 +76,9 @@ export function apiUrl(path: string): string {
 }
 
 export function aiUrl(path: string): string {
+  if (!isNativeApp()) {
+    return path;
+  }
   if (/^https?:\/\//i.test(path)) return path;
   return joinUrl(getAiBase(), path);
 }

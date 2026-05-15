@@ -59,7 +59,7 @@ router.post("/auth/register", async (req, res) => {
   const token = await signJwt({ sub: String(user!.id), username: user!.username ?? username, email: user!.email });
   setAuthCookie(res, token);
 
-  return res.json({ user: { id: user!.id, username: user!.username, email: user!.email, gender: user!.gender } });
+  return res.json({ token, user: { id: user!.id, username: user!.username, email: user!.email, gender: user!.gender } });
 });
 
 router.post("/auth/login", async (req, res) => {
@@ -93,7 +93,7 @@ router.post("/auth/login", async (req, res) => {
   const token = await signJwt({ sub: String(user.id), username: user.username ?? username, email: user.email });
   setAuthCookie(res, token);
 
-  return res.json({ user: { id: user.id, username: user.username, email: user.email } });
+  return res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
 });
 
 router.post("/auth/logout", (req, res) => {

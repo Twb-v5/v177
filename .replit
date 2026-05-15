@@ -74,3 +74,4 @@ packages = ["glib", "nss", "nspr", "atk", "cups", "xorg.libX11", "xorg.libXcompo
 VAPID_PUBLIC_KEY = "BE75hv5VZ5Wt-X6Kk_cOUb2hevJJWV7aODdln971UaReFQEjcxuhYVV7-ElRf3QxW1Pv8KqqVmnvz815vFxJgyA"
 VAPID_PRIVATE_KEY = "XfVXXqRQrf-O9yU2dkalihqYyXMVsHkH9q2L86TRoas"
 VAPID_EMAIL = "mailto:admin@tawbah.app"
+EXPO_TOKEN = "_b9Mbt2aSKcLloFX8yneFQvA-j-BxURvcnu9INx6"

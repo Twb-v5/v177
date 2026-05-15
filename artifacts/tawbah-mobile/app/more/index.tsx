@@ -21,6 +21,7 @@ import {
   Target,
   Moon,
   Tv,
+  Zap,
 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -218,6 +219,16 @@ export default function MoreScreen() {
           color: "#0891B2",
           bg: "#ECFEFF",
           bgDark: "#091A1F",
+        },
+        {
+          icon: <Zap size={18} color="#F59E0B" />,
+          labelAr: "مهام اليوم",
+          labelEn: "Daily Tasks",
+          href: "/hadi-tasks",
+          color: "#F59E0B",
+          bg: "#FFFBEB",
+          bgDark: "#1A1206",
+          badge: "جديد",
         },
       ],
     },

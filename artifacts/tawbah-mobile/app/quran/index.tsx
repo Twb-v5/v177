@@ -127,11 +127,14 @@ export default function QuranHubScreen() {
         <Text style={{ fontSize: 11, fontWeight: "700", color: isDark ? "#64748b" : "#94a3b8", marginBottom: 8, textAlign: "right" }}>أدوات القرآن</Text>
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
           {[
-            { label: "تفسير", emoji: "📖", href: "/quran/tafsir" },
-            { label: "حفظ", emoji: "🧠", href: "/quran/memorize" },
-            { label: "تحديات", emoji: "🏆", href: "/quran/challenges" },
-            { label: "ختمة", emoji: "📿", href: "/quran/khatmat" },
-            { label: "مساجد", emoji: "🕌", href: "/quran/map" },
+            { label: "تفسير",   emoji: "📖", href: "/quran/tafsir"   },
+            { label: "حفظ",     emoji: "🧠", href: "/quran/memorize" },
+            { label: "تحديات",  emoji: "🏆", href: "/quran/challenges" },
+            { label: "ختمة",    emoji: "📿", href: "/quran/khatmat"  },
+            { label: "مساجد",   emoji: "🕌", href: "/quran/map"      },
+            { label: "معجزات",  emoji: "✨", href: "/quran/miracles" },
+            { label: "بطاقات",  emoji: "🃏", href: "/quran/cards"    },
+            { label: "ذكاء",    emoji: "🤖", href: "/quran/ai"       },
           ].map(tool => (
             <Pressable key={tool.href} onPress={() => router.push(tool.href as any)}
               style={{ flexDirection: "row-reverse", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10,

@@ -12,7 +12,7 @@ const MOODS = [
   { id: "struggling", emoji: "💪", labelAr: "أتعافى", bg: { light: "#FFF1F0", dark: "#1A0A0A" }, accent: { light: "#DC2626", dark: "#EF4444" } },
 ] as const;
 
-function MoodChip({ mood, isSelected, isDark, onPress }: { mood: typeof MOODS[0]; isSelected: boolean; isDark: boolean; onPress: () => void }) {
+function MoodChip({ mood, isSelected, isDark, onPress }: { mood: typeof MOODS[number]; isSelected: boolean; isDark: boolean; onPress: () => void }) {
   const scale = useSharedValue(1);
   const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   const bg = isDark ? mood.bg.dark : mood.bg.light;

@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useSettings } from "@/providers/SettingsProvider";
-import { ChevronRight, ChevronLeft } from "lucide-react-native";
+import { PageHeader } from "@/components/shared/PageHeader";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 
 const CATEGORIES = [
@@ -190,31 +190,11 @@ export default function AdhkarScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={["top"]}>
-      <View style={{
-        flexDirection: isRTL ? "row-reverse" : "row",
-        alignItems: "center", paddingHorizontal: 16, paddingVertical: 12,
-        borderBottomWidth: 1, borderBottomColor: c.divider,
-      }}>
-        <Pressable
-          onPress={() => router.back()}
-          style={{
-            width: 38, height: 38, borderRadius: 12,
-            backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-            alignItems: "center", justifyContent: "center",
-          }}
-        >
-          {isRTL ? <ChevronRight size={20} color={c.textSecondary} /> : <ChevronLeft size={20} color={c.textSecondary} />}
-        </Pressable>
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <Text style={{ fontSize: 17, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold" }}>
-            الأذكار المأثورة
-          </Text>
-          <Text style={{ fontSize: 11, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 1 }}>
-            {filtered.length} ذكر
-          </Text>
-        </View>
-        <View style={{ width: 38 }} />
-      </View>
+      <PageHeader
+        titleAr="الأذكار المأثورة"
+        subtitleAr={`${filtered.length} ذكر`}
+        showBack
+      />
 
       {/* Filter Tabs */}
       <View style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: c.divider }}>

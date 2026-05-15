@@ -41,7 +41,6 @@ const colors = {
     shadowStrong: "rgba(0,0,0,0.15)",
 
     tint: "#2D6A4F",
-    text: "#1C1917",
   },
 
   dark: {
@@ -86,7 +85,6 @@ const colors = {
     shadowStrong: "rgba(0,0,0,0.65)",
 
     tint: "#10B981",
-    text: "#F1F5F9",
   },
 
   radius: {

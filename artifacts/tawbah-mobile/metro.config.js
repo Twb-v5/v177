@@ -11,6 +11,11 @@ const config = getDefaultConfig(projectRoot);
 
 config.resolver.unstable_enablePackageExports = true;
 
+config.resolver.blockList = [
+  /node_modules\/expo-asset_tmp_[^/]+\/.*/,
+  /node_modules\/.*_tmp_[^/]+\/.*/,
+];
+
 config.transformer = {
   ...config.transformer,
   getTransformOptions: async () => ({

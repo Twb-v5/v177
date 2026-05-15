@@ -64,7 +64,10 @@ export default function DhikrCounterScreen() {
   const quickCompleted = localCount >= quickTarget;
 
   useEffect(() => {
-    if (!isQuickMode) selectCategory(cat);
+    if (!isQuickMode) {
+      const adhkarCat = (cat === "prayer" || cat === "waking") ? "general" : cat;
+      selectCategory(adhkarCat as "general" | "morning" | "evening" | "sleep");
+    }
   }, [cat, selectCategory, isQuickMode]);
 
   const label = CATEGORY_LABELS[cat] || CATEGORY_LABELS.general;

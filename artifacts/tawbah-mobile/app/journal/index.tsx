@@ -1,24 +1,23 @@
-import { useState, useEffect } from "react";
-import { View, Text, Pressable, ScrollView, TextInput, KeyboardAvoidingView, Platform } from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import { View, Text, Pressable, ScrollView, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { PenLine, Trash2, ChevronDown, ChevronUp, Lock } from "lucide-react-native";
+import { PenLine, Trash2, ChevronDown, ChevronUp, Lock, RefreshCw } from "lucide-react-native";
 import { useColors } from "@/hooks/useColors";
 import { useSettings } from "@/providers/SettingsProvider";
 import { PageHeader } from "@/components/shared/PageHeader";
-
-const STORAGE_KEY = "journal_entries_v1";
+import { apiUrl } from "@/lib/api";
+import { getSessionId } from "@/lib/session";
 
 type Mood = "great" | "good" | "neutral" | "sad" | "struggling";
 
 interface JournalEntry {
-  id: string;
+  id: number;
   content: string;
   mood: Mood;
   date: string;
-  timestamp: number;
+  createdAt: string;
 }
 
 const MOOD_CONFIG: Record<Mood, { emoji: string; labelAr: string; color: string; bg: string }> = {
@@ -42,45 +41,59 @@ function getRandomPrompt() {
   return PROMPTS[Math.floor(Math.random() * PROMPTS.length)] ?? PROMPTS[0];
 }
 
-function formatDate(timestamp: number): string {
-  const d = new Date(timestamp);
-  return d.toLocaleDateString("ar-SA", { weekday: "long", month: "long", day: "numeric" });
+function formatDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("ar-SA", { weekday: "long", month: "long", day: "numeric" });
+  } catch { return iso; }
 }
 
-function EntryCard({ entry, isRTL, isDark, c, onDelete }: { entry: JournalEntry; isRTL: boolean; isDark: boolean; c: any; onDelete: (id: string) => void }) {
+function EntryCard({ entry, isRTL, isDark, c, onDelete }: {
+  entry: JournalEntry; isRTL: boolean; isDark: boolean; c: ReturnType<typeof useColors>;
+  onDelete: (id: number) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const scale = useSharedValue(1);
   const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const moodCfg = MOOD_CONFIG[entry.mood];
+  const moodCfg = MOOD_CONFIG[entry.mood] ?? MOOD_CONFIG.neutral;
 
   return (
     <Animated.View style={[animStyle, { marginBottom: 10 }]}>
-      <View style={{ borderRadius: 18, backgroundColor: isDark ? "rgba(14,14,14,0.92)" : "#fff", borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)", overflow: "hidden" }}>
+      <View style={{
+        borderRadius: 18,
+        backgroundColor: isDark ? "rgba(14,14,14,0.92)" : "#fff",
+        borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
+        overflow: "hidden",
+      }}>
         <View style={{ height: 2, backgroundColor: moodCfg.color, opacity: 0.7 }} />
         <Pressable
           onPressIn={() => { scale.value = withSpring(0.99); }}
           onPressOut={() => { scale.value = withSpring(1); }}
           onPress={() => { setExpanded(e => !e); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-          style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 12, padding: 14 }}>
+          style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 12, padding: 14 }}
+        >
           <View style={{ width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: moodCfg.bg }}>
             <Text style={{ fontSize: 20 }}>{moodCfg.emoji}</Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 12, color: moodCfg.color, fontWeight: "700", fontFamily: "IBMPlexSansArabic_700Bold" }}>{moodCfg.labelAr}</Text>
-            <Text style={{ fontSize: 11, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 2 }}>{formatDate(entry.timestamp)}</Text>
+            <Text style={{ fontSize: 11, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 2 }}>{formatDate(entry.createdAt)}</Text>
           </View>
           <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 8 }}>
             <Lock size={12} color={c.textMuted} />
             {expanded ? <ChevronUp size={16} color={c.textMuted} /> : <ChevronDown size={16} color={c.textMuted} />}
           </View>
         </Pressable>
-
         {expanded && (
           <Animated.View entering={FadeIn.duration(200)} style={{ paddingHorizontal: 14, paddingBottom: 14 }}>
             <View style={{ height: 1, backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", marginBottom: 12 }} />
             <Text style={{ fontSize: 14, color: c.text, fontFamily: "IBMPlexSansArabic_400Regular", lineHeight: 24, textAlign: isRTL ? "right" : "left" }}>{entry.content}</Text>
-            <Pressable onPress={() => { onDelete(entry.id); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); }}
-              style={{ marginTop: 12, flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 8, borderRadius: 10, backgroundColor: "rgba(239,68,68,0.08)", borderWidth: 1, borderColor: "rgba(239,68,68,0.18)" }}>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                onDelete(entry.id);
+              }}
+              style={{ marginTop: 12, flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 8, borderRadius: 10, backgroundColor: "rgba(239,68,68,0.08)", borderWidth: 1, borderColor: "rgba(239,68,68,0.18)" }}
+            >
               <Trash2 size={13} color="#ef4444" />
               <Text style={{ fontSize: 12, color: "#ef4444", fontFamily: "IBMPlexSansArabic_400Regular" }}>حذف</Text>
             </Pressable>
@@ -102,33 +115,67 @@ export default function JournalScreen() {
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<Mood>("neutral");
   const [prompt] = useState(getRandomPrompt());
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then(raw => {
-      if (raw) setEntries(JSON.parse(raw) as JournalEntry[]);
-    });
+  const fetchEntries = useCallback(async () => {
+    setLoading(true);
+    try {
+      const sid = getSessionId();
+      const res = await fetch(apiUrl(`/journal?sessionId=${encodeURIComponent(sid)}`));
+      if (res.ok) {
+        const data = await res.json() as JournalEntry[];
+        setEntries(data);
+      }
+    } catch (e) {
+      console.error("Journal fetch error:", e);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
   const saveEntry = async () => {
     if (!content.trim()) return;
-    const entry: JournalEntry = {
-      id: Date.now().toString(),
-      content: content.trim(),
-      mood,
-      date: new Date().toISOString().slice(0, 10),
-      timestamp: Date.now(),
-    };
-    const updated = [entry, ...entries];
-    setEntries(updated);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    setContent(""); setMood("neutral"); setWriting(false);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setSaving(true);
+    try {
+      const sid = getSessionId();
+      const res = await fetch(apiUrl("/journal"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: sid, content: content.trim(), mood }),
+      });
+      if (res.ok) {
+        const entry = await res.json() as JournalEntry;
+        setEntries(prev => [entry, ...prev]);
+        setContent(""); setMood("neutral"); setWriting(false);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (e) {
+      console.error("Journal save error:", e);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const deleteEntry = async (id: string) => {
-    const updated = entries.filter(e => e.id !== id);
-    setEntries(updated);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  const deleteEntry = async (id: number) => {
+    Alert.alert("حذف التدوينة", "هل تريد حذف هذه التدوينة نهائياً؟", [
+      { text: "إلغاء", style: "cancel" },
+      {
+        text: "حذف", style: "destructive", onPress: async () => {
+          try {
+            const sid = getSessionId();
+            const res = await fetch(apiUrl(`/journal/${id}`), {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionId: sid }),
+            });
+            if (res.ok) setEntries(prev => prev.filter(e => e.id !== id));
+          } catch (e) { console.error("Journal delete error:", e); }
+        },
+      },
+    ]);
   };
 
   const moodKeys: Mood[] = ["great", "good", "neutral", "sad", "struggling"];
@@ -137,65 +184,70 @@ export default function JournalScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={["top"]}>
       <PageHeader
         titleAr="مفكرة روحية"
-        subtitleAr={`${entries.length} تدوينة خاصة`}
+        subtitleAr={loading ? "جاري التحميل..." : `${entries.length} تدوينة خاصة`}
         rightAction={
-          <Pressable onPress={() => { setWriting(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-            style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: "rgba(16,185,129,0.14)", borderWidth: 1, borderColor: "rgba(16,185,129,0.25)", alignItems: "center", justifyContent: "center" }}>
-            <PenLine size={18} color="#10b981" />
-          </Pressable>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <Pressable onPress={fetchEntries} style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)", alignItems: "center", justifyContent: "center" }}>
+              <RefreshCw size={16} color={c.textSecondary} />
+            </Pressable>
+            <Pressable
+              onPress={() => { setWriting(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+              style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: "rgba(16,185,129,0.14)", borderWidth: 1, borderColor: "rgba(16,185,129,0.25)", alignItems: "center", justifyContent: "center" }}
+            >
+              <PenLine size={18} color="#10b981" />
+            </Pressable>
+          </View>
         }
       />
 
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 40 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+
           {writing && (
             <Animated.View entering={FadeIn.duration(300)} style={{ borderRadius: 20, backgroundColor: isDark ? "rgba(14,14,14,0.95)" : "#fff", borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)", padding: 16, marginBottom: 16 }}>
               <Text style={{ fontSize: 13, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: isRTL ? "right" : "left", marginBottom: 12, fontStyle: "italic" }}>
                 💭 {prompt}
               </Text>
-
               <Text style={{ fontSize: 12, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_700Bold", fontWeight: "700", marginBottom: 8, textAlign: isRTL ? "right" : "left" }}>
                 كيف حالك اليوم؟
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 8, marginBottom: 14 }}>
                 {moodKeys.map(m => {
-                  const cfg = MOOD_CONFIG[m];
+                  const cfg = MOOD_CONFIG[m]!;
                   return (
                     <Pressable key={m} onPress={() => { setMood(m); Haptics.selectionAsync(); }}
-                      style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12,
-                        backgroundColor: mood === m ? cfg.bg : (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)"),
-                        borderWidth: 1, borderColor: mood === m ? cfg.color + "50" : (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)") }}>
+                      style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: mood === m ? cfg.bg : (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)"), borderWidth: 1, borderColor: mood === m ? cfg.color + "50" : (isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)") }}>
                       <Text style={{ fontSize: 16 }}>{cfg.emoji}</Text>
                       <Text style={{ fontSize: 12, fontWeight: "700", color: mood === m ? cfg.color : c.textSecondary, fontFamily: "IBMPlexSansArabic_700Bold" }}>{cfg.labelAr}</Text>
                     </Pressable>
                   );
                 })}
               </ScrollView>
-
               <TextInput value={content} onChangeText={setContent} placeholder="اكتب ما في قلبك... هذا مكانك الآمن"
                 placeholderTextColor={c.textMuted} multiline numberOfLines={5} textAlignVertical="top"
-                style={{ borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12,
-                  color: c.text, fontFamily: "IBMPlexSansArabic_400Regular", fontSize: 14, minHeight: 110, textAlign: isRTL ? "right" : "left", lineHeight: 24, marginBottom: 12 }} />
-
+                style={{ borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, color: c.text, fontFamily: "IBMPlexSansArabic_400Regular", fontSize: 14, minHeight: 110, textAlign: isRTL ? "right" : "left", lineHeight: 24, marginBottom: 12 }} />
               <View style={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 8 }}>
                 <Pressable onPress={() => { setWriting(false); setContent(""); setMood("neutral"); }}
                   style={{ flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: "center", backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)" }}>
                   <Text style={{ fontSize: 14, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular" }}>إلغاء</Text>
                 </Pressable>
-                <Pressable onPress={saveEntry} disabled={!content.trim()}
-                  style={{ flex: 2, paddingVertical: 12, borderRadius: 14, alignItems: "center", backgroundColor: content.trim() ? "#2D6A4F" : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)") }}>
-                  <Text style={{ fontSize: 14, fontWeight: "800", color: content.trim() ? "#fff" : c.textMuted, fontFamily: "IBMPlexSansArabic_700Bold" }}>حفظ في السر</Text>
+                <Pressable onPress={saveEntry} disabled={!content.trim() || saving}
+                  style={{ flex: 2, paddingVertical: 12, borderRadius: 14, alignItems: "center", backgroundColor: content.trim() && !saving ? "#2D6A4F" : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)") }}>
+                  {saving ? <ActivityIndicator size="small" color="#fff" /> : <Text style={{ fontSize: 14, fontWeight: "800", color: content.trim() ? "#fff" : c.textMuted, fontFamily: "IBMPlexSansArabic_700Bold" }}>حفظ في السر</Text>}
                 </Pressable>
               </View>
             </Animated.View>
           )}
 
-          {entries.length === 0 && !writing ? (
+          {loading ? (
+            <View style={{ alignItems: "center", paddingVertical: 48 }}>
+              <ActivityIndicator size="large" color={c.primary} />
+              <Text style={{ fontSize: 13, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 12 }}>جاري تحميل مفكرتك...</Text>
+            </View>
+          ) : entries.length === 0 && !writing ? (
             <View style={{ alignItems: "center", paddingVertical: 48 }}>
               <Text style={{ fontSize: 56, marginBottom: 16 }}>📓</Text>
-              <Text style={{ fontSize: 17, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center", marginBottom: 8 }}>
-                مفكرتك فارغة
-              </Text>
+              <Text style={{ fontSize: 17, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold", textAlign: "center", marginBottom: 8 }}>مفكرتك فارغة</Text>
               <Text style={{ fontSize: 13, color: c.textSecondary, fontFamily: "IBMPlexSansArabic_400Regular", textAlign: "center", lineHeight: 22, paddingHorizontal: 24 }}>
                 سجّل أفكارك وأحاسيسك في رحلتك مع الله — هذا المكان لك وحدك
               </Text>

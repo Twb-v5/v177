@@ -24,10 +24,11 @@ export interface DuaContext {
 
 export function getDuaContext(): DuaContext {
   const now = new Date();
-  const power = calcDuaPower(now);
-  const label = getPowerLabel(power);
-  const nextPeak = getNextPeakDescription(now);
-  const windows = buildDuaWindows(now);
+  const power = calcDuaPower();
+  const powerLabel = getPowerLabel(power);
+  const label = typeof powerLabel === "string" ? powerLabel : powerLabel.label;
+  const nextPeak = getNextPeakDescription(power);
+  const windows = buildDuaWindows();
   const activeWindows = windows.filter(w => w.active);
 
   return { power, label, nextPeak, windows, activeWindows, now };

@@ -25,3 +25,4 @@ run = [ "pnpm", "--filter", "@workspace/tawbah-mobile", "run", "serve" ]
 [services.env]
 PORT = "24800"
 BASE_PATH = "/tawbah-mobile/"
+EXPO_PUBLIC_API_BASE_URL = "https://6ad17247-6023-4f43-a94f-02a8917a2e73-00-38r582jk3iikr.janeway.replit.dev/api"
