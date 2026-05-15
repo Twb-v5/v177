@@ -78,7 +78,3 @@ VAPID_EMAIL = "mailto:admin@tawbah.app"
 EXPO_TOKEN = "_b9Mbt2aSKcLloFX8yneFQvA-j-BxURvcnu9INx6"
 JWT_SECRET = "tawbah-jwt-secret-replit-mgzbfs174q"
 PORT = "3001"
-
-[[ports]]
-localPort = 3001
-externalPort = 3001
