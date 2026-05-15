@@ -29,6 +29,18 @@ const patches = [
       ["process.env.EXPO_ROUTER_IMPORT_MODE", '"lazy"'],
     ],
   },
+  {
+    file: path.join(dir, "build/import-mode/index.js"),
+    // Hardcode 'lazy' so screens load via React.lazy instead of sync require.
+    // Without this, loadRoute() returns a Promise but fromImport() treats it
+    // as a module object — resulting in component.default === undefined.
+    replacements: [
+      [
+        "exports.default = process.env.EXPO_ROUTER_IMPORT_MODE || 'sync';",
+        "exports.default = 'lazy';",
+      ],
+    ],
+  },
 ];
 
 let allOk = true;
