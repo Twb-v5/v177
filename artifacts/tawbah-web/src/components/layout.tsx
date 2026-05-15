@@ -1,97 +1,12 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, Calendar, CircleDot, ShieldAlert, BarChart2, HelpCircle, User2, X, ChevronUp, Bot } from "lucide-react";
+import { Home, Calendar, BarChart2, User2, ChevronUp, Bot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/context/SettingsContext";
-import { isNativeApp, getApiBase } from "@/lib/api-base";
-
-function ZakiyNavOrb({ isActive }: { isActive: boolean }) {
-  return (
-    <div className="relative w-[60px] h-[60px]">
-      {/* Ambient glow */}
-      <div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          inset: "-8px",
-          background: "radial-gradient(circle, hsl(var(--primary)/0.2) 0%, transparent 70%)",
-          filter: "blur(12px)",
-        }}
-      />
-
-      {/* Animated rings */}
-      {[0, 1, 2].map((i) => (
-        <motion.div
-          key={i}
-          className="absolute inset-0 rounded-full"
-          style={{ 
-            border: i === 0 ? "2px solid hsl(var(--primary)/0.35)" : "1px solid hsl(var(--primary)/0.15)",
-          }}
-          animate={{ 
-            scale: [1, 1.15 + i * 0.08, 1], 
-            opacity: [0.35 - i * 0.1, 0, 0.35 - i * 0.1] 
-          }}
-          transition={{ 
-            duration: 3 + i * 0.5, 
-            repeat: Infinity, 
-            delay: i * 0.8, 
-            ease: "easeInOut" 
-          }}
-        />
-      ))}
-
-      {/* Main orb with gradient */}
-      <div
-        className="absolute inset-0 rounded-full overflow-hidden flex items-center justify-center"
-        style={{
-          background: "linear-gradient(145deg, hsl(var(--primary)/0.95), hsl(var(--primary)/0.75))",
-          boxShadow: isActive
-            ? "0 0 0 3px hsl(var(--primary)/0.25), 0 0 20px hsl(var(--primary)/0.3), 0 4px 20px rgba(0,0,0,0.25)"
-            : "0 0 0 2px hsl(var(--primary)/0.2), 0 0 12px hsl(var(--primary)/0.15), 0 3px 12px rgba(0,0,0,0.2)",
-        }}
-      >
-        {/* Gloss effect */}
-        <div
-          className="absolute inset-0 rounded-full pointer-events-none"
-          style={{ 
-            background: "radial-gradient(ellipse at 35% 25%, rgba(255,255,255,0.25) 0%, transparent 55%)",
-          }}
-        />
-
-        {/* AI Bot Icon */}
-        <motion.div
-          animate={{ 
-            scale: [1, 1.05, 1],
-            rotate: [0, 3, -3, 0]
-          }}
-          transition={{ 
-            duration: 4, 
-            repeat: Infinity, 
-            ease: "easeInOut" 
-          }}
-        >
-          <Bot 
-            size={28} 
-            strokeWidth={1.8}
-            className="text-primary-foreground"
-            style={{
-              filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.15))",
-            }}
-          />
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
-  const { t, lang } = useSettings();
-  const [helpOpen, setHelpOpen] = useState(false);
-
-  // Diagnostic banner - shows build version, native status, and API base
-  const native = isNativeApp();
-  const apiBase = getApiBase();
+  const { t } = useSettings();
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
@@ -122,7 +37,6 @@ export function Layout({ children }: { children: ReactNode }) {
   }
 
   const zakiHref = "/zakiy";
-  const isZakiActive = location === zakiHref;
   const isSos = location === "/sos";
   const isZakiy = location === "/zakiy";
 
@@ -226,20 +140,8 @@ export function Layout({ children }: { children: ReactNode }) {
                     <NavItem key={item.href} {...item} />
                   ))}
 
-                  {/* Center Zakiy button (inline, not raised) */}
-                  <Link
-                    href={zakiHref}
-                    className="relative flex flex-col items-center justify-center flex-none h-full tap-highlight-transparent"
-                    style={{ width: "22%" }}
-                    aria-label="زكي - مساعدك الروحي"
-                    title="زكي"
-                  >
-                    <motion.div whileTap={{ scale: 0.92 }} className="relative">
-                      <div className="scale-[0.88]" aria-hidden="true">
-                        <ZakiyNavOrb isActive={isZakiActive} />
-                      </div>
-                    </motion.div>
-                  </Link>
+                  {/* Center Zakiy button — same style as other nav items */}
+                  <NavItem href={zakiHref} label="زكي" icon={Bot} />
 
                   {rightItems.map((item) => (
                     <NavItem key={item.href} {...item} />
