@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Patches expo-router _ctx.js and _ctx.web.js to use a static relative path
- * instead of process.env.EXPO_ROUTER_APP_ROOT.
+ * Patches expo-router _ctx.js, _ctx.android.js, _ctx.ios.js and _ctx.web.js
+ * to use a static relative path instead of process.env.EXPO_ROUTER_APP_ROOT.
  *
  * Metro's require.context() requires a STRING LITERAL as the first argument —
  * it cannot accept a runtime variable. Using "../../app" (relative to the
@@ -16,9 +16,23 @@ const dir = path.resolve(__dirname, "../node_modules/expo-router");
 const patches = [
   {
     file: path.join(dir, "_ctx.js"),
-    // Native: 3-arg require.context, no import mode arg
     replacements: [
       ["process.env.EXPO_ROUTER_APP_ROOT", '"../../app"'],
+      ["process.env.EXPO_ROUTER_IMPORT_MODE", '"lazy"'],
+    ],
+  },
+  {
+    file: path.join(dir, "_ctx.android.js"),
+    replacements: [
+      ["process.env.EXPO_ROUTER_APP_ROOT", '"../../app"'],
+      ["process.env.EXPO_ROUTER_IMPORT_MODE", '"lazy"'],
+    ],
+  },
+  {
+    file: path.join(dir, "_ctx.ios.js"),
+    replacements: [
+      ["process.env.EXPO_ROUTER_APP_ROOT", '"../../app"'],
+      ["process.env.EXPO_ROUTER_IMPORT_MODE", '"lazy"'],
     ],
   },
   {
