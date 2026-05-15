@@ -22,6 +22,12 @@ import {
   Moon,
   Tv,
   Zap,
+  Clock,
+  Lock,
+  Inbox,
+  ListChecks,
+  Library,
+  Scroll,
 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -178,6 +184,24 @@ export default function MoreScreen() {
           bg: "#EFF6FF",
           bgDark: "#080F1A",
         },
+        {
+          icon: <Scroll size={18} color="#92400E" />,
+          labelAr: "الكفارات",
+          labelEn: "Kaffarah",
+          href: "/kaffarah",
+          color: "#92400E",
+          bg: "#FFFBEB",
+          bgDark: "#1A1000",
+        },
+        {
+          icon: <Clock size={18} color="#DC2626" />,
+          labelAr: "أوقات الخطر",
+          labelEn: "Danger Times",
+          href: "/danger-times",
+          color: "#DC2626",
+          bg: "#FFF1F0",
+          bgDark: "#1A0505",
+        },
       ],
     },
     {
@@ -192,6 +216,15 @@ export default function MoreScreen() {
           bg: "#E8F5EE",
           bgDark: "#0A1F18",
           badge: "جديد",
+        },
+        {
+          icon: <ListChecks size={18} color="#0891B2" />,
+          labelAr: "مهام اليوم الأول",
+          labelEn: "Day One Tasks",
+          href: "/day-one",
+          color: "#0891B2",
+          bg: "#ECFEFF",
+          bgDark: "#091A1F",
         },
         {
           icon: <TrendingUp size={18} color="#059669" />,
@@ -212,13 +245,13 @@ export default function MoreScreen() {
           bgDark: "#1A1206",
         },
         {
-          icon: <CheckSquare size={18} color="#0891B2" />,
+          icon: <CheckSquare size={18} color="#7C3AED" />,
           labelAr: "عاداتي",
           labelEn: "My Habits",
           href: "/habits",
-          color: "#0891B2",
-          bg: "#ECFEFF",
-          bgDark: "#091A1F",
+          color: "#7C3AED",
+          bg: "#F5F0FF",
+          bgDark: "#120A1A",
         },
         {
           icon: <Zap size={18} color="#F59E0B" />,
@@ -228,13 +261,30 @@ export default function MoreScreen() {
           color: "#F59E0B",
           bg: "#FFFBEB",
           bgDark: "#1A1206",
-          badge: "جديد",
+        },
+        {
+          icon: <Lock size={18} color="#6B7280" />,
+          labelAr: "دعائي السري",
+          labelEn: "Secret Dua",
+          href: "/secret-dua",
+          color: "#6B7280",
+          bg: "#F9FAFB",
+          bgDark: "#111111",
         },
       ],
     },
     {
       title: "المحتوى الإسلامي",
       items: [
+        {
+          icon: <Library size={18} color="#059669" />,
+          labelAr: "مكتبة الرجاء",
+          labelEn: "Library of Hope",
+          href: "/rajaa",
+          color: "#059669",
+          bg: "#ECFDF5",
+          bgDark: "#0A1F18",
+        },
         {
           icon: <Tv size={18} color="#8B5CF6" />,
           labelAr: "برامج إسلامية",
@@ -291,6 +341,15 @@ export default function MoreScreen() {
     {
       title: "الإعدادات",
       items: [
+        {
+          icon: <Inbox size={18} color="#0891B2" />,
+          labelAr: "صندوق الوارد",
+          labelEn: "Inbox",
+          href: "/inbox",
+          color: "#0891B2",
+          bg: "#ECFEFF",
+          bgDark: "#091A1F",
+        },
         {
           icon: <Bell size={18} color="#64748B" />,
           labelAr: "الإشعارات",
