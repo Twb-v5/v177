@@ -149,7 +149,7 @@ function todayStr() {
 
 router.get("/user/progress", async (req, res) => {
   const sessionId = req.query.sessionId as string;
-  if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+  if (!sessionId) return void res.status(400).json({ error: "sessionId required" });
 
   let progress = await db.query.userProgressTable.findFirst({
     where: eq(userProgressTable.sessionId, sessionId),
@@ -296,14 +296,14 @@ router.post("/user/covenant", async (req, res) => {
 
 router.get("/user/journey", optionalAuth, async (req: AuthenticatedRequest, res) => {
   if (!req.auth?.sub) {
-    return res.json(null);
+    return void res.json(null);
   }
   const userId = Number(req.auth.sub);
   const [user] = await db
     .select({ id: usersTable.id, email: usersTable.email })
     .from(usersTable)
     .where(eq(usersTable.id, userId));
-  if (!user) return res.json(null);
+  if (!user) return void res.json(null);
 
   const sessionId = `user_${userId}`;
   const progress = await db.query.userProgressTable.findFirst({
@@ -311,14 +311,14 @@ router.get("/user/journey", optionalAuth, async (req: AuthenticatedRequest, res)
   });
 
   if (!progress || !progress.covenantSigned) {
-    return res.json({ active: false, progress: 0, totalDays: 40, hasSin: false });
+    return void res.json({ active: false, progress: 0, totalDays: 40, hasSin: false });
   }
 
   const hasSin = !!(progress.sinIds && progress.sinIds.trim() !== "[]");
   const totalDays = 40;
   const pct = Math.min(100, Math.round((progress.day40Progress / totalDays) * 100));
 
-  return res.json({
+  return void res.json({
     active: true,
     progress: pct,
     totalDays,
@@ -334,11 +334,11 @@ router.put("/user/sins", optionalAuth, async (req: AuthenticatedRequest, res) =>
     : (guestSessionId as string | undefined)?.trim() || null;
 
   if (!sessionId) {
-    return res.status(400).json({ error: "sessionId required" });
+    return void res.status(400).json({ error: "sessionId required" });
   }
 
   if (!Array.isArray(sinIds)) {
-    return res.status(400).json({ error: "sinIds must be an array" });
+    return void res.status(400).json({ error: "sinIds must be an array" });
   }
 
   const sinIdsJson = JSON.stringify(sinIds);
@@ -365,13 +365,13 @@ router.put("/user/sins", optionalAuth, async (req: AuthenticatedRequest, res) =>
     });
   }
 
-  return res.json({ ok: true });
+  return void res.json({ ok: true });
 });
 
 router.get("/habits", async (req, res) => {
   const sessionId = req.query.sessionId as string;
   const dateStr = (req.query.date as string) || todayStr();
-  if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+  if (!sessionId) return void res.status(400).json({ error: "sessionId required" });
 
   const progress = await db.query.userProgressTable.findFirst({
     where: eq(userProgressTable.sessionId, sessionId),
@@ -428,7 +428,7 @@ router.post("/habits", async (req, res) => {
   });
 
   if (!existing) {
-    return res.status(404).json({ error: "Habit not found" });
+    return void res.status(404).json({ error: "Habit not found" });
   }
 
   const [updated] = await db
@@ -454,7 +454,7 @@ router.post("/habits", async (req, res) => {
 router.get("/dhikr/count", async (req, res) => {
   const sessionId = req.query.sessionId as string;
   const dateStr = (req.query.date as string) || todayStr();
-  if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+  if (!sessionId) return void res.status(400).json({ error: "sessionId required" });
 
   let dhikr = await db.query.dhikrCountTable.findFirst({
     where: and(
@@ -526,7 +526,7 @@ router.post("/dhikr/increment", async (req, res) => {
 router.post("/dhikr/reset", async (req, res) => {
   const sessionId = req.body.sessionId as string;
   const dhikrType = req.body.dhikrType as "istighfar" | "tasbih" | "sayyid" | undefined;
-  if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+  if (!sessionId) return void res.status(400).json({ error: "sessionId required" });
   const dateStr = todayStr();
 
   const resetData: Record<string, number> = dhikrType
@@ -548,7 +548,7 @@ router.post("/dhikr/reset", async (req, res) => {
 
 router.get("/kaffarah", async (req, res) => {
   const sessionId = req.query.sessionId as string;
-  if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+  if (!sessionId) return void res.status(400).json({ error: "sessionId required" });
 
   const steps = await db.query.kaffarahStepsTable.findMany({
     where: eq(kaffarahStepsTable.sessionId, sessionId),
@@ -565,7 +565,7 @@ router.get("/kaffarah", async (req, res) => {
 
 router.post("/kaffarah/complete", async (req, res) => {
   const { sessionId, stepKey, completed } = req.body as { sessionId: string; stepKey: string; completed: boolean };
-  if (!sessionId || !stepKey) return res.status(400).json({ error: "sessionId and stepKey required" });
+  if (!sessionId || !stepKey) return void res.status(400).json({ error: "sessionId and stepKey required" });
 
   const existing = await db.query.kaffarahStepsTable.findFirst({
     where: and(
@@ -583,7 +583,7 @@ router.post("/kaffarah/complete", async (req, res) => {
         eq(kaffarahStepsTable.stepKey, stepKey)
       ))
       .returning();
-    return res.json({ id: updated.id, sessionId: updated.sessionId, stepKey: updated.stepKey, completed: updated.completed, completedAt: updated.completedAt ? updated.completedAt.toISOString() : null });
+    return void res.json({ id: updated.id, sessionId: updated.sessionId, stepKey: updated.stepKey, completed: updated.completed, completedAt: updated.completedAt ? updated.completedAt.toISOString() : null });
   }
 
   const [created] = await db
@@ -598,7 +598,7 @@ router.post("/kaffarah/complete", async (req, res) => {
 
 router.get("/journal", async (req, res) => {
   const sessionId = req.query.sessionId as string;
-  if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+  if (!sessionId) return void res.status(400).json({ error: "sessionId required" });
 
   const entries = await db.query.journalEntriesTable.findMany({
     where: eq(journalEntriesTable.sessionId, sessionId),
@@ -617,7 +617,7 @@ router.get("/journal", async (req, res) => {
 
 router.post("/journal", async (req, res) => {
   const { sessionId, content, mood } = req.body as { sessionId: string; content: string; mood: string };
-  if (!sessionId || !content) return res.status(400).json({ error: "sessionId and content required" });
+  if (!sessionId || !content) return void res.status(400).json({ error: "sessionId and content required" });
 
   const dateStr = todayStr();
   const [entry] = await db
@@ -638,7 +638,7 @@ router.post("/journal", async (req, res) => {
 router.delete("/journal/:id", async (req, res) => {
   const { sessionId } = req.body as { sessionId: string };
   const id = parseInt(req.params.id);
-  if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+  if (!sessionId) return void res.status(400).json({ error: "sessionId required" });
 
   await db.query.journalEntriesTable.findFirst({
     where: and(eq(journalEntriesTable.id, id), eq(journalEntriesTable.sessionId, sessionId)),
@@ -655,7 +655,7 @@ router.post("/stats/event", async (req, res) => {
   const { eventType } = req.body as { eventType: string };
   const validEvents = ["tawbah", "dhikr", "covenant", "dua", "quran"];
   if (!eventType || !validEvents.includes(eventType)) {
-    return res.status(400).json({ error: "invalid eventType" });
+    return void res.status(400).json({ error: "invalid eventType" });
   }
   await db.insert(globalStatsTable).values({
     eventType,
@@ -976,7 +976,7 @@ ${sinListText}
 
 router.get("/notifications/settings", async (req, res) => {
   const sessionId = req.query.sessionId as string;
-  if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+  if (!sessionId) return void res.status(400).json({ error: "sessionId required" });
   const row = await db.query.notificationSettingsTable.findFirst({
     where: eq(notificationSettingsTable.sessionId, sessionId),
   });
@@ -988,7 +988,7 @@ router.put("/notifications/settings", async (req, res) => {
     sessionId: string; settingsJson: string;
     prayerCity?: string; prayerCountry?: string; prayerLat?: string; prayerLng?: string;
   };
-  if (!sessionId || !settingsJson) return res.status(400).json({ error: "sessionId and settingsJson required" });
+  if (!sessionId || !settingsJson) return void res.status(400).json({ error: "sessionId and settingsJson required" });
   await db.insert(notificationSettingsTable)
     .values({ sessionId, settingsJson, prayerCity, prayerCountry, prayerLat, prayerLng })
     .onConflictDoUpdate({
@@ -1002,7 +1002,7 @@ router.put("/notifications/settings", async (req, res) => {
 
 router.get("/notifications/inbox", async (req, res) => {
   const sessionId = req.query.sessionId as string;
-  if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+  if (!sessionId) return void res.status(400).json({ error: "sessionId required" });
   const rows = await db.query.appInboxTable.findMany({
     where: eq(appInboxTable.sessionId, sessionId),
     orderBy: [desc(appInboxTable.createdAt)],
@@ -1016,11 +1016,11 @@ router.post("/notifications/inbox", async (req, res) => {
     sessionId: string; notifId: string; type: string;
     title: string; body: string; icon?: string; color?: string;
   };
-  if (!sessionId || !notifId || !title || !body) return res.status(400).json({ error: "missing fields" });
+  if (!sessionId || !notifId || !title || !body) return void res.status(400).json({ error: "missing fields" });
   const existing = await db.query.appInboxTable.findFirst({
     where: eq(appInboxTable.notifId, notifId),
   });
-  if (existing) return res.json(existing);
+  if (existing) return void res.json(existing);
   const [row] = await db.insert(appInboxTable)
     .values({ sessionId, notifId, type: type || "reminder", title, body, icon: icon || "bell", color: color || "#4A90B8", isRead: false })
     .returning();
@@ -1035,7 +1035,7 @@ router.patch("/notifications/inbox/:notifId/read", async (req, res) => {
 
 router.post("/notifications/inbox/read-all", async (req, res) => {
   const { sessionId } = req.body as { sessionId: string };
-  if (!sessionId) return res.status(400).json({ error: "sessionId required" });
+  if (!sessionId) return void res.status(400).json({ error: "sessionId required" });
   await db.update(appInboxTable).set({ isRead: true }).where(eq(appInboxTable.sessionId, sessionId));
   res.json({ ok: true });
 });

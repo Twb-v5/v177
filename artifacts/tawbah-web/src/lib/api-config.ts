@@ -1,6 +1,10 @@
+const replitDev = typeof window !== "undefined"
+  ? window.location.origin
+  : "https://tawbah.replit.app";
+
 export const API_CONFIG = {
-  zakiyApiBaseUrl: "https://v-177--number24.replit.app/api",
-  serverUrl: "https://v-177--number24.replit.app/api/",
+  zakiyApiBaseUrl: `${replitDev}/api`,
+  serverUrl: `${replitDev}/api/`,
 } as const;
 
 export type ApiConfig = typeof API_CONFIG;

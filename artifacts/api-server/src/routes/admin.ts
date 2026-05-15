@@ -168,7 +168,7 @@ router.get("/users/:sessionId", async (req, res) => {
   const user = await db.query.userProgressTable.findFirst({
     where: eq(userProgressTable.sessionId, sessionId),
   });
-  if (!user) return res.status(404).json({ error: "User not found" });
+  if (!user) return void res.status(404).json({ error: "User not found" });
 
   const habits = await db
     .select()
@@ -226,7 +226,7 @@ router.put("/users/:sessionId", async (req, res) => {
     .where(eq(userProgressTable.sessionId, sessionId))
     .returning();
 
-  if (!updated) return res.status(404).json({ error: "User not found" });
+  if (!updated) return void res.status(404).json({ error: "User not found" });
   res.json(updated);
 });
 
@@ -338,7 +338,7 @@ router.put("/dhikr/rooms/:type", async (req, res) => {
     .set({ totalCount: Number(totalCount), updatedAt: new Date() })
     .where(eq(dhikrRoomsTable.roomType, type))
     .returning();
-  if (!updated) return res.status(404).json({ error: "Room not found" });
+  if (!updated) return void res.status(404).json({ error: "Room not found" });
   res.json(updated);
 });
 
@@ -380,7 +380,7 @@ router.get("/journal/:id", async (req, res) => {
   const entry = await db.query.journalEntriesTable.findFirst({
     where: eq(journalEntriesTable.id, Number(req.params.id)),
   });
-  if (!entry) return res.status(404).json({ error: "Not found" });
+  if (!entry) return void res.status(404).json({ error: "Not found" });
   res.json(entry);
 });
 
@@ -448,7 +448,7 @@ router.get("/zakiy-memory/:sessionId", async (req, res) => {
   const memory = await db.query.zakiyMemoryTable.findFirst({
     where: eq(zakiyMemoryTable.sessionId, req.params.sessionId),
   });
-  if (!memory) return res.status(404).json({ error: "Not found" });
+  if (!memory) return void res.status(404).json({ error: "Not found" });
   res.json(memory);
 });
 
@@ -458,7 +458,7 @@ router.put("/zakiy-memory/:sessionId", async (req, res) => {
     .set({ memoryJson: JSON.stringify(req.body.memoryJson), updatedAt: new Date() })
     .where(eq(zakiyMemoryTable.sessionId, req.params.sessionId))
     .returning();
-  if (!updated) return res.status(404).json({ error: "Not found" });
+  if (!updated) return void res.status(404).json({ error: "Not found" });
   res.json(updated);
 });
 

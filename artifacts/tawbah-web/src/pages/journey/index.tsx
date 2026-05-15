@@ -11,8 +11,7 @@ import { getSessionId } from "@/lib/session";
 import { isNativeApp, getApiBase } from "@/lib/api-base";
 import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "wouter";
-import { getAuthHeader, setAuthToken } from "@/lib/auth-client";
-import { supabase } from "@/lib/supabase";
+import { getAuthHeader } from "@/lib/auth-client";
 import { JourneyData } from "./types";
 import { fetchWithTimeout, buildNativeFallbackJourney } from "./utils";
 import { CompletionCard } from "./components/CompletionCard";
@@ -55,13 +54,7 @@ export default function Journey30() {
         let res = await doFetch(getAuthHeader());
 
         if (res.status === 401) {
-          const { data: refreshData } = await supabase.auth.refreshSession();
-          if (refreshData.session) {
-            setAuthToken(refreshData.session.access_token);
-            res = await doFetch(getAuthHeader());
-          } else {
-            res = await doFetch({});
-          }
+          res = await doFetch({});
         }
 
         if (!res.ok) throw new Error("Failed to fetch journey");

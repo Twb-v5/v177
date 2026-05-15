@@ -16,20 +16,20 @@ router.post("/auth/register", async (req, res) => {
   const { username: usernameRaw, email: emailRaw, password, phone, gender } = req.body ?? {};
 
   if (typeof usernameRaw !== "string" || !usernameRaw.trim()) {
-    return res.status(400).json({ error: "username_required" });
+    return void res.status(400).json({ error: "username_required" });
   }
   if (typeof emailRaw !== "string" || !emailRaw.includes("@")) {
-    return res.status(400).json({ error: "email_required" });
+    return void res.status(400).json({ error: "email_required" });
   }
   if (typeof password !== "string" || password.length < 6) {
-    return res.status(400).json({ error: "password_min_6" });
+    return void res.status(400).json({ error: "password_min_6" });
   }
 
   const username = normalizeUsername(usernameRaw);
   const email = normalizeEmail(emailRaw);
 
   if (!/^[a-z0-9_\.]+$/.test(username)) {
-    return res.status(400).json({ error: "username_invalid_chars" });
+    return void res.status(400).json({ error: "username_invalid_chars" });
   }
 
   const existing = await db
@@ -39,8 +39,8 @@ router.post("/auth/register", async (req, res) => {
 
   if (existing.length > 0) {
     const emailExists = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, email));
-    if (emailExists.length > 0) return res.status(409).json({ error: "email_taken" });
-    return res.status(409).json({ error: "username_taken" });
+    if (emailExists.length > 0) return void res.status(409).json({ error: "email_taken" });
+    return void res.status(409).json({ error: "username_taken" });
   }
 
   const { salt, hash } = hashPassword(password);
@@ -59,17 +59,17 @@ router.post("/auth/register", async (req, res) => {
   const token = await signJwt({ sub: String(user!.id), username: user!.username ?? username, email: user!.email });
   setAuthCookie(res, token);
 
-  return res.json({ token, user: { id: user!.id, username: user!.username, email: user!.email, gender: user!.gender } });
+  return void res.json({ token, user: { id: user!.id, username: user!.username, email: user!.email, gender: user!.gender } });
 });
 
 router.post("/auth/login", async (req, res) => {
   const { username: usernameRaw, password } = req.body ?? {};
 
   if (typeof usernameRaw !== "string" || !usernameRaw.trim()) {
-    return res.status(400).json({ error: "username_required" });
+    return void res.status(400).json({ error: "username_required" });
   }
   if (typeof password !== "string") {
-    return res.status(400).json({ error: "password_required" });
+    return void res.status(400).json({ error: "password_required" });
   }
 
   const username = normalizeUsername(usernameRaw);
@@ -85,31 +85,31 @@ router.post("/auth/login", async (req, res) => {
     .from(usersTable)
     .where(eq(usersTable.username, username));
 
-  if (!user) return res.status(401).json({ error: "invalid_credentials" });
+  if (!user) return void res.status(401).json({ error: "invalid_credentials" });
 
   const ok = verifyPassword(password, user.passwordSalt, user.passwordHash);
-  if (!ok) return res.status(401).json({ error: "invalid_credentials" });
+  if (!ok) return void res.status(401).json({ error: "invalid_credentials" });
 
   const token = await signJwt({ sub: String(user.id), username: user.username ?? username, email: user.email });
   setAuthCookie(res, token);
 
-  return res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
+  return void res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
 });
 
 router.post("/auth/logout", (req, res) => {
   clearAuthCookie(res);
-  return res.json({ ok: true });
+  return void res.json({ ok: true });
 });
 
 router.get("/auth/me", optionalAuth, async (req: AuthenticatedRequest, res) => {
-  if (!req.auth?.sub) return res.json({ user: null });
+  if (!req.auth?.sub) return void res.json({ user: null });
   const userId = Number(req.auth.sub);
   const [user] = await db
     .select({ id: usersTable.id, username: usersTable.username, email: usersTable.email })
     .from(usersTable)
     .where(eq(usersTable.id, userId));
-  if (!user) return res.json({ user: null });
-  return res.json({ user });
+  if (!user) return void res.json({ user: null });
+  return void res.json({ user });
 });
 
 export default router;

@@ -71,21 +71,21 @@ async function sendFcmNotification(token: string, title: string, body: string, u
 // GET /push/vapid-public-key
 router.get("/vapid-public-key", (_req, res) => {
   if (!VAPID_PUBLIC_KEY) {
-    return res.json({ key: "", configured: false });
+    return void res.json({ key: "", configured: false });
   }
-  return res.json({ key: VAPID_PUBLIC_KEY, configured: true });
+  return void res.json({ key: VAPID_PUBLIC_KEY, configured: true });
 });
 
 // POST /push/subscribe
 router.post("/subscribe", async (req, res) => {
   const { sessionId, subscription } = req.body;
   if (!sessionId || !subscription?.endpoint) {
-    return res.status(400).json({ error: "Missing sessionId or subscription" });
+    return void res.status(400).json({ error: "Missing sessionId or subscription" });
   }
   const { endpoint, keys } = subscription;
   const { p256dh, auth } = keys || {};
   if (!p256dh || !auth) {
-    return res.status(400).json({ error: "Missing subscription keys" });
+    return void res.status(400).json({ error: "Missing subscription keys" });
   }
   await db
     .insert(pushSubscriptionsTable)
@@ -105,7 +105,7 @@ router.post("/fcm-token", async (req, res) => {
     platform?: string;
   };
   if (!sessionId || !token) {
-    return res.status(400).json({ error: "Missing sessionId or token" });
+    return void res.status(400).json({ error: "Missing sessionId or token" });
   }
   const plat = platform || "android";
   await db
@@ -115,17 +115,17 @@ router.post("/fcm-token", async (req, res) => {
       target: [pushFcmTokensTable.sessionId, pushFcmTokensTable.platform],
       set: { token, updatedAt: new Date() },
     });
-  return res.json({ ok: true });
+  return void res.json({ ok: true });
 });
 
 // POST /push/schedule
 router.post("/schedule", async (req, res) => {
   const { sessionId, jobs } = req.body;
   if (!sessionId || !Array.isArray(jobs)) {
-    return res.status(400).json({ error: "Missing sessionId or jobs" });
+    return void res.status(400).json({ error: "Missing sessionId or jobs" });
   }
   if (jobs.length === 0) {
-    return res.json({ ok: true, count: 0 });
+    return void res.json({ ok: true, count: 0 });
   }
   const rows = jobs.map((j: { type?: string; title: string; body: string; url?: string; fireAt: string }) => ({
     sessionId,
@@ -143,7 +143,7 @@ router.post("/schedule", async (req, res) => {
 // DELETE /push/jobs  — clear pending jobs for a session (before rescheduling)
 router.delete("/jobs", async (req, res) => {
   const { sessionId } = req.body;
-  if (!sessionId) return res.status(400).json({ error: "Missing sessionId" });
+  if (!sessionId) return void res.status(400).json({ error: "Missing sessionId" });
   await db
     .delete(pushJobsTable)
     .where(and(eq(pushJobsTable.sessionId, sessionId), eq(pushJobsTable.sent, false)));

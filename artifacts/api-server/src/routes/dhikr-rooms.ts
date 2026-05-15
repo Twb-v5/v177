@@ -36,7 +36,7 @@ router.get("/dhikr-rooms", async (_req, res) => {
 router.post("/dhikr-rooms/:type/tap", async (req, res) => {
   const { type } = req.params;
   if (!ROOM_TYPES.includes(type)) {
-    return res.status(400).json({ error: "نوع غير صحيح" });
+    return void res.status(400).json({ error: "نوع غير صحيح" });
   }
 
   await ensureRoom(type);

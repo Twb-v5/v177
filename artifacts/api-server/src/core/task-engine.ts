@@ -88,7 +88,7 @@ export async function getTodayTasks(
       tasks.push({
         id: `hadi_${item.id}`,
         source: "hadi",
-        title: item.text,
+        title: item.title,
         completed: item.completed,
         priority: "recommended",
         route: "/hadi-tasks",
