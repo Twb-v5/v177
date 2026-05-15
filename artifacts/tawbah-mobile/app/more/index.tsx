@@ -108,7 +108,7 @@ function MoreCard({
           style={{
             fontSize: 13,
             fontWeight: "800",
-            color: isDark ? "#F1F5F9" : "#1C1917",
+            color: c.text,
             fontFamily: "IBMPlexSansArabic_700Bold",
             textAlign: isRTL ? "right" : "left",
           }}

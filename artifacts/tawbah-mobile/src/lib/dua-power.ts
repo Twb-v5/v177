@@ -1,6 +1,8 @@
 // ── Dua-answer power score calculation ────────────────────────────────────────
 // Single source of truth — imported by dua-timing.tsx, NotificationsContext, etc.
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 function getHour(): number { return new Date().getHours(); }
 function getMinutes(): number { return new Date().getMinutes(); }
 function getDayOfWeek(): number { return new Date().getDay(); }
@@ -207,30 +209,40 @@ export function getNextPeakDescription(score: number): string {
 const COOLDOWN_KEY = "dua_peak_last_fired";
 const COOLDOWN_MS  = 2 * 60 * 60 * 1000; // 2 hours
 
-export function duaPeakCooledDown(): boolean {
-  const raw = localStorage.getItem(COOLDOWN_KEY);
-  if (!raw) return true;
-  return Date.now() - parseInt(raw, 10) > COOLDOWN_MS;
+export async function duaPeakCooledDown(): Promise<boolean> {
+  try {
+    const raw = await AsyncStorage.getItem(COOLDOWN_KEY);
+    if (!raw) return true;
+    return Date.now() - parseInt(raw, 10) > COOLDOWN_MS;
+  } catch {
+    return true;
+  }
 }
 
-export function markDuaPeakFired(): void {
-  localStorage.setItem(COOLDOWN_KEY, String(Date.now()));
+export async function markDuaPeakFired(): Promise<void> {
+  try {
+    await AsyncStorage.setItem(COOLDOWN_KEY, String(Date.now()));
+  } catch {}
 }
 
 // ── Ameen counter ─────────────────────────────────────────────────────────────
 
 const AMEEN_COUNT_KEY = "dua_peak_ameen_count";
 
-export function getDuaPeakAmeenCount(): number {
+export async function getDuaPeakAmeenCount(): Promise<number> {
   try {
-    return parseInt(localStorage.getItem(AMEEN_COUNT_KEY) ?? "0", 10);
+    const raw = await AsyncStorage.getItem(AMEEN_COUNT_KEY);
+    return parseInt(raw ?? "0", 10);
   } catch {
     return 0;
   }
 }
 
-export function incrementDuaPeakAmeenCount(): number {
-  const next = getDuaPeakAmeenCount() + 1;
-  localStorage.setItem(AMEEN_COUNT_KEY, String(next));
+export async function incrementDuaPeakAmeenCount(): Promise<number> {
+  const current = await getDuaPeakAmeenCount();
+  const next = current + 1;
+  try {
+    await AsyncStorage.setItem(AMEEN_COUNT_KEY, String(next));
+  } catch {}
   return next;
 }

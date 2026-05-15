@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface ZakiyDecision {
   message: string;
@@ -14,23 +15,33 @@ interface ZakiyModeContextType {
   setDecision: (d: ZakiyDecision | null) => void;
 }
 
+const ZAKIY_MODE_KEY = "zakiy_mode";
+
 const ZakiyModeContext = createContext<ZakiyModeContextType | undefined>(undefined);
 
 export function ZakiyModeProvider({ children }: { children: ReactNode }) {
-  const [aiMode, setAiMode] = useState(false);
+  const [aiMode, setAiModeState] = useState(false);
   const [decision, setDecision] = useState<ZakiyDecision | null>(null);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("zakiy_mode");
-      if (stored) setAiMode(JSON.parse(stored));
-    } catch {}
+    async function load() {
+      try {
+        const stored = await AsyncStorage.getItem(ZAKIY_MODE_KEY);
+        if (stored) setAiModeState(JSON.parse(stored));
+      } catch {}
+    }
+    load();
+  }, []);
+
+  const setAiMode = useCallback((mode: boolean) => {
+    setAiModeState(mode);
+    AsyncStorage.setItem(ZAKIY_MODE_KEY, JSON.stringify(mode)).catch(() => {});
   }, []);
 
   const toggleAiMode = useCallback(() => {
-    setAiMode((prev) => {
+    setAiModeState((prev) => {
       const next = !prev;
-      try { localStorage.setItem("zakiy_mode", JSON.stringify(next)); } catch {}
+      AsyncStorage.setItem(ZAKIY_MODE_KEY, JSON.stringify(next)).catch(() => {});
       return next;
     });
   }, []);

@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSurahList, useSearchSurahs, Surah } from "@/hooks/useQuranData";
 import { useSettings } from "@/providers/SettingsProvider";
+import { useColors } from "@/hooks/useColors";
 
 const FlatListFixed = FlatList as unknown as React.ComponentType<
   import("react-native").FlatListProps<Surah> & {
@@ -22,8 +23,8 @@ const isRTL = true;
 
 export default function QuranHubScreen() {
   const router = useRouter();
-  const { resolvedTheme } = useSettings();
-  const isDark = resolvedTheme === "dark";
+  const c = useColors();
+  const isDark = c.isDark;
   const [search, setSearch] = useState("");
   
   const { surahs, loading, error } = useSurahList();
@@ -76,55 +77,55 @@ export default function QuranHubScreen() {
     <Pressable
       style={({ pressed }) => [
         styles.surahItem,
-        { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" },
+        { backgroundColor: c.surface, borderColor: c.border },
         pressed && styles.pressed,
       ]}
       onPress={() => router.push(`/quran/read?surah=${item.number}` as any)}
     >
-      <View style={[styles.surahNumber, { backgroundColor: isDark ? "#334155" : "#f1f5f9" }]}>
-        <Text style={[styles.surahNumberText, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>{item.number}</Text>
+      <View style={[styles.surahNumber, { backgroundColor: c.cardAlt }]}>
+        <Text style={[styles.surahNumberText, { color: c.text }]}>{item.number}</Text>
       </View>
       <View style={styles.surahInfo}>
-        <Text style={[styles.surahName, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
+        <Text style={[styles.surahName, { color: c.text }]}>
           {getSurahNameArabic(item)}
         </Text>
-        <Text style={[styles.surahMeta, { color: isDark ? "#94a3b8" : "#64748b" }]}>
+        <Text style={[styles.surahMeta, { color: c.textSecondary }]}>
           {item.englishNameTranslation} · {item.numberOfAyahs} آية
         </Text>
       </View>
       <View style={styles.surahType}>
-        <Ionicons 
-          name={item.revelationType === "Meccan" ? "home" : "business"} 
-          size={16} 
-          color={isDark ? "#64748b" : "#94a3b8"} 
+        <Ionicons
+          name={item.revelationType === "Meccan" ? "home" : "business"}
+          size={16}
+          color={c.textMuted}
         />
       </View>
     </Pressable>
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#0f172a" : "#f8fafc" }]} edges={["top"]}>
-      <View style={[styles.header, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
-        <Text style={[styles.title, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>القرآن الكريم</Text>
-        <View style={[styles.searchContainer, { backgroundColor: isDark ? "#0f172a" : "#f1f5f9", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
-          <Ionicons name="search" size={20} color={isDark ? "#64748b" : "#94a3b8"} />
+    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={["top"]}>
+      <View style={[styles.header, { backgroundColor: c.surface, borderColor: c.border }]}>
+        <Text style={[styles.title, { color: c.text }]}>القرآن الكريم</Text>
+        <View style={[styles.searchContainer, { backgroundColor: c.backgroundDeep, borderColor: c.border }]}>
+          <Ionicons name="search" size={20} color={c.textMuted} />
           <TextInput
-            style={[styles.searchInput, { color: isDark ? "#f1f5f9" : "#1e293b" }]}
+            style={[styles.searchInput, { color: c.text }]}
             placeholder="البحث في السور..."
-            placeholderTextColor={isDark ? "#64748b" : "#94a3b8"}
+            placeholderTextColor={c.textMuted}
             value={search}
             onChangeText={setSearch}
           />
           {search.length > 0 && (
             <Pressable onPress={() => setSearch("")}>
-              <Ionicons name="close-circle" size={20} color={isDark ? "#64748b" : "#94a3b8"} />
+              <Ionicons name="close-circle" size={20} color={c.textMuted} />
             </Pressable>
           )}
         </View>
       </View>
 
-      <View style={{ paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: isDark ? "#334155" : "#e2e8f0" }}>
-        <Text style={{ fontSize: 11, fontWeight: "700", color: isDark ? "#64748b" : "#94a3b8", marginBottom: 8, textAlign: "right" }}>أدوات القرآن</Text>
+      <View style={{ paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: c.border }}>
+        <Text style={{ fontSize: 11, fontWeight: "700", color: c.textMuted, marginBottom: 8, textAlign: "right" }}>أدوات القرآن</Text>
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
           {[
             { label: "تفسير",   emoji: "📖", href: "/quran/tafsir"   },
@@ -139,36 +140,36 @@ export default function QuranHubScreen() {
           ].map(tool => (
             <Pressable key={tool.href} onPress={() => router.push(tool.href as any)}
               style={{ flexDirection: "row-reverse", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10,
-                backgroundColor: isDark ? "#1e293b" : "#f1f5f9", borderWidth: 1, borderColor: isDark ? "#334155" : "#e2e8f0" }}>
+                backgroundColor: c.surfaceElevated, borderWidth: 1, borderColor: c.border }}>
               <Text style={{ fontSize: 14 }}>{tool.emoji}</Text>
-              <Text style={{ fontSize: 11, fontWeight: "600", color: isDark ? "#f1f5f9" : "#1e293b" }}>{tool.label}</Text>
+              <Text style={{ fontSize: 11, fontWeight: "600", color: c.text }}>{tool.label}</Text>
             </Pressable>
           ))}
         </View>
       </View>
 
       <View style={styles.tabs}>
-        <Pressable style={[styles.tab, styles.activeTab, { backgroundColor: isDark ? "#1e293b" : "#ffffff" }]}>
-          <Text style={[styles.tabText, { color: isDark ? "#22c55e" : "#1a4731" }]}>الكل</Text>
+        <Pressable style={[styles.tab, styles.activeTab, { backgroundColor: c.surface, borderColor: c.primary }]}>
+          <Text style={[styles.tabText, { color: c.primary }]}>الكل</Text>
         </Pressable>
         <Pressable style={[styles.tab, { backgroundColor: "transparent" }]}>
-          <Text style={[styles.tabText, { color: isDark ? "#64748b" : "#94a3b8" }]}>الأجزاء</Text>
+          <Text style={[styles.tabText, { color: c.textMuted }]}>الأجزاء</Text>
         </Pressable>
         <Pressable style={[styles.tab, { backgroundColor: "transparent" }]}>
-          <Text style={[styles.tabText, { color: isDark ? "#64748b" : "#94a3b8" }]}>المفضلة</Text>
+          <Text style={[styles.tabText, { color: c.textMuted }]}>المفضلة</Text>
         </Pressable>
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDark ? "#22c55e" : "#1a4731"} />
-          <Text style={[styles.loadingText, { color: isDark ? "#94a3b8" : "#64748b" }]}>...جاري التحميل</Text>
+          <ActivityIndicator size="large" color={c.primary} />
+          <Text style={[styles.loadingText, { color: c.textSecondary }]}>...جاري التحميل</Text>
         </View>
       ) : error ? (
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={48} color="#ef4444" />
-          <Text style={[styles.errorText, { color: "#ef4444", marginTop: 16 }]}>{error}</Text>
-          <Pressable onPress={() => window.location.reload()} style={styles.retryBtn}>
+          <Ionicons name="alert-circle-outline" size={48} color={c.danger} />
+          <Text style={[styles.errorText, { color: c.danger, marginTop: 16 }]}>{error}</Text>
+          <Pressable style={[styles.retryBtn, { backgroundColor: c.primary }]}>
             <Text style={styles.retryText}>إعادة المحاولة</Text>
           </Pressable>
         </View>

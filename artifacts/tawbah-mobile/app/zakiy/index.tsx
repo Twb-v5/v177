@@ -49,8 +49,8 @@ function MessageBubble({
           paddingHorizontal: 16,
           paddingVertical: 12,
           backgroundColor: isUser
-            ? "#059669"
-            : isDark ? "#1a2e1a" : "#ffffff",
+            ? c.primary
+            : isDark ? c.cardBento1 : c.surface,
           borderWidth: isUser ? 0 : 1,
           borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
           shadowColor: "#000",

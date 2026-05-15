@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useColorScheme } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Theme = "light" | "dark" | "system";
 type AccentColor = "green" | "blue" | "purple" | "gold";
@@ -24,35 +25,57 @@ const ACCENT_COLORS: Record<AccentColor, { lightPrimary: string; darkPrimary: st
   gold: { lightPrimary: "#854d0e", darkPrimary: "#a16207" },
 };
 
+const SETTINGS_KEY = "tawbah_settings";
+
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const systemColorScheme = useColorScheme();
-  const [theme, setTheme] = useState<Theme>("system");
-  const [accentColor, setAccentColor] = useState<AccentColor>("green");
-  const [language, setLanguage] = useState<"ar" | "en">("ar");
+  const [theme, setThemeState] = useState<Theme>("system");
+  const [accentColor, setAccentColorState] = useState<AccentColor>("green");
+  const [language, setLanguageState] = useState<"ar" | "en">("ar");
+  const [loaded, setLoaded] = useState(false);
 
-  const resolvedTheme = theme === "system" 
+  const resolvedTheme = theme === "system"
     ? (systemColorScheme === "dark" ? "dark" : "light")
     : theme;
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("settings");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.theme) setTheme(parsed.theme);
-        if (parsed.accentColor) setAccentColor(parsed.accentColor);
-        if (parsed.language) setLanguage(parsed.language);
-      }
-    } catch {}
+    async function loadSettings() {
+      try {
+        const stored = await AsyncStorage.getItem(SETTINGS_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.theme) setThemeState(parsed.theme);
+          if (parsed.accentColor) setAccentColorState(parsed.accentColor);
+          if (parsed.language) setLanguageState(parsed.language);
+        }
+      } catch {}
+      setLoaded(true);
+    }
+    loadSettings();
   }, []);
 
-  const persist = (updates: Partial<Settings>) => {
+  const persist = async (updates: Partial<Settings>) => {
     try {
       const current = { theme, accentColor, language };
-      localStorage.setItem("settings", JSON.stringify({ ...current, ...updates }));
+      await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, ...updates }));
     } catch {}
+  };
+
+  const setTheme = (t: Theme) => {
+    setThemeState(t);
+    persist({ theme: t });
+  };
+
+  const setAccentColor = (c: AccentColor) => {
+    setAccentColorState(c);
+    persist({ accentColor: c });
+  };
+
+  const setLanguage = (l: "ar" | "en") => {
+    setLanguageState(l);
+    persist({ language: l });
   };
 
   return (
@@ -62,9 +85,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         accentColor,
         language,
         resolvedTheme,
-        setTheme: (t) => { setTheme(t); persist({ theme: t }); },
-        setAccentColor: (c) => { setAccentColor(c); persist({ accentColor: c }); },
-        setLanguage: (l) => { setLanguage(l); persist({ language: l }); },
+        setTheme,
+        setAccentColor,
+        setLanguage,
       }}
     >
       {children}

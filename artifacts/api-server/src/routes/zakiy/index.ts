@@ -291,10 +291,15 @@ ${recentJournals.map((j) => `- المزاج: ${j.mood ?? "غير محدد"} | ا
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     const result = jsonMatch ? JSON.parse(jsonMatch[0]) : { riskLevel: "low", message: "", warningSign: null };
 
-    res.json(result);
+    const riskLevel = result.riskLevel ?? "low";
+    const risk = riskLevel === "low"
+      ? null
+      : { level: riskLevel as "medium" | "high", message: result.message ?? "", sign: result.warningSign ?? null };
+
+    res.json({ ...result, risk });
   } catch (err) {
     console.error("Risk check error:", err);
-    res.json({ riskLevel: "low", message: "", warningSign: null });
+    res.json({ riskLevel: "low", message: "", warningSign: null, risk: null });
   }
 });
 

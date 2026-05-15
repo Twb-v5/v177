@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface NotificationsContextType {
   duaPeakVisible: boolean;
@@ -13,12 +14,14 @@ interface NotificationsContextType {
   requestPermissions: () => Promise<boolean>;
 }
 
+const ADHKAR_DISMISSED_KEY = "adhkar_dismissed";
+
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({ 
-    shouldShowAlert: true, 
-    shouldPlaySound: true, 
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
     shouldSetBadge: true,
     shouldShowBanner: true,
     shouldShowList: true,
@@ -31,18 +34,19 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [adhkarType, setAdhkarType] = useState<"morning" | "evening" | null>(null);
 
   useEffect(() => {
-    try {
-      if (typeof localStorage === "undefined") return;
-      const stored = localStorage.getItem("adhkar_dismissed");
-      if (stored) {
-        const { type, time } = JSON.parse(stored);
-        const now = Date.now();
-        const hour = 24 * 60 * 60 * 1000;
-        if (now - time < hour && type === adhkarType) {
-          setAdhkarVisible(false);
+    async function checkDismissed() {
+      try {
+        const stored = await AsyncStorage.getItem(ADHKAR_DISMISSED_KEY);
+        if (stored) {
+          const { type, time } = JSON.parse(stored);
+          const hour = 24 * 60 * 60 * 1000;
+          if (Date.now() - time < hour && type === adhkarType) {
+            setAdhkarVisible(false);
+          }
         }
-      }
-    } catch {}
+      } catch {}
+    }
+    checkDismissed();
   }, [adhkarType]);
 
   const requestPermissions = useCallback(async () => {
@@ -53,6 +57,16 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     return status === "granted";
   }, []);
 
+  const hideAdhkar = useCallback(() => {
+    setAdhkarVisible(false);
+    if (adhkarType) {
+      AsyncStorage.setItem(
+        ADHKAR_DISMISSED_KEY,
+        JSON.stringify({ type: adhkarType, time: Date.now() })
+      ).catch(() => {});
+    }
+  }, [adhkarType]);
+
   return (
     <NotificationsContext.Provider
       value={{
@@ -62,7 +76,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         showDuaPeak: () => setDuaPeakVisible(true),
         hideDuaPeak: () => setDuaPeakVisible(false),
         showAdhkar: (type) => { setAdhkarType(type); setAdhkarVisible(true); },
-        hideAdhkar: () => setAdhkarVisible(false),
+        hideAdhkar,
         requestPermissions,
       }}
     >
