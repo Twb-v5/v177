@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-native";
+import { apiUrl } from "@/lib/api";
+import { getSessionId } from "@/lib/session";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
@@ -169,7 +171,20 @@ export default function CovenantScreen() {
     });
   };
 
-  const handleSign = () => {
+  const [signing, setSigning] = useState(false);
+
+  const handleSign = async () => {
+    if (signing) return;
+    setSigning(true);
+    try {
+      const sessionId = await getSessionId();
+      await fetch(apiUrl("/user/covenant"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, sinCategory: "other" }),
+      });
+    } catch {}
+    finally { setSigning(false); }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSigned(true);
   };
@@ -317,9 +332,10 @@ export default function CovenantScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ fontSize: 17, fontWeight: "800", color: "#ffffff", fontFamily: "IBMPlexSansArabic_700Bold" }}>
-                🤝 أوقّع الميثاق الآن
-              </Text>
+              {signing
+                ? <ActivityIndicator size="small" color="#fff" />
+                : <Text style={{ fontSize: 17, fontWeight: "800", color: "#ffffff", fontFamily: "IBMPlexSansArabic_700Bold" }}>🤝 أوقّع الميثاق الآن</Text>
+              }
               <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 4 }}>
                 الله شاهد على عهدي
               </Text>

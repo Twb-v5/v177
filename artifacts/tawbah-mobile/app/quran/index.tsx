@@ -135,6 +135,7 @@ export default function QuranHubScreen() {
             { label: "معجزات",  emoji: "✨", href: "/quran/miracles" },
             { label: "بطاقات",  emoji: "🃏", href: "/quran/cards"    },
             { label: "ذكاء",    emoji: "🤖", href: "/quran/ai"       },
+            { label: "تجويد",   emoji: "🎙️", href: "/quran/tajweed" },
           ].map(tool => (
             <Pressable key={tool.href} onPress={() => router.push(tool.href as any)}
               style={{ flexDirection: "row-reverse", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10,
