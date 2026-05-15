@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "التوبة النصوح",
+    "slug": "workspace",
+    "android": {
+      "package": "com.aiservx.tawbah"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "53bd8b72-a711-409b-afd7-388fce3fde47"
+      }
+    },
+    "owner": "hadysbadys"
+  }
+}

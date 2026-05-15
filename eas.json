@@ -1,0 +1,11 @@
+{
+  "cli": {
+    "version": ">= 16.0.0"
+  },
+  "build": {
+    "web-apk": {
+      "config": "web-apk.yml",
+      "distribution": "internal"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+# Exclude heavy directories not needed for the web APK build
+artifacts/tawbah-mobile/
+artifacts/tawbah-mobile-backup/
+artifacts/api-server/
+artifacts/mockup-sandbox/
+
+# Media and docs
+attached_assets/
+screenshots/
+docs/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.zip
+*.tar
+*.gz
+
+# Dev artifacts
+.local/

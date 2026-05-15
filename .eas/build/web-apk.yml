@@ -1,0 +1,53 @@
+build:
+  name: Tawbah Web Android APK (Capacitor)
+  steps:
+    - eas/checkout
+
+    - run:
+        name: Install pnpm
+        command: npm install -g pnpm@10 --quiet
+
+    - run:
+        name: Install monorepo dependencies
+        command: pnpm install --no-frozen-lockfile
+
+    - run:
+        name: Build web assets (Vite)
+        command: pnpm --filter @workspace/tawbah-web run build
+        env:
+          VITE_API_BASE_URL: https://tawbah.replit.app/api
+          NODE_ENV: production
+
+    - run:
+        name: Sync Capacitor into Android project
+        command: |
+          cd artifacts/tawbah-web
+          npx cap sync android
+
+    - run:
+        name: Copy Firebase config
+        command: |
+          if [ -f "artifacts/tawbah-web/android-config/google-services.json" ]; then
+            cp artifacts/tawbah-web/android-config/google-services.json \
+               artifacts/tawbah-web/android/app/google-services.json
+            echo "Firebase config copied"
+          else
+            echo "No google-services.json, skipping"
+          fi
+
+    - run:
+        name: Build Android APK (debug)
+        command: |
+          cd artifacts/tawbah-web/android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon 2>&1 | tail -60
+          APK_PATH="$(pwd)/app/build/outputs/apk/debug/app-debug.apk"
+          if [ -f "$APK_PATH" ]; then
+            echo "SUCCESS: APK built at $APK_PATH"
+            ls -lh "$APK_PATH"
+            echo "APPLICATION_ARCHIVE=$APK_PATH" >> "$EAS_ENV"
+          else
+            echo "ERROR: APK not found at $APK_PATH"
+            find . -name "*.apk" 2>/dev/null || echo "No APK files found anywhere"
+            exit 1
+          fi
