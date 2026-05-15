@@ -86,7 +86,7 @@ if [ "$MOBILE_ONLY" = false ]; then
   fi
 fi
 if [ "$WEB_ONLY" = false ]; then
-  echo "  Mobile APK → https://expo.dev/accounts/hadysbadys/projects/tawbah-mobile/builds"
+  echo "  Mobile APK → https://expo.dev/accounts/omarkaremksa/projects/tawbah-mobile/builds"
   echo "               (ready in ~10-20 min)"
 fi
 echo "============================================"

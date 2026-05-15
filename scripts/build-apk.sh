@@ -10,13 +10,13 @@
 #   - EXPO_TOKEN secret must be set in Replit Secrets (lock icon in sidebar)
 #   - Run from the repo root: /home/runner/workspace
 #
-# EAS account: aiservx1
+# EAS account: omarkaremksa
 # Where to download the build after it finishes:
-#   https://expo.dev/accounts/aiservx1/projects/tawbah-mobile/builds
+#   https://expo.dev/accounts/omarkaremksa/projects/tawbah-mobile/builds
 #
 # Note: The EAS free plan allows 1 Android build per month.
 #       If the quota is exhausted, the build will be rejected by EAS.
-#       Upgrade at: https://expo.dev/accounts/aiservx1/settings/billing
+#       Upgrade at: https://expo.dev/accounts/omarkaremksa/settings/billing
 # =============================================================================
 set -e
 
@@ -29,7 +29,7 @@ if [ -z "$EXPO_TOKEN" ]; then
   echo ""
   echo "❌ EXPO_TOKEN is not set."
   echo "   Add it in Replit Secrets (lock icon in sidebar)."
-  echo "   Get your token from: https://expo.dev/accounts/aiservx1/settings/access-tokens"
+  echo "   Get your token from: https://expo.dev/accounts/omarkaremksa/settings/access-tokens"
   echo ""
   exit 1
 fi
@@ -76,7 +76,7 @@ echo ""
 echo "✅ Build submitted to EAS Cloud!"
 echo ""
 echo "   Track it at:"
-echo "   https://expo.dev/accounts/aiservx1/projects/tawbah-mobile/builds"
+echo "   https://expo.dev/accounts/omarkaremksa/projects/tawbah-mobile/builds"
 echo ""
 if [ "$PROFILE" = "production" ]; then
   echo "   Profile: production (AAB — Play Store ready)"

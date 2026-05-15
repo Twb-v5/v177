@@ -17,7 +17,7 @@
 #   4. Download the JSON key for that service account
 #   5. Place the downloaded file at: artifacts/tawbah-mobile/google-play-key.json
 #
-# EAS account: aiservx1
+# EAS account: omarkaremksa
 # Play Store track: internal
 # =============================================================================
 set -e
@@ -33,7 +33,7 @@ if [ -z "$EXPO_TOKEN" ]; then
   echo ""
   echo "❌ EXPO_TOKEN is not set."
   echo "   Add it in Replit Secrets (lock icon in sidebar)."
-  echo "   Get your token: https://expo.dev/accounts/aiservx1/settings/access-tokens"
+  echo "   Get your token: https://expo.dev/accounts/omarkaremksa/settings/access-tokens"
   echo ""
   exit 1
 fi

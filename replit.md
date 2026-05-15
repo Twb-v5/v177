@@ -33,7 +33,7 @@ Open **Secrets** (lock icon in sidebar) and add:
 |--------|---------|
 | `EXPO_TOKEN` | EAS cloud builds for mobile APK |
 
-Get your token: https://expo.dev/accounts/aiservx1/settings/access-tokens
+Get your token: https://expo.dev/accounts/omarkaremksa/settings/access-tokens
 
 ### OpenAI Setup (AI chatbot + TTS)
 
@@ -107,7 +107,7 @@ Steps it performs automatically:
 
 Track the build at:
 ```
-https://expo.dev/accounts/aiservx1/projects/tawbah-mobile/builds
+https://expo.dev/accounts/omarkaremksa/projects/tawbah-mobile/builds
 ```
 
 Download the APK from that page when the build finishes (~10–20 min).
@@ -426,7 +426,7 @@ pnpm install --no-frozen-lockfile
 
 - Language: Arabic (RTL) for all UI text
 - All scripts run from repo root `/home/runner/workspace`
-- EXPO_TOKEN = stored in Replit Secrets (rotate at https://expo.dev/accounts/aiservx1/settings/access-tokens)
-- Expo account: `aiservx1` (authenticated account for EAS builds)
+- EXPO_TOKEN = stored in Replit Secrets (rotate at https://expo.dev/accounts/omarkaremksa/settings/access-tokens)
+- Expo account: `omarkaremksa` (authenticated account for EAS builds)
 - Web app bundle ID: `com.aiservx.tawbah`
 - Mobile bundle ID: `com.aiservx.tawbah`
