@@ -5,8 +5,6 @@ import { Audio, AVPlaybackStatus, InterruptionModeAndroid, InterruptionModeIOS }
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const FileSystem = require("expo-file-system/legacy");
 
-const getDocumentDir = () => FileSystem.documentDirectory || "";
-
 interface AudioState {
   isPlaying: boolean;
   isLoading: boolean;
@@ -17,13 +15,11 @@ interface AudioState {
 }
 
 interface UseQuranAudioReturn extends AudioState {
-  play: (surah: number, ayah: number, audioUrl: string) => Promise<void>;
+  play: (surah: number, ayah: number, audioUrl: string, onFinished?: () => void) => Promise<void>;
   pause: () => Promise<void>;
   resume: () => Promise<void>;
   stop: () => Promise<void>;
   seekTo: (position: number) => Promise<void>;
-  skipToNext: () => Promise<void>;
-  skipToPrevious: () => Promise<void>;
   setPlaybackSpeed: (speed: number) => Promise<void>;
   downloadForOffline: (audioUrl: string, surah: number, ayah: number) => Promise<string | null>;
   isDownloaded: (surah: number, ayah: number) => Promise<boolean>;
@@ -35,6 +31,8 @@ const getOfflinePath = (surah: number, ayah: number): string => {
 
 export function useQuranAudio(): UseQuranAudioReturn {
   const soundRef = useRef<Audio.Sound | null>(null);
+  const onFinishedRef = useRef<(() => void) | undefined>(undefined);
+
   const [state, setState] = useState<AudioState>({
     isPlaying: false,
     isLoading: false,
@@ -87,20 +85,24 @@ export function useQuranAudio(): UseQuranAudioReturn {
 
     if (status.didJustFinish) {
       setState((prev) => ({ ...prev, isPlaying: false, position: 0 }));
+      const cb = onFinishedRef.current;
+      onFinishedRef.current = undefined;
+      cb?.();
     }
   }, []);
 
-  const play = useCallback(async (surah: number, ayah: number, audioUrl: string) => {
+  const play = useCallback(async (surah: number, ayah: number, audioUrl: string, onFinished?: () => void) => {
     try {
+      onFinishedRef.current = onFinished;
       setState((prev) => ({ ...prev, isLoading: true, currentSurah: surah, currentAyah: ayah }));
 
       if (soundRef.current) {
         await soundRef.current.unloadAsync();
+        soundRef.current = null;
       }
 
       let uri = audioUrl;
-      // Only check offline on native platforms (not web)
-      if (Platform.OS !== 'web') {
+      if (Platform.OS !== "web") {
         try {
           const offlinePath = getOfflinePath(surah, ayah);
           const { exists } = await FileSystem.getInfoAsync(offlinePath);
@@ -121,6 +123,7 @@ export function useQuranAudio(): UseQuranAudioReturn {
     } catch (error) {
       console.error("Failed to play audio:", error);
       setState((prev) => ({ ...prev, isLoading: false }));
+      onFinishedRef.current = undefined;
     }
   }, [onPlaybackStatusUpdate]);
 
@@ -139,6 +142,7 @@ export function useQuranAudio(): UseQuranAudioReturn {
   }, []);
 
   const stop = useCallback(async () => {
+    onFinishedRef.current = undefined;
     if (soundRef.current) {
       await soundRef.current.stopAsync();
       await soundRef.current.setPositionAsync(0);
@@ -151,22 +155,6 @@ export function useQuranAudio(): UseQuranAudioReturn {
       await soundRef.current.setPositionAsync(position);
     }
   }, []);
-
-  const skipToNext = useCallback(async () => {
-    if (soundRef.current) {
-      const newPosition = state.position + 30000;
-      if (newPosition < state.duration) {
-        await soundRef.current.setPositionAsync(newPosition);
-      }
-    }
-  }, [state.position, state.duration]);
-
-  const skipToPrevious = useCallback(async () => {
-    if (soundRef.current) {
-      const newPosition = Math.max(0, state.position - 30000);
-      await soundRef.current.setPositionAsync(newPosition);
-    }
-  }, [state.position]);
 
   const setPlaybackSpeed = useCallback(async (speed: number) => {
     if (soundRef.current) {
@@ -181,7 +169,6 @@ export function useQuranAudio(): UseQuranAudioReturn {
       if (!dirInfo.exists) {
         await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
       }
-
       const filePath = getOfflinePath(surah, ayah);
       const downloadResult = await FileSystem.downloadAsync(audioUrl, filePath);
       return downloadResult.uri;
@@ -208,8 +195,6 @@ export function useQuranAudio(): UseQuranAudioReturn {
     resume,
     stop,
     seekTo,
-    skipToNext,
-    skipToPrevious,
     setPlaybackSpeed,
     downloadForOffline,
     isDownloaded,
