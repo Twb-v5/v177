@@ -70,6 +70,7 @@ const QuranAiPage = lazy(() => import("@/pages/quran/ai"));
 const QuranCardsPage = lazy(() => import("@/pages/quran/cards"));
 const QuranMiraclesPage = lazy(() => import("@/pages/quran/miracles"));
 const QuranKhatmatPage = lazy(() => import("@/pages/quran/khatmat"));
+const QuranTajweedPage = lazy(() => import("@/pages/quran/tajweed"));
 
 // Loading fallback component
 function PageLoader() {
@@ -148,6 +149,7 @@ function Router() {
           <Route path="/quran/cards">{() => <QuranCardsPage />}</Route>
           <Route path="/quran/miracles">{() => <QuranMiraclesPage />}</Route>
           <Route path="/quran/khatmat">{() => <QuranKhatmatPage />}</Route>
+          <Route path="/quran/tajweed">{() => <QuranTajweedPage />}</Route>
           <Route path="/quran" component={QuranPage} />
           <Route component={NotFound} />
         </Switch>

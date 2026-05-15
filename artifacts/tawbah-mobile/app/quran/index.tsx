@@ -128,6 +128,7 @@ export default function QuranHubScreen() {
         <Text style={{ fontSize: 11, fontWeight: "700", color: c.textMuted, marginBottom: 8, textAlign: "right" }}>أدوات القرآن</Text>
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
           {[
+            { label: "استمع",   emoji: "🎧", href: "/quran/listen"   },
             { label: "تفسير",   emoji: "📖", href: "/quran/tafsir"   },
             { label: "حفظ",     emoji: "🧠", href: "/quran/memorize" },
             { label: "تحديات",  emoji: "🏆", href: "/quran/challenges" },

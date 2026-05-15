@@ -1,11 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
-import { View, Text, FlatList, Pressable, StyleSheet, Platform, Alert } from "react-native";
+import { useState, useCallback } from "react";
+import { View, Text, FlatList, Pressable, Platform, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 import { Ionicons } from "@expo/vector-icons";
+import { BookOpen, Trophy, Users, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react-native";
+import { useColors } from "@/hooks/useColors";
 import { useSettings } from "@/providers/SettingsProvider";
-
-const isRTL = true;
+import { PageHeader } from "@/components/shared/PageHeader";
 
 interface KhatmaSession {
   id: string;
@@ -18,11 +21,11 @@ interface KhatmaSession {
   isActive: boolean;
 }
 
-const sampleKhatmas: KhatmaSession[] = [
+const SAMPLE_KHATMAS: KhatmaSession[] = [
   {
     id: "1",
-    name: " Khatma Ramadan 1446",
-    startDate: "2025-03-01",
+    name: "ختمة رمضان ١٤٤٦",
+    startDate: "٢٠٢٥/٠٣/٠١",
     progress: 65,
     totalJuz: 30,
     completedJuz: 19,
@@ -31,8 +34,8 @@ const sampleKhatmas: KhatmaSession[] = [
   },
   {
     id: "2",
-    name: " Daily Khatma",
-    startDate: "2025-04-01",
+    name: "الختمة اليومية",
+    startDate: "٢٠٢٥/٠٤/٠١",
     progress: 30,
     totalJuz: 30,
     completedJuz: 9,
@@ -41,273 +44,287 @@ const sampleKhatmas: KhatmaSession[] = [
   },
 ];
 
+function KhatmaCard({
+  item,
+  isDark,
+  c,
+  onUpdate,
+  onDelete,
+}: {
+  item: KhatmaSession;
+  isDark: boolean;
+  c: ReturnType<typeof useColors>;
+  onUpdate: (id: string, delta: number) => void;
+  onDelete: (id: string) => void;
+}) {
+  const scale = useSharedValue(1);
+  const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  return (
+    <Animated.View
+      entering={FadeInDown.springify()}
+      style={[animStyle, { marginBottom: 14 }]}
+    >
+      <Pressable
+        onPressIn={() => { scale.value = withSpring(0.98); }}
+        onPressOut={() => { scale.value = withSpring(1); }}
+        style={{
+          borderRadius: 20,
+          backgroundColor: isDark ? "rgba(14,14,14,0.92)" : "#fff",
+          borderWidth: 1,
+          borderColor: item.progress === 100
+            ? "rgba(16,185,129,0.35)"
+            : isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
+          padding: 16,
+          ...Platform.select({
+            ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8 },
+            android: { elevation: 3 },
+          }),
+        }}
+      >
+        {/* Header Row */}
+        <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+          <View style={{ flex: 1, alignItems: "flex-end" }}>
+            <Text style={{ fontSize: 17, fontWeight: "800", color: c.text, fontFamily: "IBMPlexSansArabic_700Bold", marginBottom: 4, textAlign: "right" }}>
+              {item.name}
+            </Text>
+            <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 10 }}>
+              <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 4 }}>
+                <Ionicons name="calendar-outline" size={12} color={c.textMuted} />
+                <Text style={{ fontSize: 11, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>
+                  {item.startDate}
+                </Text>
+              </View>
+              {item.participants > 1 && (
+                <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 4 }}>
+                  <Users size={12} color={c.textMuted} />
+                  <Text style={{ fontSize: 11, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular" }}>
+                    {item.participants} مشاركين
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onDelete(item.id);
+            }}
+            style={{ padding: 8 }}
+          >
+            <Trash2 size={18} color={c.danger ?? "#ef4444"} />
+          </Pressable>
+        </View>
+
+        {/* Progress Bar */}
+        <View style={{ marginBottom: 12 }}>
+          <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", marginBottom: 6 }}>
+            <Text style={{ fontSize: 12, fontWeight: "700", color: c.textSecondary, fontFamily: "IBMPlexSansArabic_700Bold" }}>
+              الجزء {item.completedJuz} من {item.totalJuz}
+            </Text>
+            <Text style={{ fontSize: 12, fontWeight: "700", color: item.progress === 100 ? "#10b981" : c.primary, fontFamily: "IBMPlexSansArabic_700Bold" }}>
+              {item.progress}٪
+            </Text>
+          </View>
+          <View style={{ height: 8, borderRadius: 4, backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)", overflow: "hidden" }}>
+            <View style={{ width: `${item.progress}%`, height: "100%", borderRadius: 4, backgroundColor: item.progress === 100 ? "#10b981" : c.primary }} />
+          </View>
+        </View>
+
+        {/* Juz Dots Grid */}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginBottom: 14, justifyContent: "flex-end" }}>
+          {Array.from({ length: item.totalJuz }).map((_, i) => (
+            <View
+              key={i}
+              style={{
+                width: 18, height: 18, borderRadius: 4,
+                backgroundColor: i < item.completedJuz
+                  ? (item.progress === 100 ? "#10b981" : c.primary)
+                  : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)",
+              }}
+            />
+          ))}
+        </View>
+
+        {/* Controls */}
+        {item.isActive && item.progress < 100 && (
+          <View style={{ flexDirection: "row-reverse", justifyContent: "center", alignItems: "center", gap: 10 }}>
+            <Pressable
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onUpdate(item.id, -1); }}
+              disabled={item.completedJuz === 0}
+              style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", opacity: item.completedJuz === 0 ? 0.4 : 1 }}
+            >
+              <Text style={{ fontSize: 18, color: c.text, fontWeight: "700" }}>−</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onUpdate(item.id, 1); }}
+              style={{ flexDirection: "row-reverse", alignItems: "center", gap: 6, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: c.primary }}
+            >
+              <BookOpen size={16} color="#fff" />
+              <Text style={{ color: "#fff", fontWeight: "700", fontFamily: "IBMPlexSansArabic_700Bold", fontSize: 13 }}>
+                أضف جزءاً
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onUpdate(item.id, 5); }}
+              style={{ paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }}
+            >
+              <Text style={{ fontSize: 13, color: c.text, fontWeight: "700" }}>+٥</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {/* Completed Badge */}
+        {item.progress === 100 && (
+          <View style={{ flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8, paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(16,185,129,0.12)" }}>
+            <Trophy size={20} color="#10b981" />
+            <Text style={{ fontSize: 15, fontWeight: "700", color: "#10b981", fontFamily: "IBMPlexSansArabic_700Bold" }}>
+              أتممت الختمة — الحمد لله!
+            </Text>
+          </View>
+        )}
+      </Pressable>
+    </Animated.View>
+  );
+}
+
 export default function QuranKhatmaScreen() {
   const router = useRouter();
-  const { resolvedTheme } = useSettings();
-  const isDark = resolvedTheme === "dark";
-  
-  const [khatmas, setKhatmas] = useState<KhatmaSession[]>(sampleKhatmas);
+  const c = useColors();
+  const { language } = useSettings();
+  const isDark = c.isDark;
 
-  const startNewKhatma = () => {
+  const [khatmas, setKhatmas] = useState<KhatmaSession[]>(SAMPLE_KHATMAS);
+
+  const handleUpdate = useCallback((id: string, delta: number) => {
+    setKhatmas(prev => prev.map(k => {
+      if (k.id !== id) return k;
+      const newCompleted = Math.max(0, Math.min(k.completedJuz + delta, k.totalJuz));
+      return {
+        ...k,
+        completedJuz: newCompleted,
+        progress: Math.round((newCompleted / k.totalJuz) * 100),
+        isActive: newCompleted < k.totalJuz,
+      };
+    }));
+  }, []);
+
+  const handleDelete = useCallback((id: string) => {
     Alert.alert(
-      " new Khatma",
-      "Would you like to start a new Khatma?",
+      "حذف الختمة",
+      "هل تريد حذف هذه الختمة؟",
       [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Start", 
+        { text: "إلغاء", style: "cancel" },
+        { text: "حذف", style: "destructive", onPress: () => setKhatmas(prev => prev.filter(k => k.id !== id)) },
+      ]
+    );
+  }, []);
+
+  const handleNew = useCallback(() => {
+    Alert.alert(
+      "ختمة جديدة",
+      "هل تريد بدء ختمة جديدة؟",
+      [
+        { text: "إلغاء", style: "cancel" },
+        {
+          text: "ابدأ",
           onPress: () => {
-            const newKhatma: KhatmaSession = {
+            const now = new Date();
+            const dateAr = now.toLocaleDateString("ar-SA");
+            setKhatmas(prev => [{
               id: Date.now().toString(),
-              name: ` Khatma ${new Date().toLocaleDateString("ar")}`,
-              startDate: new Date().toISOString().split("T")[0],
+              name: `ختمتي ${dateAr}`,
+              startDate: dateAr,
               progress: 0,
               totalJuz: 30,
               completedJuz: 0,
               participants: 1,
               isActive: true,
-            };
-            setKhatmas(prev => [newKhatma, ...prev]);
-          }
+            }, ...prev]);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          },
         },
       ]
     );
-  };
+  }, []);
 
-  const updateProgress = (khatmaId: string, increment: number) => {
-    setKhatmas(prev => prev.map(k => {
-      if (k.id === khatmaId) {
-        const newCompleted = Math.min(k.completedJuz + increment, k.totalJuz);
-        return {
-          ...k,
-          completedJuz: newCompleted,
-          progress: Math.round((newCompleted / k.totalJuz) * 100),
-          isActive: newCompleted < k.totalJuz
-        };
-      }
-      return k;
-    }));
-  };
+  const totalKhatmas = khatmas.length;
+  const activeKhatmas = khatmas.filter(k => k.isActive && k.progress < 100).length;
+  const completedKhatmas = khatmas.filter(k => k.progress === 100).length;
 
-  const deleteKhatma = (khatmaId: string) => {
-    Alert.alert(
-      " delete Khatma",
-      "Are you sure you want to delete this Khatma?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive",
-          onPress: () => setKhatmas(prev => prev.filter(k => k.id !== khatmaId))
-        },
-      ]
-    );
-  };
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={["top"]}>
+      <PageHeader titleAr="متابعة الختمة" showBack />
 
-  const renderKhatma = ({ item }: { item: KhatmaSession }) => (
-    <View style={[styles.khatmaCard, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
-      <View style={styles.khatmaHeader}>
-        <View style={styles.khatmaInfo}>
-          <Text style={[styles.khatmaName, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>{item.name}</Text>
-          <Text style={[styles.khatmaDate, { color: isDark ? "#94a3b8" : "#64748b" }]}>
-            {item.startDate} · {item.participants} participants
-          </Text>
-        </View>
-        <Pressable onPress={() => deleteKhatma(item.id)} style={styles.deleteBtn}>
-          <Ionicons name="trash-outline" size={20} color="#ef4444" />
-        </Pressable>
-      </View>
-
-      {/* Progress Bar */}
-      <View style={styles.progressContainer}>
-        <View style={[styles.progressBar, { backgroundColor: isDark ? "#334155" : "#e2e8f0" }]}>
-          <View 
-            style={[
-              styles.progressFill, 
-              { 
-                width: `${item.progress}%`,
-                backgroundColor: item.progress === 100 ? "#22c55e" : "#1a4731"
-              }
-            ]} 
-          />
-        </View>
-        <Text style={[styles.progressText, { color: isDark ? "#94a3b8" : "#64748b" }]}>
-          {item.completedJuz} / {item.totalJuz} ({item.progress}%)
-        </Text>
-      </View>
-
-      {/* Juz Progress Dots */}
-      <View style={styles.juzContainer}>
-        {Array.from({ length: item.totalJuz }).map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.juzDot,
-              { backgroundColor: isDark ? "#334155" : "#e2e8f0" },
-              index < item.completedJuz && styles.juzDotCompleted
-            ]}
-          />
+      {/* Stats Row */}
+      <View style={{
+        flexDirection: "row-reverse", marginHorizontal: 16, marginTop: 12, marginBottom: 8,
+        borderRadius: 18, backgroundColor: isDark ? "rgba(14,14,14,0.92)" : "#fff",
+        borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
+        padding: 16,
+        ...Platform.select({
+          ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8 },
+          android: { elevation: 2 },
+        }),
+      }}>
+        {[
+          { num: totalKhatmas,     label: "إجمالي الختمات", color: c.text },
+          { num: activeKhatmas,    label: "جارية",          color: c.primary },
+          { num: completedKhatmas, label: "مكتملة",         color: "#10b981" },
+        ].map((stat, i, arr) => (
+          <View key={stat.label} style={{ flex: 1, alignItems: "center" }}>
+            <Text style={{ fontSize: 28, fontWeight: "800", color: stat.color, fontFamily: "IBMPlexSansArabic_700Bold" }}>
+              {stat.num}
+            </Text>
+            <Text style={{ fontSize: 11, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 2 }}>
+              {stat.label}
+            </Text>
+            {i < arr.length - 1 && (
+              <View style={{ position: "absolute", left: 0, top: "20%", bottom: "20%", width: 1, backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)" }} />
+            )}
+          </View>
         ))}
       </View>
 
-      {/* Control Buttons */}
-      {item.isActive && (
-        <View style={styles.controlsRow}>
-          <Pressable 
-            style={[styles.controlBtn, { backgroundColor: isDark ? "#334155" : "#e2e8f0" }]}
-            onPress={() => updateProgress(item.id, -1)}
-            disabled={item.completedJuz === 0}
-          >
-            <Ionicons name="remove" size={20} color={isDark ? "#f1f5f9" : "#1e293b"} />
-          </Pressable>
-          
-          <Pressable 
-            style={[styles.addJuzBtn, { backgroundColor: "#1a4731" }]}
-            onPress={() => updateProgress(item.id, 1)}
-          >
-            <Ionicons name="add" size={20} color="#ffffff" />
-            <Text style={styles.addJuzText}> add Juz</Text>
-          </Pressable>
-          
-          <Pressable 
-            style={[styles.controlBtn, { backgroundColor: isDark ? "#334155" : "#e2e8f0" }]}
-            onPress={() => updateProgress(item.id, 10)}
-          >
-            <Text style={[styles.skipText, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>+10</Text>
-          </Pressable>
-        </View>
-      )}
+      {/* Add Button */}
+      <Pressable
+        onPress={handleNew}
+        style={{
+          flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8,
+          marginHorizontal: 16, marginBottom: 12, paddingVertical: 13, borderRadius: 16,
+          backgroundColor: c.primary,
+          ...Platform.select({
+            ios: { shadowColor: c.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 10 },
+            android: { elevation: 5 },
+          }),
+        }}
+      >
+        <Plus size={18} color="#fff" />
+        <Text style={{ color: "#fff", fontWeight: "700", fontFamily: "IBMPlexSansArabic_700Bold", fontSize: 15 }}>
+          ختمة جديدة
+        </Text>
+      </Pressable>
 
-      {item.progress === 100 && (
-        <View style={styles.completedBadge}>
-          <Ionicons name="checkmark-circle" size={24} color="#22c55e" />
-          <Text style={[styles.completedText, { color: "#22c55e" }]}> completed Alhamduillah</Text>
-        </View>
-      )}
-    </View>
-  );
-
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#0f172a" : "#f8fafc" }]} edges={["top"]}>
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
-        <Pressable onPress={() => router.back()} style={styles.headerBtn}>
-          <Ionicons name="arrow-forward" size={24} color={isDark ? "#f1f5f9" : "#1e293b"} />
-        </Pressable>
-        <Text style={[styles.headerTitle, { color: isDark ? "#f1f5f9" : "#1e293b" }]}> Khatma Tracker</Text>
-        <Pressable onPress={startNewKhatma} style={styles.headerBtn}>
-          <Ionicons name="add-circle" size={28} color="#1a4731" />
-        </Pressable>
-      </View>
-
-      {/* Stats Summary */}
-      <View style={[styles.statsContainer, { backgroundColor: isDark ? "#1e293b" : "#ffffff", borderColor: isDark ? "#334155" : "#e2e8f0" }]}>
-        <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>{khatmas.length}</Text>
-          <Text style={[styles.statLabel, { color: isDark ? "#94a3b8" : "#64748b" }]}>Total Khatmas</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: isDark ? "#f1f5f9" : "#1e293b" }]}>
-            {khatmas.filter(k => k.isActive).length}
-          </Text>
-          <Text style={[styles.statLabel, { color: isDark ? "#94a3b8" : "#64748b" }]}>Active</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: "#22c55e" }]}>
-            {khatmas.filter(k => k.progress === 100).length}
-          </Text>
-          <Text style={[styles.statLabel, { color: isDark ? "#94a3b8" : "#64748b" }]}>Completed</Text>
-        </View>
-      </View>
-
-      {/* Khatma List */}
+      {/* List */}
       <FlatList
         data={khatmas}
-        renderItem={renderKhatma}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <KhatmaCard item={item} isDark={isDark} c={c} onUpdate={handleUpdate} onDelete={handleDelete} />
+        )}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="bookmark-outline" size={64} color={isDark ? "#475569" : "#cbd5e1"} />
-            <Text style={[styles.emptyText, { color: isDark ? "#64748b" : "#94a3b8" }]}>
-              No Khatmas yet
+          <View style={{ alignItems: "center", paddingVertical: 60 }}>
+            <BookOpen size={52} color={c.textMuted} />
+            <Text style={{ fontSize: 15, color: c.textMuted, fontFamily: "IBMPlexSansArabic_400Regular", marginTop: 16, textAlign: "center" }}>
+              لا توجد ختمات بعد{"\n"}ابدأ ختمتك الأولى الآن
             </Text>
-            <Pressable style={[styles.emptyBtn, { backgroundColor: "#1a4731" }]} onPress={startNewKhatma}>
-              <Text style={styles.emptyBtnText}>Start Khatma</Text>
-            </Pressable>
           </View>
         }
       />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    padding: 12, 
-    borderBottomWidth: 1 
-  },
-  headerBtn: { padding: 8, borderRadius: 12 },
-  headerTitle: { 
-    flex: 1, 
-    fontSize: 18, 
-    fontWeight: "bold", 
-    textAlign: "center",
-    fontFamily: Platform.OS === "ios" ? "Georgia" : "serif"
-  },
-  statsContainer: { 
-    flexDirection: "row", 
-    padding: 20, 
-    margin: 16, 
-    borderRadius: 20, 
-    borderWidth: 1,
-    ...Platform.select({
-      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8 },
-      android: { elevation: 3 }
-    })
-  },
-  statItem: { flex: 1, alignItems: "center" },
-  statNumber: { fontSize: 28, fontWeight: "bold" },
-  statLabel: { fontSize: 12, marginTop: 4 },
-  statDivider: { width: 1, backgroundColor: "#e2e8f0", marginVertical: 4 },
-  list: { padding: 16, paddingTop: 0 },
-  khatmaCard: { 
-    padding: 16, 
-    borderRadius: 20, 
-    marginBottom: 16, 
-    borderWidth: 1,
-    ...Platform.select({
-      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 6 },
-      android: { elevation: 2 }
-    })
-  },
-  khatmaHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
-  khatmaInfo: { flex: 1 },
-  khatmaName: { fontSize: 18, fontWeight: "bold", marginBottom: 4 },
-  khatmaDate: { fontSize: 12 },
-  deleteBtn: { padding: 8 },
-  progressContainer: { marginBottom: 12 },
-  progressBar: { height: 8, borderRadius: 4, overflow: "hidden", marginBottom: 8 },
-  progressFill: { height: "100%", borderRadius: 4 },
-  progressText: { fontSize: 12, textAlign: "left" },
-  juzContainer: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginBottom: 16 },
-  juzDot: { width: 18, height: 18, borderRadius: 4 },
-  juzDotCompleted: { backgroundColor: "#1a4731" },
-  controlsRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 12 },
-  controlBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
-  addJuzBtn: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12 },
-  addJuzText: { color: "#ffffff", fontWeight: "600", fontSize: 14 },
-  skipText: { fontWeight: "600", fontSize: 14 },
-  completedBadge: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 16, gap: 8 },
-  completedText: { fontSize: 16, fontWeight: "600" },
-  emptyContainer: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 60 },
-  emptyText: { fontSize: 16, marginTop: 16 },
-  emptyBtn: { marginTop: 20, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
-  emptyBtnText: { color: "#ffffff", fontWeight: "600", fontSize: 16 },
-});
