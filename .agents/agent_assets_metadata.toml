@@ -66,3 +66,9 @@ id = "QSBrElWHDCMSpLg6BKe_m"
 uri = "file://zakiy_full_analysis.md"
 type = "text"
 title = "تشريح الزكي الكامل — وثيقة التحويل لـ Expo"
+
+[[outputs]]
+id = "cB1Gh-ptEdOF1Yle4oV4V"
+uri = "file://tawbah-web-apk.zip"
+type = "unspecified"
+title = "دليل التوبة — Web APK (Capacitor – 21 MB)"

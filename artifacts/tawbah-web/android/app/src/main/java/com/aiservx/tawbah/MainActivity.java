@@ -13,22 +13,18 @@ public class MainActivity extends BridgeActivity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
-    // Switch from Launch (Splash) theme to the real app theme.
-    // Without this, the splash/logo can appear during runtime (e.g. when long-press selecting text).
     setTheme(R.style.AppTheme_NoActionBar);
     registerPlugin(SystemBarsPlugin.class);
     super.onCreate(savedInstanceState);
 
-    // Configure WebView to fill screen properly in landscape
-    this.init(
-        savedInstanceState,
-        config -> {
-          config.getWebView().getSettings().setUseWideViewPort(true);
-          config.getWebView().getSettings().setLoadWithOverviewMode(true);
-          config.getWebView().getSettings().setAllowFileAccess(true);
-          config.getWebView().getSettings().setAllowContentAccess(true);
-        }
-    );
+    // Configure WebView after bridge is initialized
+    WebView webView = getBridge().getWebView();
+    if (webView != null) {
+      webView.getSettings().setUseWideViewPort(true);
+      webView.getSettings().setLoadWithOverviewMode(true);
+      webView.getSettings().setAllowFileAccess(true);
+      webView.getSettings().setAllowContentAccess(true);
+    }
 
     // Show status bar and navigation bar
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
