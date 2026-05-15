@@ -197,13 +197,17 @@ function StatusBarBridge() {
       // Avoid drawing under the status bar (prevents icon contrast issues and layout overlap)
       StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
 
-      // Get accent color based on theme (light/dark mode)
+      // In light/day mode: white bars with dark icons
+      // In dark mode: use accent color with light icons
       const opt = ACCENT_OPTIONS.find(o => o.id === accentColor);
-      const accentColorValue = theme === "dark" 
-        ? (opt?.darkPrimary ?? "#10551b") 
-        : (opt?.lightPrimary ?? "#174d2b");
-      
-      StatusBar.setBackgroundColor({ color: accentColorValue }).catch(() => {});
+      const statusBarColor = theme === "dark"
+        ? (opt?.darkPrimary ?? "#10551b")
+        : "#FFFFFF";
+      const navBarColor = theme === "dark"
+        ? (opt?.darkPrimary ?? "#10551b")
+        : "#FFFFFF";
+
+      StatusBar.setBackgroundColor({ color: statusBarColor }).catch(() => {});
 
       if (Capacitor.isNativePlatform()) {
         try {
@@ -212,7 +216,7 @@ function StatusBarBridge() {
           }>("SystemBars");
 
           SystemBars.setNavigationBarColor({
-            color: accentColorValue,
+            color: navBarColor,
             darkIcons: theme !== "dark",
           }).catch(() => {});
         } catch {
