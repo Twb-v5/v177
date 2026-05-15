@@ -18,6 +18,12 @@ const DEFAULT_API_BASE = __DEV__ ? detectDevApiBase() : PRODUCTION_API;
 let _apiBase: string | null = null;
 
 export async function initApiBase(): Promise<void> {
+  // On web, always use window.location.origin to route through metro's API proxy.
+  // This avoids CORS issues from stale AsyncStorage values pointing to old dev URLs.
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    _apiBase = `${window.location.origin}/api`;
+    return;
+  }
   try {
     const stored = await AsyncStorage.getItem("tawbah_api_base");
     _apiBase = stored ?? DEFAULT_API_BASE;
@@ -27,6 +33,10 @@ export async function initApiBase(): Promise<void> {
 }
 
 export function getApiBase(): string {
+  // On web, always derive from current origin (supports metro proxy + production deploy)
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    return `${window.location.origin}/api`;
+  }
   return _apiBase ?? DEFAULT_API_BASE;
 }
 
@@ -41,6 +51,7 @@ export function aiUrl(path: string): string {
 }
 
 export async function setApiBase(url: string): Promise<void> {
+  if (Platform.OS === "web") return; // Web always uses origin; don't persist
   _apiBase = url;
   try {
     await AsyncStorage.setItem("tawbah_api_base", url);

@@ -50,11 +50,13 @@ function MoreCard({
   item,
   isDark,
   isRTL,
+  textColor,
   onPress,
 }: {
   item: MenuItem;
   isDark: boolean;
   isRTL: boolean;
+  textColor: string;
   onPress: () => void;
 }) {
   const scale = useSharedValue(1);
@@ -108,7 +110,7 @@ function MoreCard({
           style={{
             fontSize: 13,
             fontWeight: "800",
-            color: c.text,
+            color: textColor,
             fontFamily: "IBMPlexSansArabic_700Bold",
             textAlign: isRTL ? "right" : "left",
           }}
@@ -434,6 +436,7 @@ export default function MoreScreen() {
                     item={item}
                     isDark={isDark}
                     isRTL={isRTL}
+                    textColor={c.text}
                     onPress={() => router.push(item.href as any)}
                   />
                 ))}
