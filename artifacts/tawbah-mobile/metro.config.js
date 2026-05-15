@@ -14,6 +14,9 @@ config.resolver.unstable_enablePackageExports = true;
 config.resolver.blockList = [
   /node_modules\/expo-asset_tmp_[^/]+\/.*/,
   /node_modules\/.*_tmp_[^/]+\/.*/,
+  // Exclude backup directories from being watched by Metro
+  /artifacts\/tawbah-mobile-backup\/.*/,
+  /tawbah-mobile-backup\/.*/,
 ];
 
 config.transformer = {

@@ -1,93 +1,22 @@
-# Workspace
+# دليل التوبة النصوح — Project Guide
 
 ## Overview
 
-**دليل التوبة النصوح** - A comprehensive Arabic Islamic app guiding users through sincere repentance (Tawbah). Available as both a web app and mobile app.
+**دليل التوبة النصوح** — A comprehensive Arabic Islamic app guiding users through sincere repentance (Tawbah). Available as a web app and a React Native mobile app.
 
-### Key Features
-- **القرآن الكريم** (`/quran`): Comprehensive Quran library — hero with rotating ayahs, daily ayah+tafsir, reading tracker (streak), surah browser (114 surahs with search+filter), sciences grid, miracles section (expandable cards), virtues hadiths. Home card with embedded reading tracker before SoulMeter. Hadith-of-the-day card below SoulMeter.
-- **البوت الزكي** (`/zakiy`): AI-powered Arabic spiritual chatbot for venting and repentance guidance. Supports text and voice input, TTS responses (onyx voice), full chat history.
-- **مكتبة الرجاء** (`/rajaa`): Hadiths and stories with AI-generated Arabic TTS audio (onyx/echo voices).
-- All AI features use OpenAI via Replit proxy (no API key needed).
-- **Roadmap**: Full Quran library roadmap in `QURAN_ROADMAP.md` (4 phases: foundation ✅, deep reading, social khatma, AI).
+---
 
-## Stack
+## Quick Start (New Replit Account Setup)
 
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
-- **Web frontend**: React + Vite, Tailwind CSS, Framer Motion
-- **Mobile**: Expo SDK 54, Expo Router, AsyncStorage, expo-av, expo-haptics, expo-location
+Every time you open this project in a new Replit account, do the following **once**:
 
-## App Features
-
-1. **عهد التوبة (Covenant)** - User selects sin category and signs a repentance covenant
-2. **مهام اليوم الأول (First Day Tasks)** - Mandatory checklist of 4 immediate actions
-3. **رحلة الـ 30 يوماً (30-Day Journey)** - Primary journey: day-by-day task list with individual task toggling, sin integration panel, and streak tracking. Replaces the 40-day plan as the main hero card.
-4. **عداد الذكر (Dhikr Counter)** - Three counters (Istighfar/100, Tasbih/33, Sayyid al-Istighfar)
-5. **زر الطوارئ SOS المطور** - 3-phase emergency: Alert → Breathing exercise (animated) → Emergency duas
-6. **علامات قبول التوبة (Signs of Accepted Repentance)** - 5 spiritual signs
-7. **التعامل مع الانتكاسات (Handling Relapse)** - Guidance and encouragement
-8. **الكفارات الشرعية (Kaffarah System)** - Sin-category-specific expiation steps with completion tracking
-9. **مكتبة الرجاء (Library of Hope)** - Quran verses + Hadiths + Historical repentance stories with tabs
-10. **يوميات التوبة السرية (Private Journal)** - Encrypted personal diary with mood tracking
-11. **خريطة التقدم الروحي (Spiritual Progress Chart)** - 40-day grid + weekly bar charts for habits & dhikr
-12. **أوقات الخطر الذكية (Smart Danger Times)** - User-configurable danger time alerts with local notifications
-13. **تنبيهات المواسم (Seasonal Banners)** - Auto-detected Islamic season banners (Ramadan, Dhul Hijja, etc.)
-14. **البوت الزكي — Zakiy AI Chatbot** (`/zakiy`) - Arabic spiritual chatbot for venting and repentance guidance. Supports text + voice input, TTS responses (OpenAI onyx voice), full chat history. Uses OpenAI via Replit proxy.
-15. **غرف الذكر الجماعية (Dhikr Rooms)** (`/dhikr-rooms`) - Live group dhikr sessions where users join virtual rooms and do collective remembrance in real time.
-16. **مقياس الروح (Soul Meter)** - Interactive spiritual wellness gauge on the home page; user rates their spiritual state and gets a contextual response.
-17. **برامج إسلامية (Islamic Programs)** (`/islamic-programs`) - Curated collection of structured Islamic self-improvement programmes (e.g., Tahajjud challenge, Quran khatm planner).
-18. **شجرة التوبة (Tawbah Garden)** - Gamified visual tree on the home page that grows with each completed day and habit, giving a sense of spiritual progress.
-19. **وضع المناجاة (Munajat Mode)** - Immersive night-mode screen with soft background audio and personal supplication prompts for late-night worship.
-20. **شريط الوصول الفوري (Quick Access Bar)** - Horizontally scrollable pill-shaped shortcut bar at the top of the home page linking to the 8 most-used sections (Quran, Prayer Times, Dhikr, Rajaa Library, Islamic Programs, Dhikr Rooms, Journal, Adhkar).
-21. **بطاقة تركيزي اليوم (Daily Focus Card)** - A pinned daily task card on the home page showing one spiritually focused mission per day (rotates by day of week). User marks it complete; state persists across sessions via localStorage.
-22. **قارئ القرآن الداخلي الكامل (In-App Quran Reader)** - Full in-app surah reader sheet triggered from the Quran browser. Displays all ayahs in Uthmani script fetched from `/api/quran/surah/:id`. Each ayah has a play/pause audio button using the CDN audio proxy. Includes reciter selection (6 reciters), Bismillah header, and a singleton audio manager so only one ayah plays at a time.
-23. **مسار API لنص القرآن (Quran Text API Route)** (`GET /api/quran/surah/:id`) - Backend proxy route that fetches full surah ayah text from alquran.cloud (`quran-uthmani` edition) and caches responses in memory for 24 hours to avoid repeated upstream calls.
-
-## Structure
-
-```text
-artifacts-monorepo/
-├── artifacts/
-│   ├── api-server/       # Express 5 API server (port 8080, /api)
-│   ├── tawbah-web/       # React+Vite web app (port 20251, /)
-│   └── tawbah-mobile/    # Expo React Native mobile app (port 24800, /mobile/)
-├── lib/
-│   ├── api-spec/         # OpenAPI spec + Orval codegen config
-│   ├── api-client-react/ # Generated React Query hooks
-│   ├── api-zod/          # Generated Zod schemas from OpenAPI
-│   └── db/               # Drizzle ORM schema + DB connection
-│       └── schema/tawbah.ts  # user_progress, habits, dhikr_count tables
-└── ...
+### Step 1 — Install dependencies
+```bash
+pnpm install
 ```
 
-## DB Schema
-
-- `user_progress` - Tracks each session's repentance journey
-- `habits` - Daily habit completion tracking
-- `dhikr_count` - Daily dhikr counters per session
-- `kaffarah_steps` - Tracks completion of each expiation step per session
-- `journal_entries` - Private repentance journal entries with mood field
-
-## TypeScript & Composite Projects
-
-Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references.
-
-## Required Setup (for any agent starting on this project)
-
-### OpenAI Integration (REQUIRED — must run before starting)
-
-All AI features (Zakiy chatbot, TTS in Rajaa library, voice responses) use OpenAI via Replit's managed AI Integrations proxy. No API key from the user is needed — Replit provisions it automatically.
-
-**You MUST run this in the code_execution sandbox before working on any AI features:**
-
+### Step 2 — Set up OpenAI (AI features)
+Run this in the Replit **code_execution** sandbox (not the terminal):
 ```javascript
 const result = await setupReplitAIIntegrations({
     providerSlug: "openai",
@@ -96,69 +25,199 @@ const result = await setupReplitAIIntegrations({
 });
 console.log(result);
 ```
+This provisions the OpenAI API key automatically — no key needed from you.
 
-This sets `AI_INTEGRATIONS_OPENAI_BASE_URL` and `AI_INTEGRATIONS_OPENAI_API_KEY` environment variables. The server-side client is at `lib/integrations-openai-ai-server/src/client.ts` — it automatically picks up these env vars. After running, restart the API server workflow so it picks up the new variables.
+### Step 3 — Set required secrets
+Open **Secrets** (lock icon in sidebar) and add:
 
-If the Zakiy chatbot throws "No OpenAI credentials found", it means this step was skipped.
+| Secret | Value | Purpose |
+|--------|-------|---------|
+| `EXPO_TOKEN` | Your Expo account token | Building Android APK via EAS |
 
-## Root Scripts
+To get your Expo token: https://expo.dev/accounts/[username]/settings/access-tokens
 
-- `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages
-- `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
+### Step 4 — Start the servers
+The workflows auto-start, but if they're not running, click **Run** or restart them from the Replit workflow panel:
 
-## Packages
+| Workflow | Port | What it does |
+|----------|------|--------------|
+| `Start backend` | 3001 | Express API server |
+| `Start application` | 5000 | React web app (Vite) |
+| `artifacts/tawbah-mobile: expo` | 24800 | Expo mobile dev server |
 
-### `artifacts/api-server` (`@workspace/api-server`)
+### Step 5 — Push database schema (first time only)
+```bash
+pnpm --filter @workspace/db run push
+```
 
-Express 5 API server. Routes:
-- `GET /api/healthz` - Health check
-- `GET /api/user/progress` - Get user progress by sessionId
-- `PUT /api/user/progress` - Update progress
-- `POST /api/user/covenant` - Sign repentance covenant
-- `GET /api/habits` - Get today's habits
-- `POST /api/habits` - Toggle habit completion
-- `GET /api/dhikr/count` - Get dhikr counts
-- `POST /api/dhikr/increment` - Increment a dhikr counter
-- `GET /api/quran/surah/:id` - Fetch full ayah text for a surah (1-114) from alquran.cloud, 24h in-memory cache
-- `GET /api/audio-proxy/quran/:reciterId/:globalAyahNum.mp3` - Streams Quran recitation audio from cdn.islamic.network CDN
+---
 
-### `artifacts/tawbah-web` (`@workspace/tawbah-web`)
+## Building the Android APK
 
-React+Vite web app with Arabic RTL layout, Islamic green/gold theme.
-Pages: home, covenant, day-one, plan, dhikr, sos, signs, relapse
+### Mobile app APK (tawbah-mobile — React Native / Expo)
 
-#### Dynamic Header System (`src/components/header/`)
-Three adaptive header variants — all use design tokens only:
+Uses **EAS Build** (Expo cloud build service). No Android SDK needed locally.
 
-- **`StandardHeader`** — Enhanced sticky header for all inner pages. Replaces the old `PageHeader`. Supports scroll-shrink animation (compact at >12px scroll). Props: `title`, `subtitle`, `icon`, `showBack`, `onBack`, `right`.
-- **`HeroHeader`** — Transparent absolute overlay for pages with hero backgrounds. Compact on scroll (>60px). Props: `title`, `subtitle`, `showBack`, `leftActions`, `rightActions`, `bottomContent`.
-- **`ContextHeader`** — State-aware header for Zakiy and smart pages. Responds to `zakiyState` (`emergency`/`repentance`/`growth`) with subtle color tinting and an animated accent border. Props extend `StandardHeader` + `zakiyState`.
-- **`PageHeader`** — Backward-compat shim that delegates to `StandardHeader`. All existing pages using it continue to work unchanged.
+```bash
+# Build a distributable APK (recommended)
+./scripts/build-apk.sh
 
-**Page-specific integrations:**
-- **Home page**: `HomeHeroBar` overlaid on `IslamicHero` — notifications bell, theme toggle (sun/moon), language toggle (AR/EN).
-- **Zakiy page**: Uses `ContextHeader` with dynamic zakiy state awareness (color shifts per state).
-- **Quran page**: Uses `StandardHeader` with an `أقسام` dropdown button revealing a 3×3 grid of all Quran sections (quick nav).
+# Or build a production AAB (for Google Play Store)
+./scripts/build-apk.sh production
+```
 
-### `artifacts/tawbah-mobile` (`@workspace/tawbah-mobile`)
+After running, a link is printed. Open it to track the build:
+```
+https://expo.dev/accounts/hadysbadys/projects/tawbah-mobile/builds
+```
 
-Expo React Native app with 4 tabs + multiple stack/modal screens.
-Tabs: الرئيسية, القرآن, الذكر, زكي, المزيد
+When the build finishes, an **APK download link** appears on that page. Install it on any Android device.
 
-#### Mobile Engines (src/engines/)
-- **Zakiy engine** (`src/engines/zakiy/`) - AI spiritual chat: `useZakiy.ts` hook with real API calls to `/api/zakiy/message`, `/api/zakiy/voice`, `/api/zakiy/suggestions`, voice recording via expo-av, voice profiles, Arabic starters, risk alerts, anniversary milestones
-- **Journey engine** (`src/engines/journey/`) - 30-day journey: `useJourney.ts` with React Query, real API (`/journey30`, `/journey30/complete`), fallback journey data, per-day task tracking
-- **Media engine** (`src/engines/media/`) - Islamic media player: `useMediaPlayer.ts` with expo-av, 6 live radio stations, 3 podcast series with episodes, 50 Islamic programs, playback state, favorites, progress persistence via AsyncStorage
+> **Note:** EAS sometimes has high queue times. The build usually takes 5–20 minutes.
 
-#### Mobile Shared Infrastructure (src/lib/)
-- `src/lib/api.ts` - API base URL management with AsyncStorage, defaults to `https://tawbah.replit.app/api`
-- `src/lib/session.ts` - Persistent session ID generation stored in AsyncStorage key `tawbah_session_id`
+### Web app APK (tawbah-web — Capacitor)
 
-#### Mobile Screens
-- `app/zakiy/index.tsx` - Full chat UI: suggestions bar, risk alerts, voice recording, TTS playback, streaming messages
-- `app/journey/index.tsx` - 30-day journey: API-connected progress card, day cards with expand/collapse, task tracking, completion flow
-- `app/programs/index.tsx` - Islamic programs browser: hero banner (auto-rotating), live radio, podcast series with episodes, program category browser with mini-player
-- `app/more/index.tsx` - Navigation hub: links to all screens including Programs (/programs)
+The web app is wrapped as a native Android app using Capacitor.  
+Building it requires **Android Studio** (Android SDK + Gradle) on your local machine.
 
-#### Path Aliases
-- `@/*` → `src/*` (so `@/engines/*` → `src/engines/*`, `@/lib/*` → `src/lib/*`)
+Steps on your local machine:
+```bash
+# 1. Build the web bundle
+pnpm --filter @workspace/tawbah-web run build
+
+# 2. Sync with Capacitor
+npx cap sync android
+
+# 3. Open in Android Studio and build APK
+npx cap open android
+```
+Then in Android Studio: **Build → Build Bundle(s)/APK(s) → Build APK(s)**
+
+---
+
+## Project Structure
+
+```
+workspace/
+├── artifacts/
+│   ├── api-server/       # Express 5 API server  (port 3001 / 8080)
+│   ├── tawbah-web/       # React + Vite web app  (port 5000)
+│   └── tawbah-mobile/    # Expo React Native app (port 24800)
+├── lib/
+│   ├── api-spec/         # OpenAPI spec + Orval codegen
+│   ├── api-client-react/ # Generated React Query hooks
+│   ├── api-zod/          # Generated Zod schemas
+│   └── db/               # Drizzle ORM schema + DB connection
+├── scripts/
+│   └── build-apk.sh      # One-command Android APK builder
+└── replit.md             # This file
+```
+
+---
+
+## Stack
+
+| Layer | Tech |
+|-------|------|
+| Monorepo | pnpm workspaces |
+| Node.js | v24 |
+| TypeScript | 5.9 |
+| API | Express 5 |
+| Database | PostgreSQL + Drizzle ORM |
+| Validation | Zod v4, drizzle-zod |
+| Web frontend | React 19, Vite, Tailwind CSS 4, Framer Motion |
+| Mobile | Expo SDK 54, Expo Router, NativeWind |
+| AI | OpenAI GPT-4o via Replit AI Integrations proxy |
+| Mobile builds | EAS Build (Expo) |
+
+---
+
+## App Features
+
+1. **عهد التوبة (Covenant)** — Select sin category and sign repentance covenant
+2. **مهام اليوم الأول (First Day Tasks)** — 4 mandatory immediate actions
+3. **رحلة الـ 30 يوماً (30-Day Journey)** — Day-by-day task list with streak tracking
+4. **عداد الذكر (Dhikr Counter)** — Istighfar/100, Tasbih/33, Sayyid al-Istighfar
+5. **SOS Emergency Button** — 3-phase: Alert → Breathing → Emergency duas
+6. **علامات قبول التوبة** — 5 spiritual signs of accepted repentance
+7. **الكفارات الشرعية (Kaffarah)** — Sin-specific expiation steps with tracking
+8. **مكتبة الرجاء (Hope Library)** — Quran + Hadiths + repentance stories with TTS
+9. **يوميات التوبة السرية (Private Journal)** — Encrypted diary with mood tracking
+10. **البوت الزكي (Zakiy AI Chatbot)** — Arabic spiritual AI chat with voice I/O
+11. **غرف الذكر الجماعية (Dhikr Rooms)** — Live group dhikr sessions
+12. **مقياس الروح (Soul Meter)** — Spiritual wellness gauge
+13. **القرآن الكريم** — Full Quran browser with audio, tafsir, reading tracker
+14. **شجرة التوبة (Tawbah Garden)** — Gamified growth tree
+15. **وضع المناجاة (Munajat Mode)** — Immersive night worship mode
+
+---
+
+## API Routes (`/api`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/healthz` | Health check |
+| GET | `/api/user/progress` | Get session progress |
+| PUT | `/api/user/progress` | Update progress |
+| POST | `/api/user/covenant` | Sign covenant |
+| GET | `/api/habits` | Today's habits |
+| POST | `/api/habits` | Toggle habit |
+| GET | `/api/dhikr/count` | Get dhikr counts |
+| POST | `/api/dhikr/increment` | Increment dhikr |
+| GET | `/api/quran/surah/:id` | Fetch surah text (1–114) |
+| GET | `/api/audio-proxy/quran/:reciterId/:num.mp3` | Stream Quran audio |
+
+---
+
+## Database Schema
+
+| Table | Purpose |
+|-------|---------|
+| `user_progress` | Repentance journey state per session |
+| `habits` | Daily habit completion |
+| `dhikr_count` | Daily dhikr counters |
+| `kaffarah_steps` | Expiation step completion |
+| `journal_entries` | Private journal entries with mood |
+
+---
+
+## Common Commands
+
+```bash
+# Install all dependencies
+pnpm install
+
+# Push DB schema changes
+pnpm --filter @workspace/db run push
+
+# Build everything (typecheck + build)
+pnpm run build
+
+# Build Android APK via EAS
+./scripts/build-apk.sh
+
+# Typecheck all packages
+pnpm run typecheck
+```
+
+---
+
+## Troubleshooting
+
+### "No OpenAI credentials found"
+Run the OpenAI setup in Step 2 above, then restart the backend workflow.
+
+### Port already in use
+The `artifacts/tawbah-web: web` workflow conflicts with `Start application` (both use port 5000). Only one needs to run — use `Start application`.
+
+### EAS build fails with git error
+The build script handles this automatically with `EAS_SKIP_AUTO_FINGERPRINT=1`. If it still fails, make sure `EXPO_TOKEN` is set in Replit Secrets.
+
+### expo-router bundling crash (`require.context` error)
+Run: `cd artifacts/tawbah-mobile && node scripts/patch-expo-router.js`  
+The script patches `_ctx.js`, `_ctx.android.js`, `_ctx.ios.js`, and `_ctx.web.js`.
+
+### Dependencies out of date
+```bash
+pnpm install --no-frozen-lockfile
+```
