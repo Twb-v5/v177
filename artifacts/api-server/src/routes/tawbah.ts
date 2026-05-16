@@ -499,6 +499,10 @@ router.post("/dhikr/increment", async (req, res) => {
     dhikr = created;
   }
 
+  if (!dhikr) {
+    return res.status(500).json({ error: "Failed to initialize dhikr record" });
+  }
+
   const VALID_DHIKR_TYPES = ["istighfar", "tasbih", "sayyid"] as const;
   if (!VALID_DHIKR_TYPES.includes(body.dhikrType as "istighfar" | "tasbih" | "sayyid")) {
     return res.status(400).json({ error: "dhikrType must be one of: istighfar, tasbih, sayyid" });
@@ -518,7 +522,11 @@ router.post("/dhikr/increment", async (req, res) => {
     ))
     .returning();
 
-  res.json({
+  if (!updated) {
+    return res.status(500).json({ error: "Failed to update dhikr record" });
+  }
+
+  return res.json({
     sessionId: updated.sessionId,
     date: updated.date,
     istighfar: updated.istighfar,

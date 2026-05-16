@@ -605,7 +605,8 @@ export default function Adhkar() {
                 <div className="px-4 pt-1 pb-3">
                   <div className="flex gap-2.5">
                     {["morning", "evening"].map(id => {
-                      const cat = CATEGORIES.find(c => c.id === id)!;
+                      const cat = CATEGORIES.find(c => c.id === id);
+                      if (!cat) return null;
                       return (
                         <motion.button
                           key={id}

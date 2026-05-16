@@ -127,7 +127,7 @@ export default function Dhikr() {
     },
   });
 
-  const currentTab = TABS.find(t => t.id === activeTab)!;
+  const currentTab = TABS.find(t => t.id === activeTab) ?? TABS[0];
   const currentCount = counts?.[activeTab] || 0;
   const progress = Math.min(100, (currentCount / currentTab.target) * 100);
   const isComplete = currentCount >= currentTab.target;

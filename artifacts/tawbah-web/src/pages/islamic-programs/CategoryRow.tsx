@@ -10,10 +10,15 @@ const CARD_H = 86;
 const GAP = 10;
 
 export function CategoryRow({ catId, onProgramClick }: { catId: CategoryId; onProgramClick: (id: string) => void }) {
-  const cat = CATEGORIES.find((c) => c.id === catId)!;
+  const cat = CATEGORIES.find((c) => c.id === catId);
   const programs = PROGRAMS.filter((p) => p.category === catId);
 
+  if (!cat || programs.length === 0) return null;
+
   const featured = programs.find((p) => p.hot) ?? programs.find((p) => p.badge) ?? programs[0];
+
+  if (!featured) return null;
+
   const rest = programs.filter((p) => p.id !== featured.id);
 
   return (

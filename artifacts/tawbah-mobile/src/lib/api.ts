@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
-const PRODUCTION_API = "https://tawbah.replit.app/api";
+const PRODUCTION_API = "https://v-177--hadystow.replit.app/api";
 
 const EXPO_PUBLIC_API = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -17,6 +17,8 @@ const DEFAULT_API_BASE = __DEV__ ? detectDevApiBase() : PRODUCTION_API;
 
 let _apiBase: string | null = null;
 
+const STALE_URLS = ["tawbah.replit.app"];
+
 export async function initApiBase(): Promise<void> {
   // On web, always use window.location.origin to route through metro's API proxy.
   // This avoids CORS issues from stale AsyncStorage values pointing to old dev URLs.
@@ -26,7 +28,13 @@ export async function initApiBase(): Promise<void> {
   }
   try {
     const stored = await AsyncStorage.getItem("tawbah_api_base");
-    _apiBase = stored ?? DEFAULT_API_BASE;
+    // Clear stale/outdated URLs and migrate to current production API
+    if (stored && STALE_URLS.some(stale => stored.includes(stale))) {
+      await AsyncStorage.removeItem("tawbah_api_base");
+      _apiBase = DEFAULT_API_BASE;
+    } else {
+      _apiBase = stored ?? DEFAULT_API_BASE;
+    }
   } catch {
     _apiBase = DEFAULT_API_BASE;
   }
