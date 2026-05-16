@@ -1,5 +1,54 @@
 # The format of this file is identical to `.dockerignore`.
 # It is used to reduce the size of deployed images to make the process of publishing faster.
+# Production only needs: api-server + tawbah-web (web bundle served as static files).
 
-# No need to store the pnpm store twice.
+# ── Replit internals ──────────────────────────────────────────────────────────
 .local
+
+# ── pnpm store (already installed, no need to ship the cache) ─────────────────
+.local/share/pnpm
+**/.pnpm-store
+.pnpm-store
+
+# ── Mobile app — not needed in production web deployment ─────────────────────
+artifacts/tawbah-mobile
+artifacts/tawbah-mobile-backup
+
+# ── Capacitor Android project — only used for APK builds, not web serving ────
+artifacts/tawbah-web/android
+
+# ── Mockup / design sandbox — dev-only ───────────────────────────────────────
+artifacts/mockup-sandbox
+
+# ── Build caches & Gradle ─────────────────────────────────────────────────────
+.gradle
+**/.gradle
+**/build/intermediates
+**/build/generated
+**/build/tmp
+
+# ── node_modules (reinstalled during build) ───────────────────────────────────
+# Keep api-server node_modules to speed up cold starts; exclude heavy packages
+artifacts/tawbah-web/node_modules
+artifacts/tawbah-mobile/node_modules
+artifacts/tawbah-mobile-backup/node_modules
+artifacts/mockup-sandbox/node_modules
+
+# ── Dev / docs / large non-essential files ────────────────────────────────────
+attached_assets
+screenshots
+docs
+*.zip
+*.apk
+*.aab
+f.txt
+tawbah-web-apk.zip
+pnpm-lock.yaml.323642236
+APP_MEMORY.md
+MOBILE_MIGRATION_PLAN.md
+QURAN_ROADMAP.md
+zakiy_full_analysis.md
+store-listing.md
+Tawbah-Ai.md
+"Proposed plan.md"
+www.youtube.com_watch_v=Ts_A8TwE9G0.png
