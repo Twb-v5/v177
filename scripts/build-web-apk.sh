@@ -42,7 +42,25 @@ echo "✔  ANDROID_HOME: $ANDROID_HOME"
 echo ""
 
 # ── 2. Build Vite web bundle ─────────────────────────────────────────────────
+# Bake the server URL into the APK at build time so Capacitor's WebView knows
+# where to send API requests (window.location.origin = "https://localhost" in
+# native context — not useful as an API base).
+#
+# Override with:  SERVER_URL=https://your-domain.app ./scripts/build-web-apk.sh
+if [ -z "$VITE_API_BASE_URL" ]; then
+  if [ -n "$SERVER_URL" ]; then
+    export VITE_API_BASE_URL="$SERVER_URL"
+  elif [ -n "$REPLIT_DOMAINS" ]; then
+    # Use the first Replit domain (dev or prod)
+    FIRST_DOMAIN="${REPLIT_DOMAINS%%,*}"
+    export VITE_API_BASE_URL="https://$FIRST_DOMAIN"
+  fi
+fi
+
 echo "📦  [1/3] Building Vite web bundle..."
+if [ -n "$VITE_API_BASE_URL" ]; then
+  echo "    API base baked into APK: $VITE_API_BASE_URL"
+fi
 cd "$WEB_DIR"
 pnpm run build
 echo "    ✓ Bundle ready → dist/public/"

@@ -1,12 +1,17 @@
 import { HeartHandshake, Share2 } from "lucide-react";
 import { useState } from "react";
+import { isNativeApp } from "@/lib/api-base";
+import { API_CONFIG } from "@/lib/api-config";
 
 export function InviteFriendCard() {
   const [shared, setShared] = useState(false);
   const handleInvite = async () => {
     const text =
       "اكتشفت تطبيقاً يساعدك على التوبة الصادقة 🌿\nرحلة 30 يوماً مع خطة يومية وذكر وإرشاد روحي.\n\nابدأ رحلتك الآن 👇";
-    const url = window.location.origin;
+    // In native APK, window.location.origin = "https://localhost" — use the real server URL instead
+    const url = isNativeApp()
+      ? API_CONFIG.serverUrl.replace(/\/api\/?$/, "")
+      : window.location.origin;
     if (navigator.share) {
       try {
         await navigator.share({ title: "دليل التوبة النصوح", text, url });

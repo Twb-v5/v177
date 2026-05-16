@@ -24,16 +24,11 @@ export function isNativeApp(): boolean {
 
 export function getApiBase(): string {
   if (isNativeApp()) {
-    const fromEnv = import.meta.env.VITE_API_BASE_URL as string | undefined;
-    if (fromEnv) return fromEnv;
-    const stored =
-      typeof localStorage !== "undefined"
-        ? localStorage.getItem("tawbah_api_base")
-        : null;
-    if (stored) return stored;
+    // API_CONFIG.serverUrl already resolves the priority:
+    //   VITE_API_BASE_URL (baked at build) → localStorage → fallback domain
     return API_CONFIG.serverUrl;
   }
-
+  // Browser: Vite dev-server proxies /api → localhost:3001
   return "/api";
 }
 
