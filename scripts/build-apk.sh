@@ -41,21 +41,27 @@ node scripts/patch-expo-router.js
 echo "📁 Copying project to /tmp (outside git repo for EAS compatibility)..."
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
-find "$MOBILE_DIR" -mindepth 1 -maxdepth 1 ! -name 'node_modules' -exec cp -r {} "$BUILD_DIR/" \;
+find "$MOBILE_DIR" -mindepth 1 -maxdepth 1 \
+  ! -name 'node_modules' \
+  ! -name 'pnpm-lock.yaml' \
+  -exec cp -r {} "$BUILD_DIR/" \;
 
-echo "🔗 Linking node_modules and lockfile for EAS config resolution..."
+# ── Generate a standalone lockfile ───────────────────────────────────────────
+# The workspace pnpm-lock.yaml covers all packages (api-server, tawbah-web,
+# tawbah-mobile, etc.) and CANNOT be used with just the mobile package.json —
+# pnpm raises ERR_PNPM_OUTDATED_LOCKFILE.  We generate a fresh lockfile that
+# matches exactly the mobile package.json so EAS's frozen-install succeeds.
+echo "📦 Generating standalone pnpm lockfile for mobile project..."
+cd "$BUILD_DIR"
+# Use npm's node-linker so EAS can resolve modules the same way
+pnpm install --no-frozen-lockfile --ignore-scripts --node-linker=hoisted 2>&1 | tail -5
+echo "    ✓ Standalone lockfile generated"
+
+echo "🔗 Linking node_modules from workspace for EAS config resolution..."
+# Replace the freshly-installed node_modules with a symlink to the already-
+# installed workspace copy — saves disk space and avoids a second download.
+rm -rf "$BUILD_DIR/node_modules"
 ln -sf "$MOBILE_DIR/node_modules" "$BUILD_DIR/node_modules"
-
-# EAS requires a lockfile for deterministic installs on the cloud server.
-# We also copy pnpm-workspace.yaml so that the overrides defined there match
-# the overrides recorded in the lockfile — without it pnpm raises
-# ERR_PNPM_LOCKFILE_CONFIG_MISMATCH and the EAS build fails.
-cp "$REPO_ROOT/pnpm-lock.yaml"      "$BUILD_DIR/pnpm-lock.yaml"      2>/dev/null || true
-cp "$REPO_ROOT/pnpm-workspace.yaml" "$BUILD_DIR/pnpm-workspace.yaml" 2>/dev/null || true
-# pnpm-workspace.yaml references patch files — copy the patches dir too
-if [ -d "$REPO_ROOT/patches" ]; then
-  cp -r "$REPO_ROOT/patches" "$BUILD_DIR/patches"
-fi
 
 echo "🔧 Initialising temporary git repo for EAS archiving..."
 # EAS requires a git repo to create the project archive.
