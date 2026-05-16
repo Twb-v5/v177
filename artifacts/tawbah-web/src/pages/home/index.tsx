@@ -41,14 +41,35 @@ import { BookOpen, Zap, CircleDot } from "lucide-react";
 // Only show the 7 core sections the user selected.
 // Bump bucket key version so existing stored arrangements are reset.
 const DEFAULT_PRIMARY_ITEMS = [] as const;
-const DEFAULT_DAILY_TOOLS = ["quran-card", "dhikr", "prayer-times", "adhkar"] as const;
-const DEFAULT_GROWTH_ITEMS = ["journey30", "islamic-programs", "journal"] as const;
+
+// ── Daily grid (2-column tiles) ──────────────────────────────────────────────
+const DEFAULT_DAILY_TOOLS = [
+  "dhikr",         // مسبحة الذكر
+  "prayer-times",  // مواقيت الصلاة
+  "notifications", // الإشعارات
+  "settings",      // الإعدادات
+  "kaffarah",      // الكفارات
+  "rajaa",         // مكتبة الرجاء
+  "journal",       // يوميات التوبة
+  "hadi-tasks",    // دليل الذنوب
+] as const;
+
+// ── Growth (full-width featured cards) ───────────────────────────────────────
+const DEFAULT_GROWTH_ITEMS = [
+  "zakiy-card",       // بطاقة زكي المميزة
+  "quran-card",       // بطاقة القرآن
+  "journey30",        // رحلة 30 يوم
+  "islamic-programs", // البرامج الإسلامية
+  "adhkar",           // الأذكار والأدعية
+  "invite",           // دعوة صديق
+] as const;
+
 const DEFAULT_COMMUNITY_ITEMS = [] as const;
 
 type HomeBucket = "primary" | "daily" | "growth" | "community";
 type HomeBucketOrOther = HomeBucket | "other";
 
-const HOME_BUCKET_KEY = "home_bucket_map_v2";
+const HOME_BUCKET_KEY = "home_bucket_map_v3";
 
 function getDefaultBucket(id: SectionId): HomeBucketOrOther {
   if ((DEFAULT_PRIMARY_ITEMS as readonly string[]).includes(id)) return "primary";
@@ -154,13 +175,13 @@ export default function Home() {
           id: "daily" as const,
           title: "أدواتك اليومية",
           icon: <CircleDot size={16} />,
-          subtitle: "أذكار • صلاة • قرآن • مواقيت",
+          subtitle: "ذكر • صلاة • إشعارات • كفارات",
         },
         {
           id: "growth" as const,
-          title: "النمو والمحتوى",
+          title: "رحلتك الروحية",
           icon: <BookOpen size={16} />,
-          subtitle: "رحلة التوبة • برامج إسلامية • يومياتك",
+          subtitle: "الزكي • القرآن • التوبة • البرامج",
         },
       ] as const,
     [],

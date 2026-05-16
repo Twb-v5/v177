@@ -37,32 +37,36 @@ export const SortableUnifiedItem = memo(function SortableUnifiedItem({
       <div ref={setNodeRef} style={style} className="relative">
         <Link
           href={meta.href}
-          className={`relative flex flex-col items-center justify-center gap-2.5 bg-gradient-to-br ${meta.bg} border ${meta.border} px-3 py-5 active:scale-[0.96] transition-all text-center overflow-hidden`}
+          className={`relative flex flex-col items-center justify-center gap-3 bg-gradient-to-br ${meta.bg} border ${meta.border} px-3 py-5 active:scale-[0.95] transition-all text-center overflow-hidden`}
           style={{
-            minHeight: "106px",
+            minHeight: "122px",
             borderRadius: 22,
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
             boxShadow:
-              "0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.25)",
+              "0 4px 18px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.06)",
           }}
         >
+          {/* Shimmer highlight */}
           <div
-            className="absolute top-0 inset-x-0 h-[40%] pointer-events-none rounded-t-[22px]"
+            className="absolute top-0 inset-x-0 h-[45%] pointer-events-none rounded-t-[22px]"
             style={{
               background:
-                "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%)",
+                "linear-gradient(180deg, rgba(255,255,255,0.17) 0%, transparent 100%)",
             }}
           />
+          {/* Icon container */}
           <div
-            className={`w-11 h-11 rounded-2xl flex items-center justify-center ${meta.iconBg}`}
-            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center ${meta.iconBg}`}
+            style={{
+              boxShadow: "0 3px 10px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.2)",
+            }}
           >
             {meta.icon}
           </div>
           <div>
-            <p className="font-bold text-[11.5px] leading-tight">{meta.label}</p>
-            <p className="text-[9.5px] text-muted-foreground mt-0.5 leading-tight">
+            <p className="font-bold text-[12px] leading-tight">{meta.label}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight opacity-75">
               {meta.sub}
             </p>
           </div>

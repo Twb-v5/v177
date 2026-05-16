@@ -16,6 +16,10 @@ import {
   HandHeart,
   ImageIcon,
   Users,
+  Bot,
+  Sparkles,
+  Mic,
+  BrainCircuit,
 } from "lucide-react";
 import { SoulMeter } from "@/components/SoulMeter";
 import { LiveStats } from "@/components/live-stats";
@@ -38,7 +42,7 @@ export const SECTION_LABELS: Record<ListId, string> = {
   "hadith-card": "الحديث الشريف",
   "soul-meter": "مقياس الروح",
   "journey-card": "رحلة التوبة ٣٠ يوماً",
-  journey30: "رحلة ٣٠ يوماً (رابط)",
+  journey30: "رحلة ٣٠ يوماً",
   invite: "ادعُ رفيقاً",
   ameen: "قل آمين",
   "tawbah-card": "بطاقة توبتي",
@@ -49,6 +53,7 @@ export const SECTION_LABELS: Record<ListId, string> = {
   garden: "شجرة التوبة",
   munajat: "وضع المناجاة",
   adhkar: "الأذكار والأدعية",
+  "zakiy-card": "البوت الزكي",
 };
 
 // ─── Individual section components ────────────────────────────────────────────
@@ -536,6 +541,179 @@ function HeartHandshake({ size }: { size: number }) {
   return <HandHeart size={size} />;
 }
 
+// ─── Zakiy Featured Card ─────────────────────────────────────────────────────
+
+export function SectionZakiyCard() {
+  return (
+    <Link
+      href="/zakiy"
+      className="block rounded-[24px] overflow-hidden active:scale-[0.97] transition-transform relative"
+      style={{
+        background:
+          "linear-gradient(135deg, #0f0723 0%, #1e0d42 40%, #13204a 75%, #0c1a3d 100%)",
+        border: "1px solid rgba(139,92,246,0.38)",
+        boxShadow:
+          "0 14px 45px rgba(88,28,200,0.28), 0 4px 14px rgba(0,0,0,0.45)",
+      }}
+    >
+      {/* Glow orbs */}
+      <div
+        className="absolute -top-8 -right-8 w-40 h-40 rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(139,92,246,0.45) 0%, transparent 70%)",
+          filter: "blur(20px)",
+        }}
+      />
+      <div
+        className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 70%)",
+          filter: "blur(22px)",
+        }}
+      />
+      {/* Star particles */}
+      {[
+        [12, 18],
+        [82, 12],
+        [48, 7],
+        [72, 32],
+        [22, 38],
+        [60, 22],
+      ].map(([x, y], i) => (
+        <div
+          key={i}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            left: `${x}%`,
+            top: `${y}%`,
+            width: i % 2 === 0 ? 2 : 1.5,
+            height: i % 2 === 0 ? 2 : 1.5,
+            background:
+              i % 2 === 0
+                ? "rgba(196,181,253,0.85)"
+                : "rgba(147,197,253,0.65)",
+          }}
+        />
+      ))}
+
+      <div className="relative z-10 p-5">
+        <div className="flex items-center gap-4">
+          {/* Bot icon with glow ring */}
+          <div className="relative shrink-0">
+            <div
+              className="w-[64px] h-[64px] rounded-[18px] flex items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(139,92,246,0.38) 0%, rgba(59,130,246,0.22) 100%)",
+                border: "1px solid rgba(139,92,246,0.55)",
+                boxShadow:
+                  "0 0 28px rgba(139,92,246,0.4), inset 0 1px 0 rgba(255,255,255,0.12)",
+              }}
+            >
+              <Bot size={30} style={{ color: "#c4b5fd" }} />
+            </div>
+            <div
+              className="absolute -top-1 -right-1 w-4 h-4 rounded-full border-[2.5px]"
+              style={{ background: "#34d399", borderColor: "#1e0d42" }}
+            />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            {/* Badges */}
+            <div className="flex items-center gap-1.5 mb-2">
+              <span
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-widest uppercase"
+                style={{
+                  background: "rgba(139,92,246,0.25)",
+                  border: "1px solid rgba(139,92,246,0.42)",
+                  color: "#c4b5fd",
+                }}
+              >
+                GPT-4o
+              </span>
+              <span
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
+                style={{
+                  background: "rgba(52,211,153,0.15)",
+                  border: "1px solid rgba(52,211,153,0.32)",
+                  color: "#6ee7b7",
+                }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full inline-block"
+                  style={{ background: "#34d399" }}
+                />
+                متاح الآن
+              </span>
+            </div>
+            <h3
+              style={{
+                fontSize: 21,
+                fontWeight: 800,
+                color: "#fff",
+                lineHeight: 1.15,
+                marginBottom: 4,
+              }}
+            >
+              البوت الزكي
+            </h3>
+            <p
+              style={{
+                fontSize: 11.5,
+                color: "rgba(196,181,253,0.65)",
+                lineHeight: 1.5,
+              }}
+            >
+              رفيقك الروحي الذكي — يسمعك ويرشدك
+            </p>
+          </div>
+
+          <div
+            className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+            style={{
+              background: "rgba(139,92,246,0.2)",
+              border: "1px solid rgba(139,92,246,0.38)",
+            }}
+          >
+            <ArrowLeft size={17} style={{ color: "#a78bfa" }} />
+          </div>
+        </div>
+
+        {/* Feature chips */}
+        <div className="flex gap-2 mt-4 flex-wrap">
+          {[
+            { icon: <BrainCircuit size={11} />, label: "يتذكر قصتك" },
+            { icon: <Mic size={11} />, label: "صوت لصوت" },
+            { icon: <Sparkles size={11} />, label: "إرشاد روحي" },
+          ].map(({ icon, label }) => (
+            <div
+              key={label}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              <span style={{ color: "rgba(196,181,253,0.75)" }}>{icon}</span>
+              <span
+                style={{
+                  fontSize: 10.5,
+                  color: "rgba(255,255,255,0.58)",
+                  fontWeight: 600,
+                }}
+              >
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 // ─── renderSection ────────────────────────────────────────────────────────────
 
 export function renderSection(id: ListId): React.ReactNode {
@@ -570,5 +748,7 @@ export function renderSection(id: ListId): React.ReactNode {
       return <SectionQuranCard />;
     case "hadith-card":
       return <SectionHadithCard />;
+    case "zakiy-card":
+      return <SectionZakiyCard />;
   }
 }
