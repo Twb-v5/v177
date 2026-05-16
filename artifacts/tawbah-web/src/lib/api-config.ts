@@ -9,15 +9,14 @@
 //
 // Priority (native only):
 //   1. VITE_API_BASE_URL  — baked in at build time by build-web-apk.sh
-//                           (automatically set to the Replit domain)
 //   2. localStorage "tawbah_api_base" — user-configurable at runtime
-//   3. Hardcoded fallback — update this if you deploy to a custom domain
+//   3. Hardcoded production URL
 // ─────────────────────────────────────────────────────────────────────────────
 
 const BAKED_URL: string | undefined = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
-// Fallback: the Replit deployment domain (keep in sync with replit.md)
-const FALLBACK_SERVER = "https://tawbah.replit.app";
+// Production deployment URL — update if domain changes
+const FALLBACK_SERVER = "https://v-177--hadystow.replit.app";
 
 function resolveServerBase(): string {
   if (BAKED_URL && BAKED_URL.startsWith("http")) return BAKED_URL.replace(/\/+$/, "");

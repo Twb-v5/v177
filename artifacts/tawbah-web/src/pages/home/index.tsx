@@ -1,14 +1,11 @@
-import { Fragment, useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { GripVertical, Settings2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppUserProgress } from "@/hooks/use-app-data";
 import { useZakiyMode } from "@/context/ZakiyModeContext";
 import { ZakiyModeDashboard } from "@/components/ZakiyModeDashboard";
 import { ZakiyEmergencyOverlay } from "@/components/ZakiyEmergencyOverlay";
-import { IslamicHero } from "@/components/IslamicHero";
 import { KnowledgeSlider } from "@/components/KnowledgeSlider";
-import { MoodSelector } from "@/components/MoodSelector";
-import { CommunityTicker } from "@/components/CommunityTicker";
 import {
   DndContext,
   closestCenter,
@@ -34,24 +31,24 @@ import {
 } from "./types";
 import type { SectionId, ListId } from "./types";
 import { SECTION_LABELS } from "./list-sections";
-import { HomeHeroBar } from "./HomeHeroBar";
 import { SosReturnToast } from "./SosReturnToast";
 import { EidEntryCard } from "./EidEntryCard";
-import { QuickAccessBar } from "./QuickAccessBar";
 import { SortableUnifiedItem } from "./SortableUnifiedItem";
 import { SectionHeader } from "./SectionHeader";
-import { Bot, BookOpen, Zap, CircleDot, Users } from "lucide-react";
+import { BookOpen, Zap, CircleDot } from "lucide-react";
 
-// Section organization for visual hierarchy
-const DEFAULT_PRIMARY_ITEMS = ["journey-card", "tawbah-card"] as const;
-const DEFAULT_DAILY_TOOLS = ["quran-card", "islamic-programs", "adhkar", "prayer-times", "notifications", "dhikr", "rajaa"] as const;
-const DEFAULT_GROWTH_ITEMS = ["journey30", "journal"] as const;
-const DEFAULT_COMMUNITY_ITEMS = ["dhikr-rooms"] as const;
+// ── Default home layout ────────────────────────────────────────────────────────
+// Only show the 7 core sections the user selected.
+// Bump bucket key version so existing stored arrangements are reset.
+const DEFAULT_PRIMARY_ITEMS = [] as const;
+const DEFAULT_DAILY_TOOLS = ["quran-card", "dhikr", "prayer-times", "adhkar"] as const;
+const DEFAULT_GROWTH_ITEMS = ["journey30", "islamic-programs", "journal"] as const;
+const DEFAULT_COMMUNITY_ITEMS = [] as const;
 
 type HomeBucket = "primary" | "daily" | "growth" | "community";
 type HomeBucketOrOther = HomeBucket | "other";
 
-const HOME_BUCKET_KEY = "home_bucket_map_v1";
+const HOME_BUCKET_KEY = "home_bucket_map_v2";
 
 function getDefaultBucket(id: SectionId): HomeBucketOrOther {
   if ((DEFAULT_PRIMARY_ITEMS as readonly string[]).includes(id)) return "primary";
@@ -154,50 +151,34 @@ export default function Home() {
     () =>
       [
         {
-          id: "primary" as const,
-          title: "الأهم",
-          icon: <Bot size={16} />,
-          subtitle: "محادثة الزكي والورد اليومي",
-        },
-        {
           id: "daily" as const,
           title: "أدواتك اليومية",
           icon: <CircleDot size={16} />,
-          subtitle: "أذكار • صلاة • قرآن",
+          subtitle: "أذكار • صلاة • قرآن • مواقيت",
         },
         {
           id: "growth" as const,
           title: "النمو والمحتوى",
           icon: <BookOpen size={16} />,
-          subtitle: "برامج • يوميات • تلاوات",
-        },
-        {
-          id: "community" as const,
-          title: "المجتمع والمزيد",
-          icon: <Users size={16} />,
-          subtitle: undefined,
+          subtitle: "رحلة التوبة • برامج إسلامية • يومياتك",
         },
       ] as const,
     [],
   );
 
   const itemsBySection = useMemo(() => {
-    const primary: SectionId[] = [];
     const daily: SectionId[] = [];
     const growth: SectionId[] = [];
-    const community: SectionId[] = [];
     const other: SectionId[] = [];
 
     for (const id of combinedOrder) {
       const bucket = getBucketForItem(id, bucketMap);
-      if (bucket === "primary") primary.push(id);
-      else if (bucket === "daily") daily.push(id);
+      if (bucket === "primary" || bucket === "daily") daily.push(id);
       else if (bucket === "growth") growth.push(id);
-      else if (bucket === "community") community.push(id);
       else other.push(id);
     }
 
-    return { primary, daily, growth, community, other };
+    return { daily, growth, other };
   }, [combinedOrder, bucketMap]);
 
   useEffect(() => {
@@ -309,19 +290,11 @@ export default function Home() {
         <ZakiyModeDashboard />
       ) : (
         <>
-          {/* Hero + header overlay */}
-          <div className="relative">
-            <IslamicHero />
-            <HomeHeroBar />
-          </div>
-          <div className="px-4 relative z-10 flex flex-col gap-5 mt-[-88px]">
-            {/* Quick Access Bar */}
-            <QuickAccessBar />
+          <div className="px-4 flex flex-col gap-5 pt-3">
+            {/* بانر الآيات القرآنية */}
+            <KnowledgeSlider />
 
             <EidEntryCard />
-
-            {/* Mood Selector */}
-            <MoodSelector />
 
             {/* Edit mode banner */}
             <AnimatePresence>
@@ -364,15 +337,13 @@ export default function Home() {
                 <div className="flex flex-col gap-8">
                   {HOME_SECTIONS.map((section) => {
                     const ids =
-                      section.id === "primary"
-                        ? itemsBySection.primary
-                        : section.id === "daily"
-                          ? itemsBySection.daily
-                          : section.id === "growth"
-                            ? itemsBySection.growth
-                            : itemsBySection.community;
+                      section.id === "daily"
+                        ? itemsBySection.daily
+                        : itemsBySection.growth;
 
-                    const isGridish = section.id === "daily" || section.id === "community";
+                    if (ids.length === 0) return null;
+
+                    const isGridish = section.id === "daily";
 
                     return (
                       <BucketDroppable key={section.id} bucket={section.id}>
@@ -405,9 +376,10 @@ export default function Home() {
                     );
                   })}
 
-                  {itemsBySection.other.length > 0 && (
+                  {/* "Other" sections only visible in organize mode */}
+                  {editMode && itemsBySection.other.length > 0 && (
                     <div>
-                      <SectionHeader title="أخرى" icon={<Zap size={16} />} />
+                      <SectionHeader title="أضف المزيد" icon={<Zap size={16} />} />
                       <div className="flex flex-wrap gap-3">
                         {itemsBySection.other.map((id) => (
                           <div
@@ -452,9 +424,6 @@ export default function Home() {
                 ) : null}
               </DragOverlay>
             </DndContext>
-
-            {/* Community Ticker */}
-            <CommunityTicker />
 
             {/* Organize toggle button */}
             <motion.button

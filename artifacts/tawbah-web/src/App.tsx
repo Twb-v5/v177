@@ -199,28 +199,27 @@ function StatusBarBridge() {
 
       // In light/day mode: white bars with dark icons
       // In dark mode: use accent color with light icons
-      const opt = ACCENT_OPTIONS.find(o => o.id === accentColor);
-      const statusBarColor = theme === "dark"
-        ? (opt?.darkPrimary ?? "#10551b")
-        : "#FFFFFF";
-      const navBarColor = theme === "dark"
-        ? (opt?.darkPrimary ?? "#10551b")
-        : "#FFFFFF";
+      // Use app background colours — keeps system icons always visible.
+      // Dark mode: near-black (#0B1E1B) with Style.Light (white icons) ✓
+      // Light mode: white (#FFFFFF) with Style.Dark (dark icons) ✓
+      const statusBarColor = theme === "dark" ? "#0B1E1B" : "#FFFFFF";
+      const navBarColor   = theme === "dark" ? "#0B1E1B" : "#FFFFFF";
 
       StatusBar.setBackgroundColor({ color: statusBarColor }).catch(() => {});
 
+      // Try to update the navigation bar colour via the standard plugin registration.
+      // Fails silently if the plugin is unavailable — styles.xml covers the default.
       if (Capacitor.isNativePlatform()) {
         try {
           const SystemBars = registerPlugin<{
             setNavigationBarColor: (opts: { color: string; darkIcons?: boolean }) => Promise<void>;
           }>("SystemBars");
-
           SystemBars.setNavigationBarColor({
             color: navBarColor,
             darkIcons: theme !== "dark",
           }).catch(() => {});
         } catch {
-          // ignore
+          // ignore — styles.xml default (#0B1E1B) handles the fallback
         }
       }
     }).catch(() => {});

@@ -45,11 +45,6 @@ import {
 } from "@/lib/dua-power";
 import { isNativeApp, getApiBase } from "@/lib/api-base";
 import {
-  initCapacitorPush,
-  getCapacitorPermission,
-  requestCapacitorPermission,
-} from "@/lib/capacitor-push";
-import {
   createNotificationChannels,
   showLocalNotifNow,
   requestLocalNotifPermission,
@@ -179,43 +174,50 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
           setPermission("granted");
         }
       });
-      // Capacitor native: initialize FCM push notifications
-      const s = loadSettings();
-      if (s.enabled) {
-        void initCapacitorPush({
-          onToken: () => {},
-          onNotification: (title, body) => {
-            void addToInboxApi({
-              type: "reminder",
-              title,
-              body,
-              icon: "bell",
-              color: "#4A90B8",
-            });
-          },
-        }).then((ok) => {
-          if (ok) {
-            setPermission("granted");
-            try {
-              localStorage.setItem("native_notif_permission", "granted");
-            } catch {}
+      // Native: use only @capacitor/local-notifications (no FCM/google-services.json required).
+      // Register SW in background so in-app showViaSW alerts still work.
+      registerSW().catch(() => {});
+
+      // Listen for local notification taps → trigger adhkar modal if relevant
+      try {
+        const localNotifSpec = "@capacitor/" + "local-notifications";
+        import(/* @vite-ignore */ localNotifSpec).then((mod) => {
+          const LN = (mod as unknown as {
+            LocalNotifications?: {
+              addListener?: (
+                event: string,
+                cb: (action: unknown) => void
+              ) => Promise<void>;
+            };
+          }).LocalNotifications;
+          if (LN?.addListener) {
+            void LN.addListener(
+              "localNotificationActionPerformed",
+              (action: unknown) => {
+                const a = action as {
+                  notification?: { extra?: { url?: string; adhkar?: string } };
+                };
+                const extra = a?.notification?.extra ?? {};
+                const url = extra.url ?? "";
+                const adhkar =
+                  extra.adhkar ??
+                  (url.includes("morning")
+                    ? "morning"
+                    : url.includes("evening")
+                      ? "evening"
+                      : "");
+                if (adhkar === "morning") {
+                  setAdhkarType("morning");
+                  setAdhkarVisible(true);
+                } else if (adhkar === "evening") {
+                  setAdhkarType("evening");
+                  setAdhkarVisible(true);
+                }
+              }
+            );
           }
-        });
-      }
-      // Update permission state
-      void getCapacitorPermission().then((p) => setPermission(p));
-      // Register service worker even in native builds so showViaSW works
-      registerSW().then(() => {
-        // IMPORTANT: in native mode do NOT use web Notification.permission,
-        // because it can report denied inside WebView even when OS permission is granted.
-        const s = loadSettings();
-        void getCapacitorPermission().then((p) => {
-          setPermission(p);
-          if (s.enabled && p === "granted") {
-            void subscribeToPush();
-          }
-        });
-      });
+        }).catch(() => {});
+      } catch {}
     } else {
       registerSW().then(() => {
         setPermission(getPermission());
@@ -501,113 +503,27 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   const enableNotifications = useCallback(async (): Promise<boolean> => {
     if (native) {
+      // Native: use @capacitor/local-notifications only.
+      // No FCM / google-services.json required.
       try {
         localStorage.removeItem("push_last_error");
         localStorage.removeItem("push_stage");
       } catch {}
       try {
-        localStorage.setItem("push_stage", "native_enable_start");
+        localStorage.setItem("push_stage", "native_local_notif_start");
       } catch {}
-      // Force Android permission request from a user gesture (button click)
-      try {
-        localStorage.setItem("push_stage", "requesting_permission");
-      } catch {}
-      let perm: NotificationPermission = "default";
-      try {
-        perm = await Promise.race([
-          requestCapacitorPermission(),
-          new Promise<NotificationPermission>((resolve) =>
-            setTimeout(() => resolve("default"), 9000),
-          ),
-        ]);
-        if (perm === "default") {
-          try {
-            localStorage.setItem(
-              "push_stage",
-              "permission_request_timeout_or_default",
-            );
-          } catch {}
-        }
-      } catch {
-        try {
-          localStorage.setItem("push_stage", "permission_request_failed");
-        } catch {}
-        perm = "default";
-      }
-      setPermission(perm);
-      try {
-        localStorage.setItem("push_stage", `permission_${perm}`);
-      } catch {}
-      // Some Android builds (and Android < 13) can return "default" while notifications still work.
-      // Only treat explicit "denied" as a blocker.
-      if (perm === "denied") return false;
 
-      let lastErr = "";
-      try {
-        localStorage.setItem("push_stage", "init_push_start");
-      } catch {}
-      console.log(
-        "[Notifications] enableNotifications: starting native push init",
-      );
-      const ok = await initCapacitorPush({
-        onToken: (token) => {
-          console.log(
-            "[Notifications] enableNotifications: token received",
-            token ? "(redacted)" : "(empty)",
-          );
-          try {
-            localStorage.setItem("push_stage", "token_received");
-          } catch {}
-        },
-        onNotification: (title, body) => {
-          console.log(
-            "[Notifications] enableNotifications: notification received",
-            title,
-            body,
-          );
-          void addToInboxApi({
-            type: "reminder",
-            title,
-            body,
-            icon: "bell",
-            color: "#4A90B8",
-          });
-        },
-        onError: (e) => {
-          lastErr = e;
-          console.error("[Notifications] enableNotifications error:", e);
-          try {
-            localStorage.setItem("push_last_error", e || "unknown_error");
-          } catch {}
-        },
-      });
-      console.log(
-        "[Notifications] enableNotifications: initCapacitorPush returned",
-        ok,
-      );
-      if (!ok) {
-        try {
-          console.log(
-            "[Notifications] enableNotifications: saving error to localStorage",
-            lastErr || "unknown_error",
-          );
-          localStorage.setItem("push_last_error", lastErr || "unknown_error");
-        } catch {}
+      const granted = await requestLocalNotifPermission().catch(() => false);
+      if (!granted) {
+        try { localStorage.setItem("push_last_error", "local_notif_permission_denied"); } catch {}
         return false;
       }
-      // Mark as granted inside the app so settings UI unlocks once native push is working.
+      await createNotificationChannels().catch(() => {});
       setPermission("granted");
       try {
         localStorage.setItem("native_notif_permission", "granted");
+        localStorage.setItem("push_stage", "native_local_notif_granted");
       } catch {}
-      // Also ensure LocalNotifications permission for scheduled/timed notifications
-      void requestLocalNotifPermission().then((localOk) => {
-        if (localOk) {
-          try {
-            localStorage.setItem("native_notif_permission", "granted");
-          } catch {}
-        }
-      });
       updateSettings({ enabled: true });
       return true;
     }
