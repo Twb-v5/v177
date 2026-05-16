@@ -52,6 +52,10 @@ ln -sf "$MOBILE_DIR/node_modules" "$BUILD_DIR/node_modules"
 # ERR_PNPM_LOCKFILE_CONFIG_MISMATCH and the EAS build fails.
 cp "$REPO_ROOT/pnpm-lock.yaml"      "$BUILD_DIR/pnpm-lock.yaml"      2>/dev/null || true
 cp "$REPO_ROOT/pnpm-workspace.yaml" "$BUILD_DIR/pnpm-workspace.yaml" 2>/dev/null || true
+# pnpm-workspace.yaml references patch files — copy the patches dir too
+if [ -d "$REPO_ROOT/patches" ]; then
+  cp -r "$REPO_ROOT/patches" "$BUILD_DIR/patches"
+fi
 
 echo "🔧 Initialising temporary git repo for EAS archiving..."
 # EAS requires a git repo to create the project archive.
