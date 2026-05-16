@@ -172,16 +172,16 @@ export default function Home() {
     () =>
       [
         {
-          id: "daily" as const,
-          title: "أدواتك اليومية",
-          icon: <CircleDot size={16} />,
-          subtitle: "ذكر • صلاة • إشعارات • كفارات",
-        },
-        {
           id: "growth" as const,
           title: "رحلتك الروحية",
           icon: <BookOpen size={16} />,
           subtitle: "الزكي • القرآن • التوبة • البرامج",
+        },
+        {
+          id: "daily" as const,
+          title: "أدواتك اليومية",
+          icon: <CircleDot size={16} />,
+          subtitle: "ذكر • صلاة • إشعارات • كفارات",
         },
       ] as const,
     [],
