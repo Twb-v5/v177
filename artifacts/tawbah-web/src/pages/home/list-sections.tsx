@@ -111,21 +111,99 @@ export function SectionMap() {
 }
 
 export function SectionJourney30() {
+  const dayNumber = (() => {
+    try {
+      return parseInt(localStorage.getItem("journey_day") ?? "1") || 1;
+    } catch {
+      return 1;
+    }
+  })();
+  const progress = Math.min(Math.round((dayNumber / 30) * 100), 100);
+
   return (
     <Link
       href="/journey"
-      className="flex items-center gap-4 bg-gradient-to-l from-violet-500/10 to-primary/10 border border-violet-400/25 rounded-2xl p-4 hover:shadow-md active:scale-[0.98] transition-all"
+      className="block rounded-[22px] overflow-hidden active:scale-[0.97] transition-transform relative"
+      style={{
+        background:
+          "linear-gradient(135deg, #120a2e 0%, #1e1048 45%, #2d1060 100%)",
+        border: "1px solid rgba(167,139,250,0.32)",
+        boxShadow:
+          "0 10px 36px rgba(109,40,217,0.22), 0 3px 10px rgba(0,0,0,0.35)",
+      }}
     >
-      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center shadow-md shrink-0">
-        <CalendarDays size={20} className="text-white" />
+      {/* Glow */}
+      <div
+        className="absolute -top-6 -left-6 w-32 h-32 rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(139,92,246,0.4) 0%, transparent 70%)",
+          filter: "blur(18px)",
+        }}
+      />
+      <div className="relative z-10 p-4">
+        <div className="flex items-center gap-3.5">
+          <div
+            className="w-[54px] h-[54px] rounded-[16px] flex items-center justify-center shrink-0"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(139,92,246,0.35) 0%, rgba(109,40,217,0.5) 100%)",
+              border: "1px solid rgba(167,139,250,0.4)",
+              boxShadow: "0 0 18px rgba(139,92,246,0.3)",
+            }}
+          >
+            <CalendarDays size={24} style={{ color: "#c4b5fd" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-0.5">
+              <h3
+                style={{
+                  fontSize: 15,
+                  fontWeight: 800,
+                  color: "#fff",
+                  lineHeight: 1.2,
+                }}
+              >
+                رحلة التوبة ٣٠ يوماً
+              </h3>
+              <span
+                className="shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full"
+                style={{
+                  background: "rgba(167,139,250,0.2)",
+                  border: "1px solid rgba(167,139,250,0.35)",
+                  color: "#c4b5fd",
+                }}
+              >
+                اليوم {dayNumber}/٣٠
+              </span>
+            </div>
+            <p
+              style={{
+                fontSize: 10.5,
+                color: "rgba(196,181,253,0.6)",
+                marginBottom: 8,
+              }}
+            >
+              برنامج تدريجي يومي للتوبة والاستقامة
+            </p>
+            {/* Progress bar */}
+            <div
+              className="h-1.5 rounded-full overflow-hidden"
+              style={{ background: "rgba(255,255,255,0.1)" }}
+            >
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${progress}%`,
+                  background:
+                    "linear-gradient(90deg, #7c3aed, #a78bfa, #c4b5fd)",
+                  transition: "width 0.6s ease",
+                }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="flex-1">
-        <h3 className="font-bold text-sm">رحلة ٣٠ يوماً</h3>
-        <p className="text-[11px] text-muted-foreground">
-          برنامج تدريجي يومي للتوبة والاستقامة
-        </p>
-      </div>
-      <ArrowLeft size={16} className="text-muted-foreground shrink-0" />
     </Link>
   );
 }

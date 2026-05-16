@@ -58,8 +58,8 @@ const DEFAULT_DAILY_TOOLS = [
 const DEFAULT_GROWTH_ITEMS = [
   "zakiy-card",       // بطاقة زكي المميزة
   "quran-card",       // بطاقة القرآن
-  "journey30",        // رحلة 30 يوم
   "islamic-programs", // البرامج الإسلامية
+  "journey30",        // رحلة 30 يوم (بعد البرامج)
   "adhkar",           // الأذكار والأدعية
   "invite",           // دعوة صديق
 ] as const;
