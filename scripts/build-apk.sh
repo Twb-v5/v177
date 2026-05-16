@@ -45,8 +45,13 @@ find "$MOBILE_DIR" -mindepth 1 -maxdepth 1 ! -name 'node_modules' -exec cp -r {}
 
 echo "🔗 Linking node_modules and lockfile for EAS config resolution..."
 ln -sf "$MOBILE_DIR/node_modules" "$BUILD_DIR/node_modules"
-# EAS requires a lockfile for deterministic installs on the cloud server
-cp "$REPO_ROOT/pnpm-lock.yaml" "$BUILD_DIR/pnpm-lock.yaml" 2>/dev/null || true
+
+# EAS requires a lockfile for deterministic installs on the cloud server.
+# We also copy pnpm-workspace.yaml so that the overrides defined there match
+# the overrides recorded in the lockfile — without it pnpm raises
+# ERR_PNPM_LOCKFILE_CONFIG_MISMATCH and the EAS build fails.
+cp "$REPO_ROOT/pnpm-lock.yaml"      "$BUILD_DIR/pnpm-lock.yaml"      2>/dev/null || true
+cp "$REPO_ROOT/pnpm-workspace.yaml" "$BUILD_DIR/pnpm-workspace.yaml" 2>/dev/null || true
 
 echo "🔧 Initialising temporary git repo for EAS archiving..."
 # EAS requires a git repo to create the project archive.
