@@ -104,6 +104,36 @@ function proxyUrl(url: string, res: ReturnType<Router["get"]> extends (path: str
   }).on("error", () => { res.status(502).end(); });
 }
 
+// ─── Mushaf Image Proxy ───────────────────────────────────────────────────────
+// Proxies KSU mushaf page images to avoid CORS issues in Expo Web / PWA.
+// GET /api/quran-img/:page  (page = 1–604)
+// Mushaf image proxy — serves KSU mushaf page images.
+// Correct URL format: https://quran.ksu.edu.sa/ayat/safahat1/{page}.png
+// (no zero-padding, just the plain page number)
+router.get("/quran-img/:page", (req, res) => {
+  const pageNum = parseInt(req.params.page ?? "0", 10);
+  if (!pageNum || pageNum < 1 || pageNum > 604) {
+    res.status(400).json({ error: "Invalid page number (1–604)" });
+    return;
+  }
+  const url = `https://quran.ksu.edu.sa/ayat/safahat1/${pageNum}.png`;
+
+  https.get(url, (upstream) => {
+    if (upstream.statusCode && upstream.statusCode >= 400) {
+      res.status(upstream.statusCode ?? 502).end();
+      return;
+    }
+    res.setHeader("Content-Type", upstream.headers["content-type"] ?? "image/png");
+    res.setHeader("Cache-Control", "public, max-age=604800, immutable");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    if (upstream.headers["content-length"]) {
+      res.setHeader("Content-Length", upstream.headers["content-length"]);
+    }
+    upstream.pipe(res);
+  }).on("error", () => { res.status(502).end(); });
+});
+
+// ─── Audio Proxy ──────────────────────────────────────────────────────────────
 router.get("/audio-proxy/quran/:reciter/:file", (req, res) => {
   const { reciter, file } = req.params;
   if (!file?.endsWith(".mp3") || !reciter) {

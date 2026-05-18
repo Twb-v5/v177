@@ -14,6 +14,7 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
+import { apiUrl } from "@/lib/api";
 import {
   ChevronLeft, ChevronRight, List, Bookmark, BookmarkCheck,
   X, Search, ChevronsUpDown, ZoomIn, ZoomOut,
@@ -55,7 +56,8 @@ const JUZ_START_PAGES: number[] = [
 ];
 
 function pageImageUrl(page: number): string {
-  return `https://quran.ksu.edu.sa/tafseer/hafs/page${String(page).padStart(3, "0")}.png`;
+  // Route through our API proxy to avoid CORS issues in Expo Web / PWA
+  return apiUrl(`/quran-img/${page}`);
 }
 
 function getSurahForPage(page: number): string {

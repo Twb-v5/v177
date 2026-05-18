@@ -72,7 +72,8 @@ function getJuzForPage(page: number): number {
 }
 
 function pageImageUrl(page: number): string {
-  return `https://quran.ksu.edu.sa/tafseer/hafs/page${String(page).padStart(3, "0")}.png`;
+  // Correct KSU mushaf CDN — no zero-padding, plain page number
+  return `/api/quran-img/${page}`;
 }
 
 function getStorage(key: string, fb: string): string {
