@@ -124,20 +124,39 @@ export default function QuranHubScreen() {
         </View>
       </View>
 
-      <View style={{ paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: c.border }}>
-        <Text style={{ fontSize: 11, fontWeight: "700", color: c.textMuted, marginBottom: 8, textAlign: "right" }}>أدوات القرآن</Text>
+      {/* Featured Quick Access */}
+      <View style={{ paddingHorizontal: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: c.border }}>
+        <Text style={{ fontSize: 11, fontWeight: "700", color: c.textMuted, marginBottom: 10, textAlign: "right" }}>الأدوات الرئيسية</Text>
+        <View style={{ flexDirection: "row-reverse", gap: 8, marginBottom: 10 }}>
+          {[
+            { label: "قراءة المصحف", emoji: "📖", href: "/quran/mushaf", gold: true },
+            { label: "وردي اليومي",  emoji: "🌙", href: "/quran/wird",   gold: true },
+            { label: "المفضلة",      emoji: "🔖", href: "/quran/bookmarks", gold: false },
+          ].map(tool => (
+            <Pressable
+              key={tool.href}
+              onPress={() => router.push(tool.href as any)}
+              style={{ flex: 1, flexDirection: "column", alignItems: "center", gap: 4, paddingVertical: 12, borderRadius: 14,
+                backgroundColor: tool.gold ? "rgba(200,168,75,0.12)" : c.surfaceElevated,
+                borderWidth: 1.5, borderColor: tool.gold ? "rgba(200,168,75,0.35)" : c.border }}>
+              <Text style={{ fontSize: 22 }}>{tool.emoji}</Text>
+              <Text style={{ fontSize: 10, fontWeight: "700", color: tool.gold ? "#c8a84b" : c.text, textAlign: "center" }}>{tool.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={{ fontSize: 11, fontWeight: "700", color: c.textMuted, marginBottom: 8, textAlign: "right" }}>أدوات إضافية</Text>
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
           {[
-            { label: "استمع",   emoji: "🎧", href: "/quran/listen"   },
-            { label: "تفسير",   emoji: "📖", href: "/quran/tafsir"   },
-            { label: "حفظ",     emoji: "🧠", href: "/quran/memorize" },
+            { label: "استمع",   emoji: "🎧", href: "/quran/listen"    },
+            { label: "تفسير",   emoji: "📚", href: "/quran/tafsir"    },
+            { label: "حفظ",     emoji: "🧠", href: "/quran/memorize"  },
             { label: "تحديات",  emoji: "🏆", href: "/quran/challenges" },
-            { label: "ختمة",    emoji: "📿", href: "/quran/khatmat"  },
-            { label: "مساجد",   emoji: "🕌", href: "/quran/map"      },
-            { label: "معجزات",  emoji: "✨", href: "/quran/miracles" },
-            { label: "بطاقات",  emoji: "🃏", href: "/quran/cards"    },
-            { label: "ذكاء",    emoji: "🤖", href: "/quran/ai"       },
-            { label: "تجويد",   emoji: "🎙️", href: "/quran/tajweed" },
+            { label: "ختمة",    emoji: "📿", href: "/quran/khatmat"   },
+            { label: "مساجد",   emoji: "🕌", href: "/quran/map"       },
+            { label: "معجزات",  emoji: "✨", href: "/quran/miracles"  },
+            { label: "بطاقات",  emoji: "🃏", href: "/quran/cards"     },
+            { label: "ذكاء",    emoji: "🤖", href: "/quran/ai"        },
+            { label: "تجويد",   emoji: "🎙️", href: "/quran/tajweed"  },
           ].map(tool => (
             <Pressable key={tool.href} onPress={() => router.push(tool.href as any)}
               style={{ flexDirection: "row-reverse", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10,

@@ -159,6 +159,12 @@ workspace/
 │   │       └── tts.ts       # Text-to-speech route
 │   ├── tawbah-web/          # React + Vite web app (port 5000)
 │   │   ├── src/pages/       # 50+ page components
+│   │   │   └── quran/
+│   │   │       ├── index.tsx          # Main Quran hub page
+│   │   │       ├── read.tsx           # Mushaf image reader (KSU, 604 pages)
+│   │   │       ├── wird.tsx           # Daily wird system (5 levels, streaks)
+│   │   │       ├── bookmarks.tsx      # Ayah bookmarks + personal notes
+│   │   │       └── components/        # 11 sub-components (QuranHero, SurahBrowser…)
 │   │   ├── android/         # Capacitor Android project
 │   │   └── capacitor.config.ts
 │   └── tawbah-mobile/       # Expo React Native app (port 24800)
@@ -230,10 +236,41 @@ workspace/
 - **الثبات على التوبة**: بيانات حقيقية من `useJourney()` عبر الـ API
 - **بوصلة القبلة**: Magnetometer + GPS — تدور في الوقت الحقيقي
 
-### ورد اليوم القرآني
-- `AsyncStorage` key: `quran_ward_YYYY-MM-DD`
-- Target: 5 صفحات/يوم (قابل للتعديل)
-- أزرار + / − لتسجيل الصفحات المقروءة
+### ورد القرآن اليومي (نظام شامل)
+نظام الورد مبني بالكامل على `localStorage` بدون backend:
+
+| مفتاح | القيمة | الوصف |
+|-------|--------|-------|
+| `wird_level` | `mubtadi` \| `muntazim` \| `muhtasib` \| `jadd` \| `khatim` | مستوى الورد المختار |
+| `wird_total` | رقم | إجمالي الصفحات المقروءة منذ البداية |
+| `wird_streak` | رقم | عدد الأيام المتتالية |
+| `wird_checked` | JSON boolean[] | حالة كل صفحة في ورد اليوم |
+| `wird_date` | YYYY-MM-DD | تاريخ آخر تسجيل |
+| `wird_completed_date` | YYYY-MM-DD | تاريخ آخر ورد مكتمل |
+| `wird_history` | JSON Record<date, boolean> | سجل 30 يوم للتقويم |
+
+**مستويات الورد:**
+- مبتدئ: ٢ صفحة/يوم
+- منتظم: ٥ صفحات/يوم (الافتراضي)
+- محتسب: ١٠ صفحات/يوم
+- جادّ: ١٥ صفحة/يوم
+- خاتم: ٢٠ صفحة/يوم
+
+**صفحة الورد المخصصة:** `/quran/wird` — مستويات، إنجازات، تقويم ٣٠ يوم، ختمات
+
+### المفضلة القرآنية
+مبنية على `localStorage` (مفتاح: `quran_bookmarks`):
+- حفظ آيات مع ملاحظات شخصية (تأملات)
+- صفحة مخصصة: `/quran/bookmarks`
+- بحث وتصفية — مشاركة — حذف
+
+### صفحة قراءة المصحف (`/quran/read`)
+- **صور المصحف** من منصة KSU: `https://quran.ksu.edu.sa/tafseer/hafs/page{001-604}.png`
+- تنقل بالسحب (swipe) بين الصفحات
+- شريط تمرير + 30 جزءاً للقفز السريع
+- قائمة السور (114 سورة) + قفز لرقم صفحة
+- حفظ آخر صفحة في `quran_last_page`
+- تكبير/تصغير — إخفاء عناصر التحكم تلقائياً
 
 ---
 
@@ -253,7 +290,7 @@ workspace/
 | 10 | **البوت الزكي** | Arabic AI spiritual chatbot (GPT-4o) with voice I/O + memory |
 | 11 | **غرف الذكر الجماعية** | Live group dhikr rooms (Istighfar, Tasbih, Tahmid, Takbir) |
 | 12 | **مقياس الروح** | Soul/spiritual wellness gauge |
-| 13 | **القرآن الكريم** | Full Quran browser with audio, tafsir, memorization, khatma tracker |
+| 13 | **القرآن الكريم** | Full Quran browser with audio, tafsir, memorization, khatma tracker — mushaf image reader (KSU), bookmarks, comprehensive wird system |
 | 14 | **شجرة التوبة** | Gamified growth tree (Seed → Garden) powered by dhikr count |
 | 15 | **وضع المناجاة** | Immersive night worship mode with ambient scenes |
 | 16 | **الأذكار** | Complete collection of morning/evening/occasion adhkar |
@@ -467,3 +504,19 @@ pnpm install --no-frozen-lockfile
 - Expo account: `omarkaremksa` (authenticated account for EAS builds)
 - Web app bundle ID: `com.aiservx.tawbah`
 - Mobile bundle ID: `com.aiservx.tawbah`
+
+---
+
+## 📋 Changelog (هذه الجلسة — 18 مايو 2026)
+
+| الكوميت | التغيير |
+|---------|---------|
+| `442b2ce` | قاعدة المشروع الأصلية (grafted origin) |
+| `59c8635` | تقسيم صفحة القرآن إلى 11 مكوّناً في `components/` |
+| `d14b717` | إضافة (ويب): قارئ المصحف `/quran/read`، نظام الورد `/quran/wird`، المفضلة `/quran/bookmarks` — تحديث `QuranCard` و`ReadingTracker` و`App.tsx` |
+| جلسة جديدة | إضافة (موبايل): `mushaf.tsx` + `wird.tsx` + `bookmarks.tsx` — تحديث `read.tsx` (إشارات مرجعية لكل آية) + `index.tsx` (بطاقات الأدوات الرئيسية) |
+
+**آخر بناء APK معروف جيد:**
+- EAS preview build: `d93891d7` (commit snapshot `793c8b7`)
+- تم قبل جلسة 18 مايو (قبل تقسيم صفحة القرآن)
+- لبناء APK يشمل الميزات الجديدة: `./scripts/build-apk.sh`

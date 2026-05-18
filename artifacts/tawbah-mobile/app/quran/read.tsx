@@ -25,11 +25,14 @@ import {
   Play,
   Plus,
   X,
+  Bookmark,
+  BookmarkCheck,
 } from "lucide-react-native";
 import { useAyahs, Ayah } from "@/hooks/useQuranData";
 import { useQuranAudio } from "@/hooks/useQuranAudio";
 import { useSettings } from "@/providers/SettingsProvider";
 import { QuranAudioPlayer } from "@/components/quran/QuranAudioPlayer";
+import { saveBookmark, removeBookmark, getBookmarks } from "./bookmarks";
 
 const PAGE_SIZE = 10;
 const SHEET_MAX_HEIGHT = Math.min(620, Math.round(Dimensions.get("window").height * 0.78));
@@ -130,6 +133,29 @@ export default function QuranReadScreen() {
   const [hiddenAyahs, setHiddenAyahs] = useState<Set<number>>(new Set());
   const [reciterId, setReciterId] = useState("ar.alafasy");
   const [showReciterPicker, setShowReciterPicker] = useState(false);
+  const [bookmarkedAyahs, setBookmarkedAyahs] = useState<Set<number>>(new Set());
+
+  // Load bookmarks state for current surah
+  useEffect(() => {
+    getBookmarks().then(list => {
+      const ids = new Set(list.filter(b => b.surahId === surahNumber).map(b => b.ayahNum));
+      setBookmarkedAyahs(ids);
+    });
+  }, [surahNumber]);
+
+  const toggleAyahBookmark = useCallback(async (ayah: Ayah) => {
+    const isAlready = bookmarkedAyahs.has(ayah.numberInSurah);
+    if (isAlready) {
+      const list = await getBookmarks();
+      const bm = list.find(b => b.surahId === surahNumber && b.ayahNum === ayah.numberInSurah);
+      if (bm) await removeBookmark(bm.id);
+      setBookmarkedAyahs(prev => { const s = new Set(prev); s.delete(ayah.numberInSurah); return s; });
+    } else {
+      await saveBookmark({ surahId: surahNumber, surahName: SURAH_NAMES[surahNumber] ?? `سورة ${surahNumber}`, ayahNum: ayah.numberInSurah, ayahText: ayah.text, note: "" });
+      setBookmarkedAyahs(prev => new Set([...prev, ayah.numberInSurah]));
+    }
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, [bookmarkedAyahs, surahNumber]);
 
   const totalPages = Math.ceil(ayahs.length / PAGE_SIZE);
   const paginatedAyahs = ayahs.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
@@ -360,6 +386,11 @@ export default function QuranReadScreen() {
               {hiddenAyahs.has(item.number) ? <EyeOff size={18} color={palette.muted} /> : <Eye size={18} color={palette.muted} />}
             </Pressable>
           )}
+          <Pressable style={styles.actionBtn} onPress={() => toggleAyahBookmark(item)}>
+            {bookmarkedAyahs.has(item.numberInSurah)
+              ? <BookmarkCheck size={18} color={palette.gold} />
+              : <Bookmark size={18} color={palette.muted} />}
+          </Pressable>
           <Pressable style={styles.actionBtn} onPress={() => openTafsir(item)}>
             <BookOpen size={18} color={palette.muted} />
           </Pressable>

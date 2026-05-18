@@ -38,6 +38,8 @@ export default function QuranPage() {
     { icon: "📅", label: "الختمات", sub: "ختمات تاريخية", href: "/quran/khatmat" },
     { icon: "👥", label: "الختمة الجماعية", sub: "مع أصدقائك", href: "/quran/khatma" },
     { icon: "🔥", label: "التحديات", sub: "تحدّ نفسك", href: "/quran/challenges" },
+    { icon: "📌", label: "المفضلة", sub: "آياتك المحفوظة", href: "/quran/bookmarks" },
+    { icon: "🌱", label: "الورد اليومي", sub: "تتبع قراءتك", href: "/quran/wird" },
   ];
 
   const newFeatures = [
