@@ -56,7 +56,11 @@ const JUZ_START_PAGES: number[] = [
 ];
 
 function pageImageUrl(page: number): string {
-  // Route through our API proxy to avoid CORS issues in Expo Web / PWA
+  // On native (Android/iOS) fetch directly — no CORS restrictions in RN
+  if (Platform.OS !== "web") {
+    return `https://quran.ksu.edu.sa/ayat/safahat1/${page}.png`;
+  }
+  // On Expo Web / PWA route through our API proxy to avoid CORS
   return apiUrl(`/quran-img/${page}`);
 }
 

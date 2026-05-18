@@ -203,12 +203,12 @@ export async function sendDuePushJobs() {
       }
     }
 
-    void sent;
-
-    await db
-      .update(pushJobsTable)
-      .set({ sent: true })
-      .where(eq(pushJobsTable.id, job.id));
+    if (sent) {
+      await db
+        .update(pushJobsTable)
+        .set({ sent: true })
+        .where(eq(pushJobsTable.id, job.id));
+    }
   }
 }
 

@@ -115,6 +115,50 @@ export async function cancelAllNotifs(): Promise<void> {
 
 // ─── Apply Settings ───────────────────────────────────────────────────────────
 
+async function fetchAndSchedulePrayerNotifs(s: NotifSettings): Promise<void> {
+  try {
+    const res = await fetch(
+      "https://api.aladhan.com/v1/timingsByCity?city=Riyadh&country=SA&method=4",
+      { signal: AbortSignal.timeout(8000) }
+    );
+    if (!res.ok) return;
+    const json = (await res.json()) as {
+      data?: { timings?: Record<string, string> };
+    };
+    const timings = json?.data?.timings;
+    if (!timings) return;
+
+    const prayers: Array<{ key: keyof NotifSettings; id: string; name: string; apiKey: string }> = [
+      { key: "prayerFajr",    id: "prayer_fajr",    name: "الفجر",   apiKey: "Fajr"    },
+      { key: "prayerDhuhr",   id: "prayer_dhuhr",   name: "الظهر",   apiKey: "Dhuhr"   },
+      { key: "prayerAsr",     id: "prayer_asr",     name: "العصر",   apiKey: "Asr"     },
+      { key: "prayerMaghrib", id: "prayer_maghrib", name: "المغرب",  apiKey: "Maghrib" },
+      { key: "prayerIsha",    id: "prayer_isha",    name: "العشاء",  apiKey: "Isha"    },
+    ];
+
+    for (const p of prayers) {
+      const enabled = s[p.key] as boolean;
+      if (!enabled) { await cancelNotif(p.id); continue; }
+      const raw = timings[p.apiKey];
+      if (!raw) continue;
+      const [hStr, mStr] = raw.split(":");
+      const h = parseInt(hStr ?? "0", 10);
+      const m = Math.max(0, parseInt(mStr ?? "0", 10) - s.prayerAdvance);
+      const hhmm = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      await scheduleDailyNotif(
+        p.id,
+        `🕌 حان وقت ${p.name}`,
+        `استعد لصلاة ${p.name} — ${s.prayerAdvance > 0 ? `بعد ${s.prayerAdvance} دقيقة` : "الآن"}`,
+        hhmm
+      );
+    }
+  } catch {
+    for (const id of Object.values(PRAYER_NOTIF_IDS)) {
+      await cancelNotif(id);
+    }
+  }
+}
+
 export async function applyNotifSettings(s: NotifSettings): Promise<void> {
   if (Platform.OS === "web") return;
   const ok = await hasNotifPermission();
@@ -142,6 +186,15 @@ export async function applyNotifSettings(s: NotifSettings): Promise<void> {
     await scheduleDailyNotif("quran_reminder", "📖 ورد القرآن", "اقرأ ولو آية — القرآن شفاء وهدى", "20:00");
   } else {
     await cancelNotif("quran_reminder");
+  }
+
+  const anyPrayer = s.prayerFajr || s.prayerDhuhr || s.prayerAsr || s.prayerMaghrib || s.prayerIsha;
+  if (anyPrayer) {
+    await fetchAndSchedulePrayerNotifs(s);
+  } else {
+    for (const id of Object.values(PRAYER_NOTIF_IDS)) {
+      await cancelNotif(id);
+    }
   }
 }
 

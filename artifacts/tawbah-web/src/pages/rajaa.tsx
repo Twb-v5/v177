@@ -575,16 +575,33 @@ type AudioPayload =
 
 function AudioPlayer({ payload, accentClass = "hover:text-secondary hover:border-secondary/40" }: { payload: AudioPayload; accentClass?: string }) {
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const blobUrlRef = useRef<string | null>(null);
   const API_BASE = useMemo(() => getApiBase(), []);
 
-  const handlePlay = async (e: React.MouseEvent) => {
+  useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+    };
+  }, []);
+
+  const handleClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (audioUrl) {
-      audioRef.current?.play();
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (blobUrlRef.current) {
+      if (audio.paused) {
+        void audio.play().catch(() => {});
+        setIsPlaying(true);
+      } else {
+        audio.pause();
+        setIsPlaying(false);
+      }
       return;
     }
+
     setStatus("loading");
     try {
       const body =
@@ -604,7 +621,11 @@ function AudioPlayer({ payload, accentClass = "hover:text-secondary hover:border
       }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      setAudioUrl(url);
+      blobUrlRef.current = url;
+      audio.src = url;
+      audio.load();
+      void audio.play().catch(() => {});
+      setIsPlaying(true);
       setStatus("ready");
     } catch {
       setStatus("error");
@@ -613,50 +634,50 @@ function AudioPlayer({ payload, accentClass = "hover:text-secondary hover:border
 
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
-    audioRef.current?.pause();
+    const audio = audioRef.current;
+    if (audio) { audio.pause(); audio.currentTime = 0; }
+    setIsPlaying(false);
     setStatus("idle");
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
-      setAudioUrl(null);
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
     }
   };
 
-  if (status === "ready" && audioUrl) {
-    return (
-      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-        <audio
-          ref={audioRef}
-          src={audioUrl}
-          controls
-          autoPlay
-          className="h-7"
-          style={{ minWidth: 140, maxWidth: 180 }}
-        />
-        <button
-          onClick={handleClose}
-          className="p-1 rounded-md text-muted-foreground hover:text-foreground"
-          title="إغلاق"
-        >
-          <X size={12} />
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <button
-      onClick={handlePlay}
-      disabled={status === "loading"}
-      title="استمع"
-      className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all border bg-muted/60 border-border text-muted-foreground disabled:opacity-60 ${accentClass}`}
-    >
-      {status === "loading" ? (
-        <Loader2 size={12} className="animate-spin" />
+    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+      <audio
+        ref={audioRef}
+        onEnded={() => setIsPlaying(false)}
+        onError={() => { setStatus("error"); setIsPlaying(false); }}
+        style={{ display: "none" }}
+      />
+      {status === "ready" ? (
+        <>
+          <button
+            onClick={handleClick}
+            title={isPlaying ? "إيقاف" : "استمع"}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all border bg-muted/60 border-border text-muted-foreground ${accentClass}`}
+          >
+            {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+            <span>{isPlaying ? "إيقاف" : "استمع"}</span>
+          </button>
+          <button onClick={handleClose} className="p-1 rounded-md text-muted-foreground hover:text-foreground" title="إغلاق">
+            <X size={12} />
+          </button>
+        </>
       ) : (
-        <Play size={12} />
+        <button
+          onClick={handleClick}
+          disabled={status === "loading"}
+          title="استمع"
+          className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all border bg-muted/60 border-border text-muted-foreground disabled:opacity-60 ${accentClass}`}
+        >
+          {status === "loading" ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
+          <span>{status === "loading" ? "جاري التحميل..." : status === "error" ? "حاول مجدداً" : "استمع"}</span>
+        </button>
       )}
-      <span>{status === "loading" ? "جاري التحميل..." : status === "error" ? "حاول مجدداً" : "استمع"}</span>
-    </button>
+    </div>
   );
 }
 
